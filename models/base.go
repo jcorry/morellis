@@ -32,6 +32,7 @@ func init() {
 	}
 
 	db = conn
+	db.Set("association_autoupdate", true)
 	db.Debug().AutoMigrate(&Account{}, &Flavor{}, &Ingredient{})
 }
 
