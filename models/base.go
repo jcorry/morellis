@@ -33,7 +33,7 @@ func init() {
 
 	db = conn
 	db.Set("association_autoupdate", true)
-	db.Debug().AutoMigrate(&Account{}, &Flavor{}, &Ingredient{})
+	db.Debug().AutoMigrate(&Account{}, &AccountStatus{}, &Flavor{}, &Ingredient{})
 }
 
 func GetDB() *gorm.DB {

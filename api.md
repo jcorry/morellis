@@ -8,7 +8,7 @@ All REST API endpoints are authenticated using JWT. User management is presently
 of this API and will be performed manually by the API developers. To add or delete a user contact
 John <[jcorry@gmail.com](mailto:jcorry@gmail.com)>
 
-### `POST /authentication`
+### `POST /user/login`
 Exchange credentials for a JWT that will be used to authenticate subsequent API requests.
 #### Request body
 ```$xslt
