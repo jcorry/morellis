@@ -2,7 +2,8 @@ package models
 
 import (
 	"fmt"
-	u "morellis/utils"
+
+	u "github.com/jcorry/morellis/utils"
 
 	"github.com/jinzhu/gorm"
 )

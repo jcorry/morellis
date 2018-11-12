@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"morellis/app"
-	"morellis/controllers"
 	"net/http"
 	"os"
+
+	"github.com/jcorry/morellis/app"
+	"github.com/jcorry/morellis/controllers"
 
 	"github.com/gorilla/mux"
 )

@@ -1,5 +1,5 @@
 PROJECT_NAME := "morellis"
-PKG := "morellis"
+PKG := "github.com/jcorry/${PROJECT_NAME}"
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 
@@ -26,7 +26,7 @@ coverhtml: ## Generate global code coverage report in HTML
 	./tools/coverage.sh html;
 
 dep: ## Get the dependencies
-	@go get -v -d ./...
+	@go get -v -d -t ./...
 
 build: dep ## Build the binary file
 	@go build -i -v $(PKG)

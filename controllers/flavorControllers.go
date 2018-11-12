@@ -2,9 +2,10 @@ package controllers
 
 import (
 	"encoding/json"
-	"morellis/models"
-	u "morellis/utils"
 	"net/http"
+
+	"github.com/jcorry/morellis/models"
+	u "github.com/jcorry/morellis/utils"
 )
 
 var CreateFlavor = func(w http.ResponseWriter, r *http.Request) {
