@@ -1,3 +1,4 @@
+[![CircleCI](https://circleci.com/gh/jcorry/morellis/tree/master.svg?style=svg&circle-token=c66443d46cc348481a050ce58e1fb2c41a8803b9)](https://circleci.com/gh/jcorry/morellis/tree/master)
 # Morellis API
 
 The Morellis API is a simple marketing app for use by Morellis Ice Cream stores. It was born from a desire on my part
