@@ -1,9 +1,10 @@
 package models
 
 import (
-	u "morellis/utils"
 	"os"
 	"strings"
+
+	u "github.com/jcorry/morellis/utils"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"

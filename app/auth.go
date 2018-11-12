@@ -3,11 +3,12 @@ package app
 import (
 	"context"
 	"fmt"
-	"morellis/models"
-	u "morellis/utils"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/jcorry/morellis/models"
+	u "github.com/jcorry/morellis/utils"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )
