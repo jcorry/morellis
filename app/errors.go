@@ -1,8 +1,9 @@
 package app
 
 import (
-	u "morellis/utils"
 	"net/http"
+
+	u "github.com/jcorry/morellis/utils"
 )
 
 var NotFoundHandler = func(next http.Handler) http.Handler {
