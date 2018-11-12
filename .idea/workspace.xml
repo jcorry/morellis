@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="0d690479-85cb-4d32-923c-e900d7a256bc" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api.md" beforeDir="false" afterPath="$PROJECT_DIR$/api.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/authControllers.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/authControllers.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/account.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/account.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/base.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/base.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/request.paw" beforeDir="false" afterPath="$PROJECT_DIR$/request.paw" afterDir="false" />
-    </list>
+    <list default="true" id="0d690479-85cb-4d32-923c-e900d7a256bc" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,7 +12,7 @@
     <session id="-499239482">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="7" />
+          <entry key="project.closed" value="8" />
           <entry key="project.open.time.0" value="1" />
           <entry key="project.open.time.1" value="1" />
           <entry key="project.open.time.2" value="2" />
@@ -33,7 +26,7 @@
           <entry key="env" value="70" />
           <entry key="go" value="5624" />
           <entry key="md" value="3379" />
-          <entry key="txt" value="72" />
+          <entry key="txt" value="103" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
@@ -41,7 +34,7 @@
           <entry key=".env file" value="23" />
           <entry key="Go" value="5624" />
           <entry key="Markdown" value="3369" />
-          <entry key="PLAIN_TEXT" value="129" />
+          <entry key="PLAIN_TEXT" value="160" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -84,20 +77,20 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/controllers/authControllers.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="360">
-              <caret line="30" column="5" lean-forward="true" selection-start-line="30" selection-start-column="5" selection-end-line="30" selection-end-column="5" />
+            <state relative-caret-position="115">
+              <caret line="17" column="55" lean-forward="true" selection-start-line="17" selection-start-column="55" selection-end-line="17" selection-end-column="55" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/models/account.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1157">
-              <caret line="57" column="99" selection-start-line="57" selection-start-column="99" selection-end-line="57" selection-end-column="99" />
+            <state relative-caret-position="502">
+              <caret line="136" lean-forward="true" selection-start-line="136" selection-end-line="136" />
             </state>
           </provider>
         </entry>
@@ -157,8 +150,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="2" />
-    <option name="y" value="413" />
+    <option name="x" value="2581" />
+    <option name="y" value="131" />
     <option name="width" value="1420" />
     <option name="height" value="1027" />
   </component>
@@ -305,14 +298,15 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="2" y="413" width="1420" height="1027" extended-state="0" />
+    <frame x="2" y="23" width="1420" height="1027" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.16328011" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4992743" visible="true" weight="0.27807486" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4992743" weight="0.27807486" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.33298537" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -335,7 +329,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Many to many relationship on flavors and ingredients working" />
-    <option name="LAST_COMMIT_MESSAGE" value="Many to many relationship on flavors and ingredients working" />
+    <MESSAGE value="Author status relationship" />
+    <option name="LAST_COMMIT_MESSAGE" value="Author status relationship" />
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="watch">
@@ -444,17 +439,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/controllers/authControllers.go">
+    <entry file="file://$PROJECT_DIR$/models/account.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="30" column="5" lean-forward="true" selection-start-line="30" selection-start-column="5" selection-end-line="30" selection-end-column="5" />
+        <state relative-caret-position="502">
+          <caret line="136" lean-forward="true" selection-start-line="136" selection-end-line="136" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/account.go">
+    <entry file="file://$PROJECT_DIR$/controllers/authControllers.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1157">
-          <caret line="57" column="99" selection-start-line="57" selection-start-column="99" selection-end-line="57" selection-end-column="99" />
+        <state relative-caret-position="115">
+          <caret line="17" column="55" lean-forward="true" selection-start-line="17" selection-start-column="55" selection-end-line="17" selection-end-column="55" />
         </state>
       </provider>
     </entry>
