@@ -98,7 +98,7 @@ func (account *Account) Create() map[string]interface{} {
 func Login(email, password string) map[string]interface{} {
 
 	account := &Account{}
-	err := GetDB().Table("accounts").Where("email = ? ", email).Where("account_status_id = ?", 1).First(account).Error
+	err := GetDB().Table("accounts").Where("email = ? ", email).First(account).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return u.Message(false, "Email address not found")
@@ -126,12 +126,12 @@ func Login(email, password string) map[string]interface{} {
 
 func GetUser(u uint) *Account {
 
-	acc := &Account{}
-	GetDB().Table("accounts").Where("id = ?", u).First(acc)
-	if acc.Email == "" { //User not found!
+	account := &Account{}
+	GetDB().Table("accounts").Where("id = ?", u).First(account)
+	if account.Email == "" { //User not found!
 		return nil
 	}
 
-	acc.Password = ""
-	return acc
+	account.Password = ""
+	return account
 }
