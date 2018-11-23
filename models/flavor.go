@@ -68,7 +68,7 @@ func GetFlavor(id uint) *Flavor {
 // Get all of the flavors in the flavors table
 func GetFlavors() []*Flavor {
 	flavors := make([]*Flavor, 0)
-	err := GetDB().Table("flavors").Find(&flavors).Error
+	err := GetDB().Preload("Ingredients").Find(&flavors).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
