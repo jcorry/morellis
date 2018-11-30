@@ -3,7 +3,7 @@ FROM golang:1.11
 RUN mkdir -p /go/src/app
 WORKDIR /go/src/app
 
-ADD . /go/src/app
+COPY . /go/src/app
 
 ARG SSH_KEY
 RUN mkdir -p /root/.ssh

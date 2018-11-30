@@ -6,8 +6,23 @@ services:
       context: .
       args:
         SSH_KEY: ${SSH_KEY}
-    command: ["go", "run", "main.go"]
+    command: ["./wait-for-it.sh", "db:33061", "--", "go", "run", "main.go"]
     volumes:
       - .:/go/src/app
     ports:
       - "8080:8080"
+    depends_on:
+      - db
+  db:
+    container_name: morellis-mysql
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: morellis
+      MYSQL_USER: morellis
+      MYSQL_PASSWORD: E4j+#2G^8Pa=^Nn9
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+      - ./data:/var/lib/mysql
+    ports:
+      - "33061:3306"

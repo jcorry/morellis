@@ -33,7 +33,7 @@ func main() {
 
 	//router.NotFoundHandler = app.NotFoundHandler
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("app_port")
 	if port == "" {
 		port = "8000" //localhost
 	}
