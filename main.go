@@ -8,6 +8,7 @@ import (
 	"github.com/getsentry/raven-go"
 
 	"github.com/jcorry/morellis/app"
+
 	"github.com/jcorry/morellis/controllers"
 
 	"github.com/gorilla/mux"
@@ -33,7 +34,7 @@ func main() {
 
 	//router.NotFoundHandler = app.NotFoundHandler
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("app_port")
 	if port == "" {
 		port = "8000" //localhost
 	}
