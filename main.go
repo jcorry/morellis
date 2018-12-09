@@ -8,6 +8,7 @@ import (
 	"github.com/getsentry/raven-go"
 
 	"github.com/jcorry/morellis/app"
+
 	"github.com/jcorry/morellis/controllers"
 
 	"github.com/gorilla/mux"

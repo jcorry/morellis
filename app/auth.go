@@ -10,7 +10,7 @@ import (
 	"github.com/jcorry/morellis/models"
 	u "github.com/jcorry/morellis/utils"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go"
 )
 
 var JwtAuthentication = func(next http.Handler) http.Handler {
