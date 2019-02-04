@@ -4,25 +4,24 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"gopkg.in/matryer/respond.v1"
+
 	"github.com/jcorry/morellis/models"
-	u "github.com/jcorry/morellis/utils"
 )
 
 var CreateFlavor = func(w http.ResponseWriter, r *http.Request) {
 	flavor := &models.Flavor{}
-
 	err := json.NewDecoder(r.Body).Decode(flavor)
 	if err != nil {
-		u.Respond(w, u.Message(false, "Error unmarshaling request body"))
-		return
+		respond.With(w, r, http.StatusBadRequest, err)
 	}
-	res := flavor.Create()
-	u.Respond(w, res)
+	respond.With(w, r, http.StatusOK, flavor)
 }
 
 var GetFlavors = func(w http.ResponseWriter, r *http.Request) {
-	flavors := models.GetFlavors()
-	resp := u.Message(true, "success")
-	resp["flavors"] = flavors
-	u.Respond(w, resp)
+	flavors, err := models.GetFlavors()
+	if err != nil {
+		respond.With(w, r, http.StatusBadRequest, err)
+	}
+	respond.With(w, r, http.StatusOK, flavors)
 }
