@@ -21,9 +21,10 @@ func init() {
 	username := os.Getenv("db_user")
 	password := os.Getenv("db_pass")
 	dbName := os.Getenv("db_name")
-	//dbHost := os.Getenv("db_host")
+	dbPort := os.Getenv("db_port")
+	dbHost := os.Getenv("db_host")
 
-	dbUri := fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=True&loc=Local", username, password, dbName)
+	dbUri := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", username, password, dbHost, dbPort, dbName)
 	fmt.Println(dbUri)
 
 	conn, err := gorm.Open("mysql", dbUri)
@@ -32,7 +33,8 @@ func init() {
 	}
 
 	db = conn
-	db.Debug().AutoMigrate(&Account{}, &Flavor{}, &Ingredient{})
+	db.Set("association_autoupdate", true)
+	db.Debug().AutoMigrate(&Account{}, &AccountStatus{}, &Flavor{}, &Ingredient{})
 }
 
 func GetDB() *gorm.DB {

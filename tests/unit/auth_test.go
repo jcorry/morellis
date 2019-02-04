@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"morellis/app"
-	"morellis/models"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/jcorry/morellis/app"
+	"github.com/jcorry/morellis/models"
 
 	"github.com/dgrijalva/jwt-go"
 

@@ -2,7 +2,8 @@ package models
 
 import (
 	"fmt"
-	u "morellis/utils"
+
+	u "github.com/jcorry/morellis/utils"
 
 	"github.com/jinzhu/gorm"
 )
@@ -12,7 +13,7 @@ type Flavor struct {
 	gorm.Model
 	Name        string       `json:"name"`
 	Description string       `json:"description"`
-	Ingredients []Ingredient `json:"ingredients";gorm:"many2many:flavor_ingredients;save_associations:true"`
+	Ingredients []Ingredient `gorm:"many2many:flavors_ingredients;"json:"ingredients"`
 }
 
 func (flavor *Flavor) Validate() (map[string]interface{}, bool) {
@@ -41,15 +42,8 @@ func (flavor *Flavor) Create() map[string]interface{} {
 		return resp
 	}
 
-	GetDB().Create(&flavor)
-
-	for _, ingredient := range flavor.Ingredients {
-		GetDB().Create(&ingredient)
-		GetDB().Model(&flavor).Association("Ingredients").Append(&ingredient)
-		if ingredient.ID <= 0 {
-			return u.Message(false, "Failed to create ingredient, DB connection error.")
-		}
-	}
+	GetDB().Model(&flavor).Create(&flavor)
+	GetDB().Model(&flavor).Save(&flavor)
 
 	if flavor.ID <= 0 {
 		return u.Message(false, "Failed to create flavor, DB connection error.")
@@ -74,7 +68,7 @@ func GetFlavor(id uint) *Flavor {
 // Get all of the flavors in the flavors table
 func GetFlavors() []*Flavor {
 	flavors := make([]*Flavor, 0)
-	err := GetDB().Table("flavors").Find(&flavors).Error
+	err := GetDB().Preload("Ingredients").Find(&flavors).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil

@@ -6,5 +6,5 @@ type Ingredient struct {
 	gorm.Model
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
-	Flavors     []Flavor `json:"flavors";gorm:"many2many:flavor_ingredients;save_associations:true"`
+	Flavors     []Flavor `json:"-";gorm:"many2many:flavors_ingredients;"`
 }

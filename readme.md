@@ -1,3 +1,4 @@
+[![CircleCI](https://circleci.com/gh/jcorry/morellis/tree/master.svg?style=svg&circle-token=c66443d46cc348481a050ce58e1fb2c41a8803b9)](https://circleci.com/gh/jcorry/morellis/tree/master)
 # Morellis API
 
 The Morellis API is a simple marketing app for use by Morellis Ice Cream stores. It was born from a desire on my part
@@ -6,7 +7,9 @@ coconut jalapeno cone.
 
 ## What Does it Do?
 The idea is that as the store personnel retires empty barrels and replaces them with
-new flavors, they can update the current flavors using a mobile web app. Customers can 
+new flavors, they can update the current flavors using a mobile web app. Each of the store locations keeps 12 flavors current at a time. The company has ~40 total flavors. Each store's active/current flavors are selected from the company's ~40 total flavors. Company flavors change infrequently, current flavors at a store change frequently.
+
+Customers can 
 save their favorite flavors (or flavor keywords) using a very low friction SMS interface.
 When a flavor that matches a customer's saved flavor keywords is loaded into the cooler,
 the customers that have keywords saved matching that flavor are notified via SMS.

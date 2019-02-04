@@ -3,13 +3,14 @@ package app
 import (
 	"context"
 	"fmt"
-	"morellis/models"
-	u "morellis/utils"
 	"net/http"
 	"os"
 	"strings"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/jcorry/morellis/models"
+	u "github.com/jcorry/morellis/utils"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 var JwtAuthentication = func(next http.Handler) http.Handler {
@@ -72,7 +73,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		}
 
 		//Everything went well, proceed with the request and set the caller to the user retrieved from the parsed token
-		fmt.Sprintf("User %", tk.UserId) //Useful for monitoring
+		fmt.Sprintf("User %d", tk.UserId) //Useful for monitoring
 		ctx := context.WithValue(r.Context(), "user", tk.UserId)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r) //proceed in the middleware chain!

@@ -1,9 +1,10 @@
 package models
 
 import (
-	u "morellis/utils"
 	"os"
 	"strings"
+
+	u "github.com/jcorry/morellis/utils"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
@@ -21,10 +22,24 @@ type Token struct {
 //a struct to rep user account
 type Account struct {
 	gorm.Model
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Token    string `json:"token";sql:"-"`
+	Email           string        `json:"email"`
+	Password        string        `json:"password"`
+	Token           string        `json:"token";sql:"-"`
+	AccountStatusID uint          `json:"-"`
+	AccountStatus   AccountStatus `json:"account_status"`
 }
+
+type AccountStatus struct {
+	ID    uint   `json:"-"`
+	Value string `json:"value";sql:"not null;type:ENUM('Pending','Active')"`
+}
+
+type AccountStatusValue string
+
+const (
+	Active  AccountStatusValue = "Active"
+	Pending AccountStatusValue = "Pending"
+)
 
 //Validate incoming user details...
 func (account *Account) Validate() (map[string]interface{}, bool) {
@@ -41,7 +56,7 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	temp := &Account{}
 
 	//check for errors and duplicate emails
-	err := GetDB().Table("accounts").Where("email = ?", account.Email).First(temp).Error
+	err := GetDB().Table("accounts").Where("email = ?", account.Email).Where("account_status_id = ?", 1).First(temp).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return u.Message(false, "Connection error. Please retry"), false
 	}
@@ -83,7 +98,7 @@ func (account *Account) Create() map[string]interface{} {
 func Login(email, password string) map[string]interface{} {
 
 	account := &Account{}
-	err := GetDB().Table("accounts").Where("email = ?", email).First(account).Error
+	err := GetDB().Table("accounts").Where("email = ? ", email).First(account).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return u.Message(false, "Email address not found")
@@ -111,12 +126,12 @@ func Login(email, password string) map[string]interface{} {
 
 func GetUser(u uint) *Account {
 
-	acc := &Account{}
-	GetDB().Table("accounts").Where("id = ?", u).First(acc)
-	if acc.Email == "" { //User not found!
+	account := &Account{}
+	GetDB().Table("accounts").Where("id = ?", u).First(account)
+	if account.Email == "" { //User not found!
 		return nil
 	}
 
-	acc.Password = ""
-	return acc
+	account.Password = ""
+	return account
 }
