@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -10,6 +11,13 @@ import (
 )
 
 var db *gorm.DB
+
+type Base struct {
+	ID        uint       `json:"id,omitempty";gorm:"primary_key"`
+	CreatedAt time.Time  `json:"created"`
+	UpdatedAt time.Time  `json:"updated,omitempty"`
+	DeletedAt *time.Time `json:"deleted,omitempty";sql:"index"`
+}
 
 func init() {
 

@@ -5,6 +5,9 @@ GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 
 .PHONY: all dep build clean test coverage coverhtml lint
 
+db:
+	docker-compose up db
+
 all: build
 
 lint: ## Lint the files
