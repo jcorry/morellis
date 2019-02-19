@@ -4,13 +4,11 @@ import (
 	"fmt"
 
 	u "github.com/jcorry/morellis/utils"
-
-	"github.com/jinzhu/gorm"
 )
 
 // A struct to represent a flavor
 type Flavor struct {
-	gorm.Model
+	Base
 	Name        string       `json:"name"`
 	Description string       `json:"description"`
 	Ingredients []Ingredient `gorm:"many2many:flavors_ingredients;"json:"ingredients"`
@@ -66,13 +64,12 @@ func GetFlavor(id uint) *Flavor {
 }
 
 // Get all of the flavors in the flavors table
-func GetFlavors() []*Flavor {
+func GetFlavors() ([]*Flavor, error) {
 	flavors := make([]*Flavor, 0)
 	err := GetDB().Preload("Ingredients").Find(&flavors).Error
 	if err != nil {
-		fmt.Println(err)
-		return nil
+		return nil, err
 	}
 
-	return flavors
+	return flavors, nil
 }
