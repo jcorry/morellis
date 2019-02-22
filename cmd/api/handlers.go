@@ -176,7 +176,7 @@ func (app *application) createStore(w http.ResponseWriter, r *http.Request) {
 	app.jsonResponse(w, store)
 }
 
-func (app *application) updateStore(w http.ResponseWriter, r *http.Request) {
+func (app *application) partialUpdateStore(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
@@ -184,6 +184,34 @@ func (app *application) updateStore(w http.ResponseWriter, r *http.Request) {
 	}
 
 	store, err := app.stores.Get(id)
+
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&store)
+
+	app.geocodeStore(store)
+
+	store, err = app.stores.Update(id, store.Name, store.Phone, store.Email, store.URL, store.Address, store.City, store.State, store.Zip, store.Lat, store.Lng)
+
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	app.jsonResponse(w, store)
+}
+
+func (app *application) updateStore(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+
+	var store *models.Store
 
 	if err != nil {
 		app.notFound(w)

@@ -19,6 +19,7 @@ func (app *application) routes() http.Handler {
 	// list stores
 	// get store by ID
 	mux.Post("/api/store", http.HandlerFunc(app.createStore))
+	mux.Patch("/api/store/:id", http.HandlerFunc(app.partialUpdateStore))
 	mux.Put("/api/store/:id", http.HandlerFunc(app.updateStore))
 	// delete store
 

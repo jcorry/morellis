@@ -59,7 +59,7 @@ func (status UserStatus) GetID(slug string) UserStatus {
 type Store struct {
 	ID      int64     `json:"id"`
 	Name    string    `json:"name"`
-	Phone   string    `json: "phone"`
+	Phone   string    `json:"phone"`
 	Email   string    `json:"email"`
 	URL     string    `json:"url"`
 	Address string    `json:"address"`
