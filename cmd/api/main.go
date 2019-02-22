@@ -12,14 +12,17 @@ import (
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	users    *mysql.UserModel
+	errorLog   *log.Logger
+	infoLog    *log.Logger
+	users      *mysql.UserModel
+	stores     *mysql.StoreModel
+	mapsApiKey string
 }
 
 func main() {
 	addr := flag.String("addr", ":4001", "HTTP network address")
 	dsn := flag.String("dsn", "morellis:E4j+#2G^8Pa=^Nn9@(127.0.0.1:33061)/morellis?parseTime=true", "MySQL DSN")
+	mapsApiKey := flag.String("api_key", "AIzaSyDzOe0YI-sQXJHM9DMr7YEU5zCwhPBXFts", "Google maps geocoding api key")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -36,9 +39,11 @@ func main() {
 	}
 
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		users:    &mysql.UserModel{DB: db},
+		errorLog:   errorLog,
+		infoLog:    infoLog,
+		users:      &mysql.UserModel{DB: db},
+		stores:     &mysql.StoreModel{DB: db},
+		mapsApiKey: *mapsApiKey,
 	}
 
 	srv := &http.Server{

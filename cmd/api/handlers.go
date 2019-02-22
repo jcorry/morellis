@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -141,4 +142,72 @@ func (app *application) deleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.notFound(w)
+}
+
+// Store handlers
+func (app *application) createStore(w http.ResponseWriter, r *http.Request) {
+	var store *models.Store
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	err = json.Unmarshal(b, &store)
+
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	// Geocode the store
+	err = app.geocodeStore(store)
+	if err != nil {
+		app.errorLog.Output(3, err.Error())
+	}
+
+	store, err = app.stores.Insert(store.Name, store.Phone, store.Email, store.URL, store.Address, store.City, store.State, store.Zip, store.Lat, store.Lng)
+
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	app.jsonResponse(w, store)
+}
+
+func (app *application) updateStore(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+
+	store, err := app.stores.Get(id)
+
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&store)
+
+	app.geocodeStore(store)
+
+	store, err = app.stores.Update(id, store.Name, store.Phone, store.Email, store.URL, store.Address, store.City, store.State, store.Zip, store.Lat, store.Lng)
+
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	app.jsonResponse(w, store)
+}
+
+func (app *application) listStore(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) getStore(w http.ResponseWriter, r *http.Request) {
+
 }

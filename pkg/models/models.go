@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -56,20 +57,21 @@ func (status UserStatus) GetID(slug string) UserStatus {
 
 // Store is an instance of a Morelli's store
 type Store struct {
-	ID    int
-	Name  string
-	Phone string
-	Location
-	Created time.Time
-	Updated time.Time
+	ID      int64     `json:"id"`
+	Name    string    `json:"name"`
+	Phone   string    `json: "phone"`
+	Email   string    `json:"email"`
+	URL     string    `json:"url"`
+	Address string    `json:"address"`
+	City    string    `json:"city"`
+	State   string    `json:state`
+	Zip     string    `json:"zip"`
+	Lat     float64   `json:"lat"`
+	Lng     float64   `json:"lng"`
+	Created time.Time `json:"created"`
+	Updated time.Time `json:"-"`
 }
 
-// Location is a geographic location
-type Location struct {
-	Address string
-	City    string
-	State   string
-	Zip     string
-	Lat     float64
-	Lng     float64
+func (s *Store) AddressString() string {
+	return fmt.Sprintf("%s %s, %s %s", s.Address, s.City, s.State, s.Zip)
 }
