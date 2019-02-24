@@ -2,10 +2,15 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"time"
 )
 
-var ErrNoRecord = errors.New("models: no matching record(s) found")
+var (
+	ErrNoRecord           = errors.New("models: no matching record(s) found")
+	ErrInvalidCredentials = errors.New("models: invalid credentials")
+	ErrDuplicateEmail     = errors.New("models: duplicate email")
+)
 
 // Flavor is an ice cream flavor served by Morellis at any of it's Stores.
 type Flavor struct {
@@ -23,6 +28,7 @@ type User struct {
 	Email     string    `json:"email"`
 	Phone     string    `json:"phone"`
 	Status    string    `json:"status"`
+	Password  string    `json:"-"`
 	Created   time.Time `json:"created"`
 }
 
@@ -46,30 +52,40 @@ func (status UserStatus) Slug() string {
 
 // GetID returns the UserStatus for a given textual slug
 func (status UserStatus) GetID(slug string) UserStatus {
-	names := make(map[string]UserStatus)
-	names["unverified"] = USER_STATUS_UNVERIFIED
-	names["verified"] = USER_STATUS_VERIFIED
-	names["deleted"] = USER_STATUS_DELETED
-
-	return names[slug]
+	switch slug {
+	case "unverified":
+		return USER_STATUS_UNVERIFIED
+	case "Unverified":
+		return USER_STATUS_UNVERIFIED
+	case "verified":
+		return USER_STATUS_VERIFIED
+	case "Verified":
+		return USER_STATUS_VERIFIED
+	case "deleted":
+		return USER_STATUS_DELETED
+	case "Deleted":
+		return USER_STATUS_DELETED
+	}
+	return USER_STATUS_UNVERIFIED
 }
 
 // Store is an instance of a Morelli's store
 type Store struct {
-	ID    int
-	Name  string
-	Phone string
-	Location
-	Created time.Time
-	Updated time.Time
+	ID      int64     `json:"id"`
+	Name    string    `json:"name"`
+	Phone   string    `json:"phone"`
+	Email   string    `json:"email"`
+	URL     string    `json:"url"`
+	Address string    `json:"address"`
+	City    string    `json:"city"`
+	State   string    `json:state`
+	Zip     string    `json:"zip"`
+	Lat     float64   `json:"lat"`
+	Lng     float64   `json:"lng"`
+	Created time.Time `json:"created"`
+	Updated time.Time `json:"-"`
 }
 
-// Location is a geographic location
-type Location struct {
-	Address string
-	City    string
-	State   string
-	Zip     string
-	Lat     float64
-	Lng     float64
+func (s *Store) AddressString() string {
+	return fmt.Sprintf("%s %s, %s %s", s.Address, s.City, s.State, s.Zip)
 }
