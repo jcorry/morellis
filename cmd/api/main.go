@@ -8,13 +8,22 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jcorry/morellis/pkg/models"
 	"github.com/jcorry/morellis/pkg/models/mysql"
 )
 
 type application struct {
-	errorLog   *log.Logger
-	infoLog    *log.Logger
-	users      *mysql.UserModel
+	errorLog *log.Logger
+	infoLog  *log.Logger
+	users    interface {
+		Insert(string, string, string, string, string) (*models.User, error)
+		Update(*models.User) (*models.User, error)
+		Get(int) (*models.User, error)
+		List(int, int, string) ([]*models.User, error)
+		Delete(int) (bool, error)
+		Count() int
+		Authenticate(string, string) (*models.User, error)
+	}
 	stores     *mysql.StoreModel
 	mapsApiKey string
 }

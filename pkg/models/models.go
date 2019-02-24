@@ -6,7 +6,11 @@ import (
 	"time"
 )
 
-var ErrNoRecord = errors.New("models: no matching record(s) found")
+var (
+	ErrNoRecord           = errors.New("models: no matching record(s) found")
+	ErrInvalidCredentials = errors.New("models: invalid credentials")
+	ErrDuplicateEmail     = errors.New("models: duplicate email")
+)
 
 // Flavor is an ice cream flavor served by Morellis at any of it's Stores.
 type Flavor struct {
@@ -24,6 +28,7 @@ type User struct {
 	Email     string    `json:"email"`
 	Phone     string    `json:"phone"`
 	Status    string    `json:"status"`
+	Password  string    `json:"-"`
 	Created   time.Time `json:"created"`
 }
 
@@ -47,12 +52,21 @@ func (status UserStatus) Slug() string {
 
 // GetID returns the UserStatus for a given textual slug
 func (status UserStatus) GetID(slug string) UserStatus {
-	names := make(map[string]UserStatus)
-	names["unverified"] = USER_STATUS_UNVERIFIED
-	names["verified"] = USER_STATUS_VERIFIED
-	names["deleted"] = USER_STATUS_DELETED
-
-	return names[slug]
+	switch slug {
+	case "unverified":
+		return USER_STATUS_UNVERIFIED
+	case "Unverified":
+		return USER_STATUS_UNVERIFIED
+	case "verified":
+		return USER_STATUS_VERIFIED
+	case "Verified":
+		return USER_STATUS_VERIFIED
+	case "deleted":
+		return USER_STATUS_DELETED
+	case "Deleted":
+		return USER_STATUS_DELETED
+	}
+	return USER_STATUS_UNVERIFIED
 }
 
 // Store is an instance of a Morelli's store

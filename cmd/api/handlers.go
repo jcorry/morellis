@@ -18,8 +18,13 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	user, err = app.users.Insert(user.FirstName, user.LastName, user.Email, user.Phone)
+	user, err = app.users.Insert(user.FirstName, user.LastName, user.Email, user.Phone, user.Password)
 	if err != nil {
+		if err == models.ErrDuplicateEmail {
+			app.badRequest(w, err)
+			return
+		}
+
 		app.serverError(w, err)
 		return
 	}
@@ -27,29 +32,34 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 	app.jsonResponse(w, user)
 }
 
-func (app *application) updateUser(w http.ResponseWriter, r *http.Request) {
+func (app *application) partialUpdateUser(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
 	}
 
-	var updateUser *models.User
+	user, err := app.users.Get(id)
 
 	if err != nil {
 		app.notFound(w)
 		return
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&updateUser)
-	updateUser.ID = int64(id)
+	err = json.NewDecoder(r.Body).Decode(&user)
+	user.ID = int64(id)
 
 	if err != nil {
 		app.serverError(w, err)
 	}
 
-	user, err := app.users.Update(updateUser)
+	user, err = app.users.Update(user)
 	if err != nil {
+		if err == models.ErrDuplicateEmail {
+			app.badRequest(w, err)
+			return
+		}
+
 		app.serverError(w, err)
 		return
 	}

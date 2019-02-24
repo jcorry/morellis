@@ -5,9 +5,12 @@ CREATE TABLE `user` (
     email VARCHAR(128) NULL,
     phone VARCHAR(24) NOT NULL,
     status_id TINYINT(3) UNSIGNED NOT NULL DEFAULT 1,
+    hashed_password CHAR(60) NOT NULL,
     created TIMESTAMP NOT NULL,
     updated TIMESTAMP NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE `user` ADD CONSTRAINT uk_user_email UNIQUE(email);
 
 CREATE TABLE `ref_user_status` (
     id TINYINT(3) UNSIGNED NOT NULL PRIMARY KEY,
