@@ -247,5 +247,21 @@ func (app *application) listStore(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getStore(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
 
+	store, err := app.stores.Get(id)
+
+	if err == models.ErrNoRecord {
+		app.notFound(w)
+		return
+	} else if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	app.jsonResponse(w, store)
 }

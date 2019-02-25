@@ -135,3 +135,34 @@ func TestGetUser(t *testing.T) {
 		})
 	}
 }
+
+func TestGetStore(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	tests := []struct {
+		name     string
+		id       int
+		wantCode int
+		wantBody []byte
+	}{
+		{"Valid request", 1, http.StatusOK, []byte("Test Store")},
+		{"No record", 0, http.StatusNotFound, nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			urlPath := fmt.Sprintf("/api/store/%d", tt.id)
+			code, _, body := ts.get(t, urlPath)
+
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+		})
+	}
+}

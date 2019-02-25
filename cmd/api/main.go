@@ -24,7 +24,11 @@ type application struct {
 		Count() int
 		Authenticate(string, string) (*models.User, error)
 	}
-	stores     *mysql.StoreModel
+	stores interface {
+		Insert(string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
+		Update(int, string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
+		Get(int) (*models.Store, error)
+	}
 	mapsApiKey string
 }
 
