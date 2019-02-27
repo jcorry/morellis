@@ -7,6 +7,15 @@ jobs:
     docker:
     # specify the version
     - image: circleci/golang:1.11
+      environment:
+        TEST_DSN: morellistest:testpass@tcp(127.0.0.1:3306)/morellistest?parseTime=true&multiStatements=true
+    
+    - image: circleci/mysql:5.7
+      environment:
+        MYSQL_ROOT_PASSWORD: password
+        MYSQL_DATABASE: morellistest
+        MYSQL_USER: morellistest
+        MYSQL_PASSWORD: testpass
 
     # Specify service dependencies here if necessary
     # CircleCI maintains a library of pre-built images

@@ -2,16 +2,19 @@ package mysql
 
 import (
 	"database/sql"
-	"flag"
 	"io/ioutil"
+	"os"
 	"testing"
 )
 
 var dsn string
 
 func init() {
-	flag.StringVar(&dsn, "dsn", "morellistest:testpass@tcp(127.0.0.1:33062)/morellistest?parseTime=true&multiStatements=true", "MySQL DSN URL")
-	flag.Parse()
+	if os.Getenv("TEST_DSN") != "" {
+		dsn = os.Getenv("TEST_DSN")
+	} else {
+		panic("No test DSN defined")
+	}
 }
 
 func newTestDB(t *testing.T) (*sql.DB, func()) {
