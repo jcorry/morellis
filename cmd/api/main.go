@@ -29,6 +29,15 @@ type application struct {
 		Update(int, string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
 		Get(int) (*models.Store, error)
 	}
+	flavors interface {
+		Get(int) (*models.Flavor, error)
+		List(int, int, string) ([]*models.Flavor, error)
+		Insert(string, []*models.Ingredient) (*models.Flavor, error)
+		Update(int, string, []*models.Ingredient) (*models.Flavor, error)
+		Delete(int) (bool, error)
+		AddIngredient(*models.Ingredient) (*models.Flavor, error)
+		RemoveIngredient(*models.Ingredient) (*models.Flavor, error)
+	}
 	mapsApiKey string
 }
 
@@ -56,6 +65,7 @@ func main() {
 		infoLog:    infoLog,
 		users:      &mysql.UserModel{DB: db},
 		stores:     &mysql.StoreModel{DB: db},
+		flavors:    &mysql.FlavorModel{DB: db},
 		mapsApiKey: *mapsApiKey,
 	}
 

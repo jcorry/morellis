@@ -54,3 +54,32 @@ CREATE TABLE `store` (
     created TIMESTAMP NOT NULL,
     updated TIMESTAMP null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Create ingredient table
+CREATE TABLE `ingredient` (
+    id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(128) NOT NULL,
+    created TIMESTAMP NOT NULL,
+    updated TIMESTAMP null
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Create flavor table
+CREATE TABLE `flavor` (
+    id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(128) NOT NULL,
+    description TEXT NULL,
+    created TIMESTAMP NOT NULL,
+    updated TIMESTAMP null
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Create flavor_ingredient table
+CREATE TABLE `flavor_ingredient` (
+    id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    flavor_id INTEGER NOT NULL,
+    ingredient_id INTEGER NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE `flavor_ingredient` ADD FOREIGN KEY (flavor_id) REFERENCES flavor(id);
+ALTER TABLE `flavor_ingredient` ADD FOREIGN KEY (ingredient_id) REFERENCES ingredient(id);
+ALTER TABLE `flavor_ingredient` ADD CONSTRAINT uk_flavor_id_ingredient_id UNIQUE (`flavor_id`, `ingredient_id`);
+
