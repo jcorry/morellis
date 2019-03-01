@@ -14,8 +14,9 @@ var (
 
 // Flavor is an ice cream flavor served by Morellis at any of it's Stores.
 type Flavor struct {
-	ID          int32        `json:"id"`
+	ID          int64        `json:"id"`
 	Name        string       `json:"name"`
+	Description string       `json:"description"`
 	Ingredients []Ingredient `json:"ingredients"`
 	Created     time.Time    `json:"created"`
 }

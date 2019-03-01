@@ -265,3 +265,22 @@ func (app *application) getStore(w http.ResponseWriter, r *http.Request) {
 
 	app.jsonResponse(w, store)
 }
+
+// Flavor handlers
+func (app *application) createFlavor(w http.ResponseWriter, r *http.Request) {
+	var flavor = &models.Flavor{}
+	err := json.NewDecoder(r.Body).Decode(&flavor)
+
+	if err != nil {
+		app.serverError(w, err)
+	}
+	defer r.Body.Close()
+
+	flavor, err = app.flavors.Insert(flavor)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	app.jsonResponse(w, flavor)
+}

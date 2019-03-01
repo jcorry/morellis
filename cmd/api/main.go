@@ -32,11 +32,15 @@ type application struct {
 	flavors interface {
 		Get(int) (*models.Flavor, error)
 		List(int, int, string) ([]*models.Flavor, error)
-		Insert(string, []*models.Ingredient) (*models.Flavor, error)
-		Update(int, string, []*models.Ingredient) (*models.Flavor, error)
+		Insert(*models.Flavor) (*models.Flavor, error)
+		Update(int, *models.Flavor) (*models.Flavor, error)
 		Delete(int) (bool, error)
-		AddIngredient(*models.Ingredient) (*models.Flavor, error)
-		RemoveIngredient(*models.Ingredient) (*models.Flavor, error)
+		AddIngredient(int, *models.Ingredient) (*models.Ingredient, error)
+		RemoveIngredient(int, *models.Ingredient) (*models.Ingredient, error)
+	}
+	ingredients interface {
+		GetByName(string) (*models.Ingredient, error)
+		Insert(*models.Ingredient) (*models.Ingredient, error)
 	}
 	mapsApiKey string
 }
@@ -65,12 +69,13 @@ func main() {
 	}
 
 	app := &application{
-		errorLog:   errorLog,
-		infoLog:    infoLog,
-		users:      &mysql.UserModel{DB: db},
-		stores:     &mysql.StoreModel{DB: db},
-		flavors:    &mysql.FlavorModel{DB: db},
-		mapsApiKey: *mapsApiKey,
+		errorLog:    errorLog,
+		infoLog:     infoLog,
+		users:       &mysql.UserModel{DB: db},
+		stores:      &mysql.StoreModel{DB: db},
+		flavors:     &mysql.FlavorModel{DB: db},
+		ingredients: &mysql.IngredientModel{DB: db},
+		mapsApiKey:  *mapsApiKey,
 	}
 
 	srv := &http.Server{
