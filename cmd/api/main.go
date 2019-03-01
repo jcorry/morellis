@@ -51,9 +51,13 @@ func main() {
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	db, err := openDB(*dsn)
+
 	if err != nil {
 		errorLog.Fatal(err)
 	}
+	db.SetMaxIdleConns(50)
+	db.SetMaxOpenConns(101)
+
 	defer db.Close()
 
 	if err != nil {
@@ -84,6 +88,7 @@ func main() {
 // openDB opens a DB connection using for a dsn
 func openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
+
 	if err != nil {
 		return nil, err
 	}
