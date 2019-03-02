@@ -284,3 +284,70 @@ func (app *application) createFlavor(w http.ResponseWriter, r *http.Request) {
 
 	app.jsonResponse(w, flavor)
 }
+
+func (app *application) getFlavor(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+
+	flavor, err := app.flavors.Get(id)
+
+	if err == models.ErrNoRecord {
+		app.notFound(w)
+		return
+	} else if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	app.jsonResponse(w, flavor)
+}
+
+func (app *application) listFlavor(w http.ResponseWriter, r *http.Request) {
+	var err error
+	params := r.URL.Query()
+
+	l := params.Get("count")
+	limit := 0
+	if l != "" {
+		limit, err = strconv.Atoi(l)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+	}
+
+	o := params.Get("start")
+	offset := 0
+	if o != "" {
+		offset, err = strconv.Atoi(o)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+	}
+
+	sb := params.Get("sortBy")
+
+	//sd := params.Get("sortDir")
+
+	flavors, err := app.flavors.List(limit, offset, sb)
+
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	meta := make(map[string]interface{})
+	meta["totalRecords"] = app.users.Count()
+	meta["count"] = limit
+	meta["start"] = offset
+	meta["sortBy"] = sb
+
+	response := make(map[string]interface{})
+	response["meta"] = meta
+	response["items"] = flavors
+
+	app.jsonResponse(w, response)
+}

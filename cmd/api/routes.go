@@ -25,6 +25,8 @@ func (app *application) routes() http.Handler {
 
 	// Flavor routes
 	mux.Post("/api/flavor", http.HandlerFunc(app.createFlavor))
+	mux.Get("/api/flavor", http.HandlerFunc(app.listFlavor))
+	mux.Get("/api/flavor/:id", http.HandlerFunc(app.getFlavor))
 
 	return app.logRequest(mux)
 }

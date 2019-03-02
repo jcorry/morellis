@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/jcorry/morellis/pkg/models"
@@ -14,13 +15,102 @@ type FlavorModel struct {
 
 // Get a single Flavor by it's ID.
 func (m *FlavorModel) Get(id int) (*models.Flavor, error) {
-	return nil, nil
+	stmt := `SELECT f.id, f.name, f.description, f.created, i.id, i.name
+			   FROM flavor AS f
+		       JOIN flavor_ingredient AS fi ON f.id = fi.flavor_id
+		  LEFT JOIN ingredient AS i ON i.id = fi.ingredient_id
+			  WHERE f.id = ?`
+
+	flavor := &models.Flavor{}
+
+	rows, err := m.DB.Query(stmt, id)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		ingredient := &models.Ingredient{}
+		err = rows.Scan(&flavor.ID, &flavor.Name, &flavor.Description, &flavor.Created, &ingredient.ID, &ingredient.Name)
+
+		if err != nil {
+			return nil, err
+		}
+
+		flavor.Ingredients = append(flavor.Ingredients, *ingredient)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return flavor, nil
 }
 
 // List {limit} number of Flavors starting at {offset}. If {order} matches a field name,
 // results will be ordered by {order}.
 func (m *FlavorModel) List(limit int, offset int, order string) ([]*models.Flavor, error) {
-	return nil, nil
+
+	stmt := fmt.Sprintf(`SELECT f.id, f.name, f.description, f.created, i.id, i.name
+			   FROM flavor AS f
+		       JOIN flavor_ingredient AS fi ON f.id = fi.flavor_id
+		  LEFT JOIN ingredient AS i ON i.id = fi.ingredient_id
+		   ORDER BY %s
+			  LIMIT ?, ?`, "f.name")
+
+	if limit > 1 {
+		limit = DEFAULT_LIMIT
+	}
+
+	rows, err := m.DB.Query(stmt, offset, limit)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	flavors := []*models.Flavor{}
+	flavor := &models.Flavor{}
+
+	var (
+		flavorId    int64
+		id          int64
+		name        string
+		description string
+		created     time.Time
+		ingredient  models.Ingredient
+	)
+
+	for rows.Next() {
+		err = rows.Scan(&id, &name, &description, &created, &ingredient.ID, &ingredient.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		if flavor != nil && flavor.ID == id {
+			flavor.Ingredients = append(flavor.Ingredients, ingredient)
+		} else {
+			flavor = &models.Flavor{
+				ID:          id,
+				Name:        name,
+				Description: description,
+				Created:     created,
+				Ingredients: []models.Ingredient{ingredient},
+			}
+		}
+
+		if flavor.ID != flavorId {
+			flavors = append(flavors, flavor)
+		}
+
+		flavorId = flavor.ID
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return flavors, nil
 }
 
 // Insert a new Flavor with it's Ingredients.
@@ -47,6 +137,7 @@ func (m *FlavorModel) Insert(flavor *models.Flavor) (*models.Flavor, error) {
 	flavor.ID = flavorId
 	flavor.Created = created
 
+	// now handle each of the ingredients
 	ingredientsModel := IngredientModel{DB: m.DB}
 
 	for index, ingredient := range flavor.Ingredients {
