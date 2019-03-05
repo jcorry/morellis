@@ -17,7 +17,7 @@ type FlavorModel struct {
 func (m *FlavorModel) Get(id int) (*models.Flavor, error) {
 	stmt := `SELECT f.id, f.name, f.description, f.created, i.id, i.name
 			   FROM flavor AS f
-		       JOIN flavor_ingredient AS fi ON f.id = fi.flavor_id
+		  LEFT JOIN flavor_ingredient AS fi ON f.id = fi.flavor_id
 		  LEFT JOIN ingredient AS i ON i.id = fi.ingredient_id
 			  WHERE f.id = ?`
 
@@ -58,7 +58,7 @@ func (m *FlavorModel) List(limit int, offset int, order string) ([]*models.Flavo
 		   ORDER BY %s
 			  LIMIT ?, ?`, "f.name")
 
-	if limit > 1 {
+	if limit < 1 {
 		limit = DEFAULT_LIMIT
 	}
 

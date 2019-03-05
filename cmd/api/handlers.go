@@ -340,8 +340,8 @@ func (app *application) listFlavor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	meta := make(map[string]interface{})
-	meta["totalRecords"] = app.users.Count()
-	meta["count"] = limit
+	meta["totalRecords"] = 0
+	meta["count"] = len(flavors)
 	meta["start"] = offset
 	meta["sortBy"] = sb
 
