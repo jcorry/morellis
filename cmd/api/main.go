@@ -30,6 +30,7 @@ type application struct {
 		Get(int) (*models.Store, error)
 	}
 	flavors interface {
+		Count() int
 		Get(int) (*models.Flavor, error)
 		List(int, int, string) ([]*models.Flavor, error)
 		Insert(*models.Flavor) (*models.Flavor, error)

@@ -192,3 +192,16 @@ func (m *FlavorModel) AddIngredient(flavorId int, ingredient *models.Ingredient)
 func (m *FlavorModel) RemoveIngredient(id int, ingredient *models.Ingredient) (*models.Ingredient, error) {
 	return nil, nil
 }
+
+// Count returns the total number of Flavors
+func (m *FlavorModel) Count() int {
+	var count int
+	row := m.DB.QueryRow(`SELECT COUNT(*) FROM flavor`)
+
+	err := row.Scan(&count)
+	if err != nil {
+		panic(err)
+	}
+
+	return count
+}
