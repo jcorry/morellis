@@ -138,7 +138,7 @@ func TestUserModel_List(t *testing.T) {
 	}{
 		{
 			"Get all 3 users, no order",
-			"",
+			"created",
 			3,
 			[]string{"John", "Garrett", "Brian"},
 			nil,
