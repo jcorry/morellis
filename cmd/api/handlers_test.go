@@ -224,7 +224,40 @@ func TestCreateFlavor(t *testing.T) {
 }
 
 func TestGetFlavor(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
 
+	tests := []struct {
+		name     string
+		id       int64
+		wantCode int
+	}{
+		{"Valid flavor ID", 1, 200},
+		{"Invalid flavor ID", 100, 404},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			urlPath := fmt.Sprintf("/api/flavor/%d", tt.id)
+			wantBody := ""
+			if tt.wantCode == 200 {
+				wantBody = fmt.Sprintf(`{"id":%d,`, tt.id)
+			} else {
+				wantBody = "Not Found"
+			}
+
+			code, _, body := ts.get(t, urlPath)
+
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, []byte(wantBody)) {
+				t.Errorf("want body %s to contain %q", body, wantBody)
+			}
+		})
+	}
 }
 
 func TestListFlavor(t *testing.T) {
