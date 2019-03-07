@@ -17,12 +17,16 @@ func (app *application) routes() http.Handler {
 
 	// Store routes
 	// list stores
-	// get store by ID
 	mux.Post("/api/store", http.HandlerFunc(app.createStore))
 	mux.Patch("/api/store/:id", http.HandlerFunc(app.partialUpdateStore))
 	mux.Put("/api/store/:id", http.HandlerFunc(app.updateStore))
 	mux.Get("/api/store/:id", http.HandlerFunc(app.getStore))
 	// delete store
+
+	// Flavor routes
+	mux.Post("/api/flavor", http.HandlerFunc(app.createFlavor))
+	mux.Get("/api/flavor", http.HandlerFunc(app.listFlavor))
+	mux.Get("/api/flavor/:id", http.HandlerFunc(app.getFlavor))
 
 	return app.logRequest(mux)
 }

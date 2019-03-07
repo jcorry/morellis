@@ -29,6 +29,20 @@ type application struct {
 		Update(int, string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
 		Get(int) (*models.Store, error)
 	}
+	flavors interface {
+		Count() int
+		Get(int) (*models.Flavor, error)
+		List(int, int, string) ([]*models.Flavor, error)
+		Insert(*models.Flavor) (*models.Flavor, error)
+		Update(int, *models.Flavor) (*models.Flavor, error)
+		Delete(int) (bool, error)
+		AddIngredient(int, *models.Ingredient) (*models.Ingredient, error)
+		RemoveIngredient(int, *models.Ingredient) (*models.Ingredient, error)
+	}
+	ingredients interface {
+		GetByName(string) (*models.Ingredient, error)
+		Insert(*models.Ingredient) (*models.Ingredient, error)
+	}
 	mapsApiKey string
 }
 
@@ -42,9 +56,13 @@ func main() {
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	db, err := openDB(*dsn)
+
 	if err != nil {
 		errorLog.Fatal(err)
 	}
+	db.SetMaxIdleConns(50)
+	db.SetMaxOpenConns(101)
+
 	defer db.Close()
 
 	if err != nil {
@@ -52,11 +70,13 @@ func main() {
 	}
 
 	app := &application{
-		errorLog:   errorLog,
-		infoLog:    infoLog,
-		users:      &mysql.UserModel{DB: db},
-		stores:     &mysql.StoreModel{DB: db},
-		mapsApiKey: *mapsApiKey,
+		errorLog:    errorLog,
+		infoLog:     infoLog,
+		users:       &mysql.UserModel{DB: db},
+		stores:      &mysql.StoreModel{DB: db},
+		flavors:     &mysql.FlavorModel{DB: db},
+		ingredients: &mysql.IngredientModel{DB: db},
+		mapsApiKey:  *mapsApiKey,
 	}
 
 	srv := &http.Server{
@@ -74,6 +94,7 @@ func main() {
 // openDB opens a DB connection using for a dsn
 func openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
+
 	if err != nil {
 		return nil, err
 	}
