@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+
+	"github.com/jcorry/morellis/pkg/models"
 )
 
 func TestCreateUser(t *testing.T) {
@@ -165,4 +167,66 @@ func TestGetStore(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCreateFlavor(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	tests := []struct {
+		name              string
+		flavorName        string
+		flavorDescription string
+		wantCode          int
+		wantBody          []byte
+	}{
+		{
+			"Valid Flavor",
+			"New Flave",
+			"A new flavor that is just delicions.",
+			200,
+			[]byte("New Flave"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reqBody := map[string]interface{}{
+				"name":        tt.flavorName,
+				"description": tt.flavorDescription,
+				"ingredients": []*models.Ingredient{
+					{
+						Name: "chocolate",
+					},
+					{
+						Name: "sriracha",
+					},
+				},
+			}
+
+			reqBytes, err := json.Marshal(reqBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			code, _, body := ts.request(t, "post", "/api/flavor", bytes.NewBuffer(reqBytes))
+
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+		})
+	}
+}
+
+func TestGetFlavor(t *testing.T) {
+
+}
+
+func TestListFlavor(t *testing.T) {
+
 }

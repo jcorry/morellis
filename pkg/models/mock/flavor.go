@@ -93,7 +93,7 @@ func (m *FlavorModel) List(limit int, offset int, order string) ([]*models.Flavo
 }
 
 func (m *FlavorModel) Insert(flavor *models.Flavor) (*models.Flavor, error) {
-	return nil, nil
+	return flavor, nil
 }
 
 func (m *FlavorModel) Update(id int, flavor *models.Flavor) (*models.Flavor, error) {
