@@ -126,7 +126,7 @@ func TestUserModel_List(t *testing.T) {
 			t.Fatal("Failed to insert new user for test")
 		}
 		toD = append(toD, user.ID)
-		time.Sleep(1 * (time.Second / 10))
+		time.Sleep(time.Second)
 	}
 
 	tests := []struct {
