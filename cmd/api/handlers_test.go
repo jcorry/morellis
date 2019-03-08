@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/jcorry/morellis/pkg/models/mock"
+
 	"github.com/jcorry/morellis/pkg/models"
 )
 
@@ -261,5 +263,20 @@ func TestGetFlavor(t *testing.T) {
 }
 
 func TestListFlavor(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
 
+	urlPath := "/api/flavor"
+	code, _, body := ts.get(t, urlPath)
+
+	if code != 200 {
+		t.Errorf("want %d, got %d", 200, code)
+	}
+
+	wantString := mock.MockFlavors[1].Name
+
+	if !bytes.Contains(body, []byte(fmt.Sprintf(`"name":"%s"`, wantString))) {
+		t.Errorf("want %s, got %s", wantString, body)
+	}
 }

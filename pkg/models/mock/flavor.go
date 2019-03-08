@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"sort"
 	"time"
 
 	"github.com/jcorry/morellis/pkg/models"
@@ -11,19 +12,19 @@ type FlavorModel struct{}
 var MockFlavors = []*models.Flavor{
 	{
 		ID:          1,
-		Name:        "Coconut Jalapeño",
-		Description: "One of our most unique flavors, it must be tasted to be believed! \n\nOur fresh made coconut ice cream is infused with just the right amount of fresh jalapenos. The experience of hot, sweet and cold hits your palate in pretty amazing ways; come try for yourself!",
+		Name:        "Ginger Lavender",
+		Description: "Fragrant and unique, Ginger Lavender is a fan favorite and popular seasonal flavor! This delicate and delicious flavor is made with ginger ice cream and fresh, fragrant lavender, steeped in heavy cream.",
 		Ingredients: []models.Ingredient{
 			{
-				ID:   1,
-				Name: "Coconut",
+				ID:   5,
+				Name: "Ginger",
 			},
 			{
-				ID:   2,
-				Name: "Jalapeño",
+				ID:   6,
+				Name: "Lavender",
 			},
 		},
-		Created: time.Now(),
+		Created: time.Now().Add(time.Second * 1),
 	},
 	{
 		ID:          2,
@@ -39,23 +40,23 @@ var MockFlavors = []*models.Flavor{
 				Name: "Chili",
 			},
 		},
-		Created: time.Now(),
+		Created: time.Now().Add(time.Second * 2),
 	},
 	{
 		ID:          3,
-		Name:        "Ginger Lavender",
-		Description: "Fragrant and unique, Ginger Lavender is a fan favorite and popular seasonal flavor! This delicate and delicious flavor is made with ginger ice cream and fresh, fragrant lavender, steeped in heavy cream.",
+		Name:        "Coconut Jalapeño",
+		Description: "One of our most unique flavors, it must be tasted to be believed! \n\nOur fresh made coconut ice cream is infused with just the right amount of fresh jalapenos. The experience of hot, sweet and cold hits your palate in pretty amazing ways; come try for yourself!",
 		Ingredients: []models.Ingredient{
 			{
-				ID:   5,
-				Name: "Ginger",
+				ID:   1,
+				Name: "Coconut",
 			},
 			{
-				ID:   6,
-				Name: "Lavender",
+				ID:   2,
+				Name: "Jalapeño",
 			},
 		},
-		Created: time.Now(),
+		Created: time.Now().Add(time.Second * 3),
 	},
 	{
 		ID:          4,
@@ -75,7 +76,7 @@ var MockFlavors = []*models.Flavor{
 				Name: "Walnuts",
 			},
 		},
-		Created: time.Now(),
+		Created: time.Now().Add(time.Second * 4),
 	},
 }
 
@@ -89,6 +90,10 @@ func (m *FlavorModel) Get(id int) (*models.Flavor, error) {
 }
 
 func (m *FlavorModel) List(limit int, offset int, order string) ([]*models.Flavor, error) {
+	// sort them by name
+	sort.Slice(MockFlavors, func(i, j int) bool {
+		return MockFlavors[i].Name < MockFlavors[i].Name
+	})
 	return MockFlavors, nil
 }
 
