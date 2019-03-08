@@ -185,10 +185,10 @@ func TestCreateFlavor(t *testing.T) {
 	}{
 		{
 			"Valid Flavor",
-			"New Flave",
-			"A new flavor that is just delicions.",
+			"Flava' Flav",
+			"A new flavor that is just delicious.",
 			200,
-			[]byte("New Flave"),
+			[]byte("Flava' Flav"),
 		},
 	}
 
