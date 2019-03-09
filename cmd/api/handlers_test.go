@@ -42,7 +42,7 @@ func TestCreateUser(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			code, _, body := ts.request(t, "post", "/api/user", bytes.NewBuffer(reqBytes))
+			code, _, body := ts.request(t, "post", "/api/v1/user", bytes.NewBuffer(reqBytes))
 
 			if code != tt.wantCode {
 				t.Errorf("want %d; got %d", tt.wantCode, code)
@@ -91,7 +91,7 @@ func TestPartialUpdateUser(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			urlPath := fmt.Sprintf("/api/user/%d", tt.id)
+			urlPath := fmt.Sprintf("/api/v1/user/%d", tt.id)
 			code, _, body := ts.request(t, "patch", urlPath, bytes.NewBuffer(reqBytes))
 
 			if code != tt.wantCode {
@@ -122,7 +122,7 @@ func TestGetUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			urlPath := fmt.Sprintf("/api/user/%d", tt.id)
+			urlPath := fmt.Sprintf("/api/v1/user/%d", tt.id)
 			code, _, body := ts.get(t, urlPath)
 
 			if code != tt.wantCode {
@@ -153,7 +153,7 @@ func TestGetStore(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			urlPath := fmt.Sprintf("/api/store/%d", tt.id)
+			urlPath := fmt.Sprintf("/api/v1/store/%d", tt.id)
 			code, _, body := ts.get(t, urlPath)
 
 			if code != tt.wantCode {
