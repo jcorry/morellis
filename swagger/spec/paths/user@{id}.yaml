@@ -38,7 +38,7 @@ patch:
   tags:
     - User
   summary: Update a User
-  description: This can only be done by the logged in user.
+  description: Partially update a user
   operationId: partiallyUpdateUser
   parameters:
     - name: id

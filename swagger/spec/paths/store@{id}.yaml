@@ -1,0 +1,120 @@
+get:
+  tags:
+    - Store
+  summary: Get store by store ID
+  description: |
+    Lookup a single store by its unique ID.
+  operationId: getStoreByID
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the store being fetched
+      required: true
+      schema:
+        type: integer
+  security:
+    - main_auth:
+        - 'read:stores'
+    - api_key: []
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/components/schemas/ListMeta'
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Store'
+    '403':
+      description: Forbidden
+    '404':
+      description: Store not found
+patch:
+  tags:
+    - Store
+  summary: Update a Store
+  description: Partially update a store, identified by its ID.
+  operationId: partiallyUpdateStore
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the store that needs to be fetched
+      required: true
+      schema:
+        type: integer
+  security:
+    - main_auth:
+        - 'write:stores'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Store'
+    description: Updated store object
+    required: true
+  responses:
+    '200':
+      description: OK
+    '400':
+      description: Invalid store supplied
+    '404':
+      description: Store not found
+put:
+  tags:
+    - Store
+  summary: Update a Store
+  description: Fully update/replace a store, identified by its ID.
+  operationId: updateStore
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the store that needs to be fetched
+      required: true
+      schema:
+        type: integer
+  security:
+    - main_auth:
+        - 'write:stores'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Store'
+    description: Updated store object
+    required: true
+  responses:
+    '200':
+      description: OK
+    '400':
+      description: Invalid store supplied
+    '404':
+      description: Store not found
+delete:
+  tags:
+    - Store
+  summary: Delete a store
+  description: Delete a Store by ID
+  operationId: partiallyUpdateStore
+  parameters:
+      - name: id
+        in: path
+        description: The ID of the store to delete
+        required: true
+        schema:
+          type: integer
+  security:
+    - main_auth:
+        - 'write:stores'
+  responses:
+    '204':
+      description: No Content
+    '400':
+      description: Invalid store supplied
+    '404':
+      description: Store not found
+
