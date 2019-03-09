@@ -1,0 +1,67 @@
+get:
+  tags:
+    - Flavor
+  summary: Get a list of Flavors
+  description: |
+    Get a paginated list of Flavors.
+  operationId: getFlavors
+  parameters:
+    - name: count
+      in: query
+      description: The number of User objects that will be returned. Defaults to 25 if no value is supplied.
+      schema:
+        type: integer
+    - name: start
+      in: query
+      description: The starting position in the recordset from which User objects will be retrieved and returned. Defaults to 0 if no value is supplied.
+      schema:
+        type: integer
+  security:
+    - main_auth:
+        - 'read:flavors'
+    - api_key: []
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/components/schemas/ListMeta'
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Flavor'
+    '403':
+      description: Forbidden
+    '404':
+      description: User not found
+post:
+  tags:
+    - Flavor
+  summary: Create a new Flavor
+  description: |
+    Create a new Flavor.
+  operationId: createFlavor
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Flavor'
+    description: Flavor payload
+    required: true
+  security:
+    - main_auth:
+        - 'write:flavors'
+    - api_key: []
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Flavor'
+    '403':
+      description: Forbidden

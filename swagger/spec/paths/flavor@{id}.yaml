@@ -1,0 +1,37 @@
+get:
+  tags:
+    - Flavor
+  summary: Get Flavor by ID
+  description: |
+    Lookup a single Flavor by its unique ID.
+  operationId: getFlavorByID
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the flavor being fetched
+      required: true
+      schema:
+        type: integer
+  security:
+    - main_auth:
+        - 'read:flavors'
+    - api_key: []
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/components/schemas/ListMeta'
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Flavor'
+    '403':
+      description: Forbidden
+    '404':
+      description: User not found
+

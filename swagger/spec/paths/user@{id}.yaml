@@ -1,0 +1,90 @@
+get:
+  tags:
+    - User
+  summary: Get user by user ID
+  description: |
+    Lookup a single user by its unique ID.
+  operationId: getUserByID
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the user being fetched
+      required: true
+      schema:
+        type: integer
+  security:
+    - main_auth:
+        - 'read:users'
+    - api_key: []
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/components/schemas/ListMeta'
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    '403':
+      description: Forbidden
+    '404':
+      description: User not found
+patch:
+  tags:
+    - User
+  summary: Update a User
+  description: This can only be done by the logged in user.
+  operationId: partiallyUpdateUser
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the user that needs to be fetched
+      required: true
+      schema:
+        type: integer
+  security:
+    - main_auth:
+        - 'write:users'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/User'
+    description: Updated user object
+    required: true
+  responses:
+    '200':
+      description: OK
+    '400':
+      description: Invalid user supplied
+    '404':
+      description: User not found
+delete:
+  tags:
+    - User
+  summary: Delete a user
+  description: Delete a User by ID
+  operationId: partiallyUpdateUser
+  parameters:
+      - name: id
+        in: path
+        description: The ID of the user to delete
+        required: true
+        schema:
+          type: integer
+  security:
+    - main_auth:
+        - 'write:users'
+  responses:
+    '204':
+      description: No Content
+    '400':
+      description: Invalid user supplied
+    '404':
+      description: User not found
+

@@ -1,0 +1,4 @@
+description: Datetime indicating when the record was created.
+type: string
+format: date-time
+example: 2019-03-01T18:12:25Z
