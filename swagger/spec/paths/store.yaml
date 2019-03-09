@@ -1,10 +1,10 @@
 get:
   tags:
-    - User
-  summary: Get list of Users
+    - Store
+  summary: Get a list of stores
   description: |
-    Get a paginated list of Users.
-  operationId: getUsers
+    Get a paginated list of stores.
+  operationId: getStores
   parameters:
     - name: count
       in: query
@@ -18,7 +18,7 @@ get:
         type: integer
   security:
     - main_auth:
-        - 'read:users'
+        - 'read:stores'
     - api_key: []
   responses:
     '200':
@@ -33,28 +33,28 @@ get:
               items:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
+                  $ref: '#/components/schemas/Store'
     '403':
       description: Forbidden
     '404':
-      description: User not found
+      description: Store not found
 post:
   tags:
-    - User
-  summary: Create a new User
+    - Store
+  summary: Create a new Store
   description: |
-    Create a new User
-  operationId: createUser
+    Create a new Store
+  operationId: createStore
   requestBody:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/User'
-    description: User payload
+          $ref: '#/components/schemas/Store'
+    description: Store payload
     required: true
   security:
     - main_auth:
-        - 'write:users'
+        - 'write:stores'
     - api_key: []
   responses:
     '200':
@@ -62,7 +62,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/User'
+            $ref: '#/components/schemas/Store'
     '403':
       description: Forbidden
     '404':
