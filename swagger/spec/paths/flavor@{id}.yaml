@@ -34,4 +34,88 @@ get:
       description: Forbidden
     '404':
       description: User not found
+patch:
+  tags:
+    - Flavor
+  summary: Update a Flavor
+  description: Partially update a flavor, identified by its ID.
+  operationId: partiallyUpdateFlavor
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the flavor that needs to be fetched
+      required: true
+      schema:
+        type: integer
+  security:
+    - main_auth:
+        - 'write:flavors'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Flavor'
+    description: Updated flavor object
+    required: true
+  responses:
+    '200':
+      description: OK
+    '400':
+      description: Invalid flavor supplied
+    '404':
+      description: Flavor not found
+put:
+  tags:
+    - Flavor
+  summary: Update a Flavor
+  description: Fully update/replace a flavor, identified by its ID.
+  operationId: updateFlavor
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the flavor that needs to be fetched
+      required: true
+      schema:
+        type: integer
+  security:
+    - main_auth:
+        - 'write:flavors'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Flavor'
+    description: Updated flavor object
+    required: true
+  responses:
+    '200':
+      description: OK
+    '400':
+      description: Invalid flavor supplied
+    '404':
+      description: Flavor not found
+delete:
+  tags:
+    - Flavor
+  summary: Delete a flavor
+  description: Delete a Flavor by ID
+  operationId: partiallyUpdateFlavor
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the flavor to delete
+      required: true
+      schema:
+        type: integer
+  security:
+    - main_auth:
+        - 'write:flavors'
+  responses:
+    '204':
+      description: No Content
+    '400':
+      description: Invalid flavor supplied
+    '404':
+      description: Flavor not found
+
 
