@@ -18,10 +18,13 @@ externalDocs:
   url: 'https://github.com/Rebilly/generator-openapi-repo'
 tags:
   - name: Flavor
-    description: Flavor operations
+    description: |
+      Flavors are ice cream flavors. Endpoints include simple CRUD operations.
   - name: User
-    description: Operations about user
+    description: |
+      User management endpoints allow a user to manage themselves or an admin level user to manage any other user.
   - name: Store
-    description: Operations about Morellis stores
+    description: |
+      Store management endpoints allow a user to manage Store location data.
 servers:
   - url: 'http://localhost:4001/api/v1'

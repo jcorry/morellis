@@ -13,9 +13,8 @@ get:
       schema:
         type: integer
   security:
-    - main_auth:
-        - 'read:stores'
-    - api_key: []
+    - bearer_auth:
+      - 'read:stores'
   responses:
     '200':
       description: Success
@@ -48,8 +47,8 @@ patch:
       schema:
         type: integer
   security:
-    - main_auth:
-        - 'write:stores'
+    - bearer_auth:
+      - 'write:stores'
   requestBody:
     content:
       application/json:
@@ -78,8 +77,8 @@ put:
       schema:
         type: integer
   security:
-    - main_auth:
-        - 'write:stores'
+    - bearer_auth:
+      - 'write:stores'
   requestBody:
     content:
       application/json:
@@ -108,7 +107,7 @@ delete:
         schema:
           type: integer
   security:
-    - main_auth:
+    - bearer_auth:
         - 'write:stores'
   responses:
     '204':

@@ -17,9 +17,8 @@ get:
       schema:
         type: integer
   security:
-    - main_auth:
-        - 'read:flavors'
-    - api_key: []
+    - bearer_auth:
+      - 'read:flavors'
   responses:
     '200':
       description: Success
@@ -53,9 +52,8 @@ post:
     description: Flavor payload
     required: true
   security:
-    - main_auth:
-        - 'write:flavors'
-    - api_key: []
+    - bearer_auth:
+      - 'write:flavors'
   responses:
     '200':
       description: Success

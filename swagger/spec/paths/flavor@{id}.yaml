@@ -13,7 +13,7 @@ get:
       schema:
         type: integer
   security:
-    - main_auth:
+    - bearer_auth:
         - 'read:flavors'
     - api_key: []
   responses:
@@ -48,7 +48,7 @@ patch:
       schema:
         type: integer
   security:
-    - main_auth:
+    - bearer_auth:
         - 'write:flavors'
   requestBody:
     content:
@@ -78,8 +78,8 @@ put:
       schema:
         type: integer
   security:
-    - main_auth:
-        - 'write:flavors'
+    - bearer_auth:
+      - 'write:flavors'
   requestBody:
     content:
       application/json:
@@ -108,7 +108,7 @@ delete:
       schema:
         type: integer
   security:
-    - main_auth:
+    - bearer_auth:
         - 'write:flavors'
   responses:
     '204':
