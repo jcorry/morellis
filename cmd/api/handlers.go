@@ -243,7 +243,47 @@ func (app *application) updateStore(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) listStore(w http.ResponseWriter, r *http.Request) {
+	var err error
+	params := r.URL.Query()
 
+	l := params.Get("count")
+	limit := 0
+	if l != "" {
+		limit, err = strconv.Atoi(l)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+	}
+
+	o := params.Get("start")
+	offset := 0
+	if o != "" {
+		offset, err = strconv.Atoi(o)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+	}
+
+	sb := "s.name"
+
+	stores, err := app.stores.List(limit, offset, sb)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	meta := make(map[string]interface{})
+	meta["totalRecords"] = app.stores.Count()
+	meta["count"] = len(stores)
+	meta["start"] = offset
+	meta["sortBy"] = sb
+
+	response := make(map[string]interface{})
+	response["meta"] = meta
+	response["items"] = stores
+
+	app.jsonResponse(w, response)
 }
 
 func (app *application) getStore(w http.ResponseWriter, r *http.Request) {

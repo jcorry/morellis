@@ -20,6 +20,23 @@ var mockStore = &models.Store{
 	Lng:     0.0,
 }
 
+var MockStores = []*models.Store{
+	mockStore,
+	{
+		ID:      2,
+		Name:    "Another Store",
+		Phone:   "867-5309",
+		Email:   "test@store-two.com",
+		URL:     "http://www.testystore.com",
+		Address: "1427 Testy St",
+		City:    "Anothertest",
+		State:   "TS",
+		Zip:     "02022",
+		Lat:     22.22222,
+		Lng:     122.22222,
+	},
+}
+
 type StoreModel struct{}
 
 func (m *StoreModel) Insert(name string, phone string, email string, url string, address string, city string, state string, zip string, lat float64, lng float64) (*models.Store, error) {
@@ -63,4 +80,12 @@ func (m *StoreModel) Update(id int, name string, phone string, email string, url
 func (m *StoreModel) Get(id int) (*models.Store, error) {
 	mockStore.ID = int64(id)
 	return mockStore, nil
+}
+
+func (m *StoreModel) List(limit int, offset int, order string) ([]*models.Store, error) {
+	return MockStores, nil
+}
+
+func (m *StoreModel) Count() int {
+	return len(MockStores)
 }

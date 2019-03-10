@@ -16,7 +16,7 @@ func (app *application) routes() http.Handler {
 	mux.Del("/api/user/:id", http.HandlerFunc(app.deleteUser))
 
 	// Store routes
-	// list stores
+	mux.Get("/api/store", http.HandlerFunc(app.listStore))
 	mux.Post("/api/store", http.HandlerFunc(app.createStore))
 	mux.Patch("/api/store/:id", http.HandlerFunc(app.partialUpdateStore))
 	mux.Put("/api/store/:id", http.HandlerFunc(app.updateStore))

@@ -280,3 +280,22 @@ func TestListFlavor(t *testing.T) {
 		t.Errorf("want %s, got %s", wantString, body)
 	}
 }
+
+func TestListStore(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	urlPath := "/api/store"
+	code, _, body := ts.get(t, urlPath)
+
+	if code != 200 {
+		t.Errorf("want %d, got %d", 200, code)
+	}
+
+	wantString := mock.MockStores[0].Name
+
+	if !bytes.Contains(body, []byte(fmt.Sprintf(`"name":"%s"`, wantString))) {
+		t.Errorf("want %s, got %s", wantString, body)
+	}
+}
