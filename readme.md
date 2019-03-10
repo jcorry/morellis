@@ -32,4 +32,15 @@ Square POS API to cross reference customer phone numbers to SMS messages sent
 - Broader inventory management for the store capturing data such as per flavor rate of consumption,
 overall frequency of flavor change, average time on premises and real time inventory data
 
+# How it works
+
+## Start the API
+- docker-compose up db
+- go run cmd/api/\*.go~*_test.go
+
+## Run the Tests
+- docker-compose up db-test
+- TEST_DSN="morellistest:testpass@tcp(127.0.0.1:33062)/morellistest?parseTime=true&multiStatements=true" go test -v -short ./...
+(`-short` flag will skip integration tests)
+
 

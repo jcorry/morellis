@@ -22,6 +22,7 @@ func newTestApplication(t *testing.T) *application {
 		infoLog:  log.New(ioutil.Discard, "", 0),
 		users:    &mock.UserModel{},
 		stores:   &mock.StoreModel{},
+		flavors:  &mock.FlavorModel{},
 	}
 }
 

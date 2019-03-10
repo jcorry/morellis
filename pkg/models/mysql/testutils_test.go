@@ -13,7 +13,9 @@ func init() {
 	if os.Getenv("TEST_DSN") != "" {
 		dsn = os.Getenv("TEST_DSN")
 	} else {
-		panic("No test DSN defined")
+		if !testing.Short() {
+			panic("No test DSN defined")
+		}
 	}
 }
 

@@ -6,6 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+
+	"github.com/jcorry/morellis/pkg/models/mock"
+
+	"github.com/jcorry/morellis/pkg/models"
 )
 
 func TestCreateUser(t *testing.T) {
@@ -164,5 +168,115 @@ func TestGetStore(t *testing.T) {
 				t.Errorf("want body %s to contain %q", body, tt.wantBody)
 			}
 		})
+	}
+}
+
+func TestCreateFlavor(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	tests := []struct {
+		name              string
+		flavorName        string
+		flavorDescription string
+		wantCode          int
+		wantBody          []byte
+	}{
+		{
+			"Valid Flavor",
+			"Flava' Flav",
+			"A new flavor that is just delicious.",
+			200,
+			[]byte("Flava' Flav"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reqBody := map[string]interface{}{
+				"name":        tt.flavorName,
+				"description": tt.flavorDescription,
+				"ingredients": []*models.Ingredient{
+					{
+						Name: "chocolate",
+					},
+					{
+						Name: "sriracha",
+					},
+				},
+			}
+
+			reqBytes, err := json.Marshal(reqBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			code, _, body := ts.request(t, "post", "/api/flavor", bytes.NewBuffer(reqBytes))
+
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+		})
+	}
+}
+
+func TestGetFlavor(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	tests := []struct {
+		name     string
+		id       int64
+		wantCode int
+	}{
+		{"Valid flavor ID", 1, 200},
+		{"Invalid flavor ID", 100, 404},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			urlPath := fmt.Sprintf("/api/flavor/%d", tt.id)
+			wantBody := ""
+			if tt.wantCode == 200 {
+				wantBody = fmt.Sprintf(`{"id":%d,`, tt.id)
+			} else {
+				wantBody = "Not Found"
+			}
+
+			code, _, body := ts.get(t, urlPath)
+
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, []byte(wantBody)) {
+				t.Errorf("want body %s to contain %q", body, wantBody)
+			}
+		})
+	}
+}
+
+func TestListFlavor(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	urlPath := "/api/flavor"
+	code, _, body := ts.get(t, urlPath)
+
+	if code != 200 {
+		t.Errorf("want %d, got %d", 200, code)
+	}
+
+	wantString := mock.MockFlavors[1].Name
+
+	if !bytes.Contains(body, []byte(fmt.Sprintf(`"name":"%s"`, wantString))) {
+		t.Errorf("want %s, got %s", wantString, body)
 	}
 }
