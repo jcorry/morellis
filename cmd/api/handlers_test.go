@@ -212,7 +212,7 @@ func TestCreateFlavor(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			code, _, body := ts.request(t, "post", "/api/flavor", bytes.NewBuffer(reqBytes))
+			code, _, body := ts.request(t, "post", "/api/v1/flavor", bytes.NewBuffer(reqBytes))
 
 			if code != tt.wantCode {
 				t.Errorf("want %d; got %d", tt.wantCode, code)
@@ -241,7 +241,7 @@ func TestGetFlavor(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			urlPath := fmt.Sprintf("/api/flavor/%d", tt.id)
+			urlPath := fmt.Sprintf("/api/v1/flavor/%d", tt.id)
 			wantBody := ""
 			if tt.wantCode == 200 {
 				wantBody = fmt.Sprintf(`{"id":%d,`, tt.id)
@@ -267,7 +267,7 @@ func TestListFlavor(t *testing.T) {
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
-	urlPath := "/api/flavor"
+	urlPath := "/api/v1/flavor"
 	code, _, body := ts.get(t, urlPath)
 
 	if code != 200 {
@@ -286,7 +286,7 @@ func TestListStore(t *testing.T) {
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
-	urlPath := "/api/store"
+	urlPath := "/api/v1/store"
 	code, _, body := ts.get(t, urlPath)
 
 	if code != 200 {
