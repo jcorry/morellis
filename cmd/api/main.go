@@ -28,6 +28,8 @@ type application struct {
 		Insert(string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
 		Update(int, string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
 		Get(int) (*models.Store, error)
+		List(int, int, string) ([]*models.Store, error)
+		Count() int
 	}
 	flavors interface {
 		Count() int

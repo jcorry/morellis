@@ -17,6 +17,7 @@ func (app *application) routes() http.Handler {
 
 	// Store routes
 	// list stores
+	mux.Get("/api/v1/store", http.HandlerFunc(app.listStore))
 	mux.Post("/api/v1/store", http.HandlerFunc(app.createStore))
 	mux.Patch("/api/v1/store/:id", http.HandlerFunc(app.partialUpdateStore))
 	mux.Put("/api/v1/store/:id", http.HandlerFunc(app.updateStore))
