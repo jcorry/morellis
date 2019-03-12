@@ -84,7 +84,7 @@ type Store struct {
 	URL     string    `json:"url"`
 	Address string    `json:"address"`
 	City    string    `json:"city"`
-	State   string    `json:state`
+	State   string    `json:"state"`
 	Zip     string    `json:"zip"`
 	Lat     float64   `json:"lat"`
 	Lng     float64   `json:"lng"`

@@ -1,0 +1,14 @@
+type: object
+properties:
+  count:
+    type: integer
+    description: Count of records returned in this response
+  sortBy:
+    type: string
+    description: The field that records in this response are sorted by
+  start:
+    type: integer
+    description: The offset of the first row to return.
+  totalRecords:
+    type: integer
+    description: The total number of records available from this endpoint
