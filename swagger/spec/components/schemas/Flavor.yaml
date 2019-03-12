@@ -1,0 +1,20 @@
+type: object
+properties:
+  id:
+    description: Unique identifier for Flavor
+    type: integer
+    example: 1
+  name:
+    description: The human readable name of the Flavor
+    type: string
+    example: "Chocolate Peanut Butter"
+  description:
+    description: "The full text description of the flavor, up to 65,535 characters."
+    type: string
+  ingredients:
+    description: Ingredients belonging to the Flavor
+    type: array
+    items:
+      $ref: '#/components/schemas/Ingredient'
+  created:
+    $ref: '#/components/schemas/Created'

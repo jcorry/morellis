@@ -1,0 +1,69 @@
+get:
+  tags:
+    - User
+  summary: Get list of Users
+  description: |
+    Get a paginated list of Users.
+  operationId: getUsers
+  parameters:
+    - name: count
+      in: query
+      description: The number of User objects that will be returned. Defaults to 25 if no value is supplied.
+      schema:
+        type: integer
+    - name: start
+      in: query
+      description: The starting position in the recordset from which User objects will be retrieved and returned. Defaults to 0 if no value is supplied.
+      schema:
+        type: integer
+  security:
+    - main_auth:
+        - 'read:users'
+    - api_key: []
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/components/schemas/ListMeta'
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    '403':
+      description: Forbidden
+    '404':
+      description: User not found
+post:
+  tags:
+    - User
+  summary: Create a new User
+  description: |
+    Create a new User
+  operationId: createUser
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/User'
+    description: User payload
+    required: true
+  security:
+    - main_auth:
+        - 'write:users'
+    - api_key: []
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+    '403':
+      description: Forbidden
+    '404':
+      description: User not found
