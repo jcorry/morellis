@@ -17,6 +17,9 @@ externalDocs:
   description: Find out how to create Github repo for your OpenAPI spec.
   url: 'https://github.com/Rebilly/generator-openapi-repo'
 tags:
+  - name: Auth
+    description: |
+      Authentication endpoint.
   - name: Flavor
     description: |
       Flavors are ice cream flavors. Endpoints include simple CRUD operations.
