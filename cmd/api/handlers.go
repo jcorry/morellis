@@ -9,6 +9,10 @@ import (
 	"github.com/jcorry/morellis/pkg/models"
 )
 
+func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 	var user *models.User
 	err := json.NewDecoder(r.Body).Decode(&user)

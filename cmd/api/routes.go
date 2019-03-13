@@ -8,6 +8,8 @@ import (
 
 func (app *application) routes() http.Handler {
 	mux := pat.New()
+	// Auth route
+	mux.Post("/api/v1/auth", http.HandlerFunc(app.createAuth))
 	// User routes
 	mux.Post("/api/v1/user", http.HandlerFunc(app.createUser))
 	mux.Get("/api/v1/user/:id", http.HandlerFunc(app.getUser))
