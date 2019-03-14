@@ -3,6 +3,8 @@ package mock
 import (
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/jcorry/morellis/pkg/models"
 )
 
@@ -51,6 +53,15 @@ func (m *UserModel) Get(id int) (*models.User, error) {
 	}
 
 	mockUser.ID = int64(id)
+	return mockUser, nil
+}
+
+func (m *UserModel) GetByUUID(id uuid.UUID) (*models.User, error) {
+	if id.String() == "" {
+		return nil, models.ErrNoRecord
+	}
+
+	mockUser.UUID = id
 	return mockUser, nil
 }
 

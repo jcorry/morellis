@@ -3,3 +3,6 @@
 .env
 data/
 morellis
+cp.out
+cmd/dataloader
+

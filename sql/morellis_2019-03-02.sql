@@ -113,17 +113,18 @@ DROP TABLE IF EXISTS `ref_user_status`;
 CREATE TABLE `ref_user_status` (
   `id` tinyint(3) unsigned NOT NULL,
   `name` varchar(16) NOT NULL,
+  `slug` varchar(16) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 LOCK TABLES `ref_user_status` WRITE;
 /*!40000 ALTER TABLE `ref_user_status` DISABLE KEYS */;
 
-INSERT INTO `ref_user_status` (`id`, `name`)
+INSERT INTO `ref_user_status` (`id`, `name`, `slug`)
 VALUES
-	(1,'Unverified'),
-	(2,'Verified'),
-	(3,'Deleted');
+	(1,'Unverified', 'unverified'),
+	(2,'Verified', 'verified'),
+	(3,'Deleted', 'deleted');
 
 /*!40000 ALTER TABLE `ref_user_status` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -160,6 +161,7 @@ DROP TABLE IF EXISTS `user`;
 
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uuid` VARCHAR(36) NOT NULL,
   `first_name` varchar(24) DEFAULT NULL,
   `last_name` varchar(24) DEFAULT NULL,
   `email` varchar(128) DEFAULT NULL,

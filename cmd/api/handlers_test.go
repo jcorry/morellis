@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/google/uuid"
+
 	"github.com/jcorry/morellis/pkg/models/mock"
 
 	"github.com/jcorry/morellis/pkg/models"
@@ -114,19 +116,25 @@ func TestGetUser(t *testing.T) {
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
+	id, err := uuid.NewUUID()
+	if err != nil {
+		t.Error(err)
+	}
+
 	tests := []struct {
 		name     string
-		id       int
+		id       uuid.UUID
 		wantCode int
 		wantBody []byte
 	}{
-		{"Valid request", 1, http.StatusOK, []byte("McTestFace")},
-		{"No record", 0, http.StatusNotFound, nil},
+		{"Valid request", id, http.StatusOK, []byte("McTestFace")},
+		{"No record", id, http.StatusNotFound, nil},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			urlPath := fmt.Sprintf("/api/v1/user/%d", tt.id)
+			urlPath := fmt.Sprintf("/api/v1/user/%s", tt.id.String())
+			t.Logf("Getting user for UUID %s", id.String())
 			code, _, body := ts.get(t, urlPath)
 
 			if code != tt.wantCode {

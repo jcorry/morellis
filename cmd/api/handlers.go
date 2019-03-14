@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/jcorry/morellis/pkg/models"
 )
 
@@ -69,13 +70,13 @@ func (app *application) partialUpdateUser(w http.ResponseWriter, r *http.Request
 
 // Get a single user by ID.
 func (app *application) getUser(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
-	if err != nil || id < 1 {
+	id, err := uuid.FromBytes([]byte(r.URL.Query().Get(":uuid")))
+	if err != nil || id.String() == "" {
 		app.notFound(w)
 		return
 	}
 
-	user, err := app.users.Get(id)
+	user, err := app.users.GetByUUID(id)
 
 	if err == models.ErrNoRecord {
 		app.notFound(w)

@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/go-sql-driver/mysql"
 
 	"github.com/jcorry/morellis/pkg/models"
@@ -29,6 +31,7 @@ func (u *UserModel) Insert(firstName string, lastName string, email string, phon
 		return nil, err
 	}
 	stmt := `INSERT INTO user (
+        uuid,
 		first_name,
 		last_name,
 		email,
@@ -37,6 +40,7 @@ func (u *UserModel) Insert(firstName string, lastName string, email string, phon
 		hashed_password,
 		created
 	) VALUES (
+	    UUID(),
 		?,
 		?,
 		?,
@@ -106,13 +110,32 @@ func (u *UserModel) Update(user *models.User) (*models.User, error) {
 
 // Get a single User by ID
 func (u *UserModel) Get(id int) (*models.User, error) {
-	stmt := `SELECT u.id, u.first_name, u.last_name, u.email, u.phone, s.name, u.created
+	stmt := `SELECT u.id, u.uuid, u.first_name, u.last_name, u.email, u.phone, s.slug, u.created
 			   FROM user AS u
 		  LEFT JOIN ref_user_status AS s ON u.status_id = s.id
 			  WHERE u.id = ?`
 
 	user := &models.User{}
-	err := u.DB.QueryRow(stmt, id).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Phone, &user.Status, &user.Created)
+	err := u.DB.QueryRow(stmt, id).Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &user.Phone, &user.Status, &user.Created)
+
+	if err == sql.ErrNoRows {
+		return nil, models.ErrNoRecord
+	} else if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+// Get a single User by UUID
+func (u *UserModel) GetByUUID(uuid uuid.UUID) (*models.User, error) {
+	stmt := `SELECT u.id, u.uuid, u.first_name, u.last_name, u.email, u.phone, s.slug, u.created
+			   FROM user AS u
+		  LEFT JOIN ref_user_status AS s ON u.status_id = s.id
+			  WHERE u.uuid = ?`
+
+	user := &models.User{}
+	err := u.DB.QueryRow(stmt, uuid).Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &user.Phone, &user.Status, &user.Created)
 
 	if err == sql.ErrNoRows {
 		return nil, models.ErrNoRecord
@@ -139,7 +162,7 @@ func (u *UserModel) List(limit int, offset int, order string) ([]*models.User, e
 		order = "created"
 	}
 
-	stmt := fmt.Sprintf(`SELECT u.id, first_name, last_name, email, phone, s.name, u.created
+	stmt := fmt.Sprintf(`SELECT u.id, u.uuid, first_name, last_name, email, phone, s.slug, u.created
 			   FROM user AS u
 		  LEFT JOIN ref_user_status AS s ON u.status_id = s.id
 		   ORDER BY %s
@@ -160,7 +183,7 @@ func (u *UserModel) List(limit int, offset int, order string) ([]*models.User, e
 
 	for rows.Next() {
 		u := &models.User{}
-		err = rows.Scan(&u.ID, &u.FirstName, &u.LastName, &u.Email, &u.Phone, &u.Status, &u.Created)
+		err = rows.Scan(&u.ID, &u.UUID, &u.FirstName, &u.LastName, &u.Email, &u.Phone, &u.Status, &u.Created)
 		if err != nil {
 			return nil, err
 		}

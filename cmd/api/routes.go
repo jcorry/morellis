@@ -10,7 +10,7 @@ func (app *application) routes() http.Handler {
 	mux := pat.New()
 	// User routes
 	mux.Post("/api/v1/user", http.HandlerFunc(app.createUser))
-	mux.Get("/api/v1/user/:id", http.HandlerFunc(app.getUser))
+	mux.Get("/api/v1/user/:uuid", http.HandlerFunc(app.getUser))
 	mux.Patch("/api/v1/user/:id", http.HandlerFunc(app.partialUpdateUser))
 	mux.Get("/api/v1/user", http.HandlerFunc(app.listUser))
 	mux.Del("/api/v1/user/:id", http.HandlerFunc(app.deleteUser))
