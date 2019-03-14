@@ -123,18 +123,18 @@ func TestGetUser(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		id       uuid.UUID
+		id       string
 		wantCode int
 		wantBody []byte
 	}{
-		{"Valid request", id, http.StatusOK, []byte("McTestFace")},
-		{"No record", id, http.StatusNotFound, nil},
+		{"Valid request", id.String(), http.StatusOK, []byte("McTestFace")},
+		{"No record", "foo", http.StatusNotFound, nil},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			urlPath := fmt.Sprintf("/api/v1/user/%s", tt.id.String())
-			t.Logf("Getting user for UUID %s", id.String())
+			urlPath := fmt.Sprintf("/api/v1/user/%s", tt.id)
+
 			code, _, body := ts.get(t, urlPath)
 
 			if code != tt.wantCode {

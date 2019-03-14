@@ -70,8 +70,8 @@ func (app *application) partialUpdateUser(w http.ResponseWriter, r *http.Request
 
 // Get a single user by ID.
 func (app *application) getUser(w http.ResponseWriter, r *http.Request) {
-	id, err := uuid.FromBytes([]byte(r.URL.Query().Get(":uuid")))
-	if err != nil || id.String() == "" {
+	id, err := uuid.Parse(r.URL.Query().Get(":uuid"))
+	if err != nil || id == uuid.Nil {
 		app.notFound(w)
 		return
 	}
