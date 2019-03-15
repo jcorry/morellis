@@ -116,7 +116,7 @@ func TestGetUser(t *testing.T) {
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
-	id, err := uuid.NewUUID()
+	id, err := uuid.NewRandom()
 	if err != nil {
 		t.Error(err)
 	}
