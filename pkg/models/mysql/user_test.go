@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/jcorry/morellis/pkg/models"
@@ -125,10 +127,16 @@ func TestUserModel_List(t *testing.T) {
 	toD := []int64{}
 
 	for _, u := range users {
-		user, err := m.Insert(u.FirstName, u.LastName, u.Email, u.Phone, u.Password)
+		uid, err := uuid.NewRandom()
+		if err != nil {
+			t.Error("Failed to create UUID for user")
+		}
+
+		user, err := m.Insert(uid, u.FirstName, u.LastName, u.Email, u.Phone, u.Password)
 		if err != nil {
 			t.Fatal("Failed to insert new user for test")
 		}
+		user.UUID = uid
 		toD = append(toD, user.ID)
 		time.Sleep(time.Second)
 	}

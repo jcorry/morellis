@@ -18,7 +18,7 @@ type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
 	users    interface {
-		Insert(string, string, string, string, string) (*models.User, error)
+		Insert(uuid.UUID, string, string, string, string, string) (*models.User, error)
 		Update(*models.User) (*models.User, error)
 		Get(int) (*models.User, error)
 		GetByUUID(uuid.UUID) (*models.User, error)

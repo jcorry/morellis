@@ -20,9 +20,10 @@ var mockUser = &models.User{
 
 type UserModel struct{}
 
-func (m *UserModel) Insert(firstName string, lastName string, email string, phone string, password string) (*models.User, error) {
+func (m *UserModel) Insert(uid uuid.UUID, firstName string, lastName string, email string, phone string, password string) (*models.User, error) {
 	user := &models.User{
 		ID:        1,
+		UUID:      uid,
 		FirstName: firstName,
 		LastName:  lastName,
 		Email:     email,
