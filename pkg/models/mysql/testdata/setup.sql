@@ -1,6 +1,7 @@
 
 CREATE TABLE `user` (
     id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    uuid VARCHAR(36) NOT NULL,
     first_name VARCHAR(24) NULL,
     last_name VARCHAR(24) NULL,
     email VARCHAR(128) NULL,
@@ -15,20 +16,22 @@ ALTER TABLE `user` ADD CONSTRAINT uk_user_email UNIQUE(email);
 
 CREATE TABLE `ref_user_status` (
     id TINYINT(3) UNSIGNED NOT NULL PRIMARY KEY,
-    name VARCHAR(16) NOT NULL
+    name VARCHAR(16) NOT NULL,
+    slug VARCHAR(16) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO `ref_user_status` (id, name)
+INSERT INTO `ref_user_status` (id, name, slug)
 VALUES
-(1, "Unverified"),
-(2, "Verified"),
-(3, "Deleted");
+(1, "Unverified", "unverified"),
+(2, "Verified", "verified"),
+(3, "Deleted", "deleted");
 
 ALTER TABLE `user` ADD FOREIGN KEY (status_id) REFERENCES ref_user_status(id);
 
 -- Insert dummy user
-INSERT INTO user (first_name, last_name, email, phone, status_id, hashed_password, created)
+INSERT INTO user (uuid, first_name, last_name, email, phone, status_id, hashed_password, created)
 VALUES (
+    UUID(),
     'Alice',
     'Jones',
     'alice@example.com',

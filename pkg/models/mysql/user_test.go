@@ -5,12 +5,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/jcorry/morellis/pkg/models"
 )
 
-func TestUserModelGet(t *testing.T) {
+func TestUserModel_Get(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mysql: skipping integration test")
 	}
@@ -30,21 +32,25 @@ func TestUserModelGet(t *testing.T) {
 				LastName:  "Jones",
 				Email:     "alice@example.com",
 				Phone:     "867-5309",
-				Status:    "Verified",
+				Status:    "verified",
 				Created:   time.Date(2019, 02, 24, 17, 25, 25, 0, time.UTC),
 			},
 			wantError: nil,
 		},
 	}
 
+	db, teardown := newTestDB(t)
+	defer teardown()
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			db, teardown := newTestDB(t)
-			defer teardown()
 
 			m := UserModel{db}
 
 			user, err := m.Get(tt.userID)
+
+			// No way to generate this...has to come from DB
+			tt.wantUser.UUID = user.UUID
 
 			if err != tt.wantError {
 				t.Errorf("want %v, got %s", tt.wantError, err)
@@ -121,10 +127,16 @@ func TestUserModel_List(t *testing.T) {
 	toD := []int64{}
 
 	for _, u := range users {
-		user, err := m.Insert(u.FirstName, u.LastName, u.Email, u.Phone, u.Password)
+		uid, err := uuid.NewRandom()
+		if err != nil {
+			t.Error("Failed to create UUID for user")
+		}
+
+		user, err := m.Insert(uid, u.FirstName, u.LastName, u.Email, u.Phone, u.Password)
 		if err != nil {
 			t.Fatal("Failed to insert new user for test")
 		}
+		user.UUID = uid
 		toD = append(toD, user.ID)
 		time.Sleep(time.Second)
 	}
@@ -179,4 +191,25 @@ func TestUserModel_List(t *testing.T) {
 		})
 	}
 
+}
+
+func TestUserModel_GetByUUID(t *testing.T) {
+	if testing.Short() {
+		t.Skip("mysql: skipping integration test")
+	}
+
+	db, teardown := newTestDB(t)
+	defer teardown()
+
+	m := UserModel{db}
+
+	u, err := m.Get(1)
+	if err != nil {
+		t.Error(err)
+	}
+
+	u, err = m.GetByUUID(u.UUID)
+	if err != nil {
+		t.Error(err)
+	}
 }
