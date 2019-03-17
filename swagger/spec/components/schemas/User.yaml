@@ -1,0 +1,28 @@
+type: object
+properties:
+  id:
+    description: Unique identifier for User
+    type: integer
+    example: 1
+  firstName:
+    description: User first name
+    type: string
+    minLength: 1
+    example: John
+  lastName:
+    description: User last name
+    type: string
+    minLength: 1
+    example: Smith
+  email:
+    $ref: '#/components/schemas/Email'
+  phone:
+    description: The phone number used to send SMS messages to the User.
+    type: string
+    example: "404-867-5309"
+  status:
+    description: The current status of the user in the system
+    type: string
+    example: "verified"
+  created:
+    $ref: '#/components/schemas/Created'

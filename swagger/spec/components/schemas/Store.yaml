@@ -1,0 +1,52 @@
+type: object
+properties:
+  id:
+    type: integer
+    description: Unique record identifier
+    example: 2
+  name:
+    type: string
+    description: The name of the store
+    example: "Dunwoody Farmburger"
+  url:
+    type: string
+    description: The URL of the store
+    example: "http://morellisicecream.com"
+  phone:
+    type: string
+    description: The phone number of the store
+    example: "867-5309"
+  email:
+    type: string
+    description: The email address for the store
+    example: "info@morellisicecream.com"
+  address:
+    type: string
+    description: The physical location street address of the store
+    example: "4514 Chamblee Dunwoody Rd"
+  city:
+    type: string
+    desccription: The physical location address city.
+    example: "Dunwoody"
+  state:
+    type: string
+    description: The physical location state
+    example: "GA"
+  zip:
+    type: string
+    description: The physical location zip code
+    example: 30338
+  lat:
+    type: number
+    description: |
+      The latitude of the store. Create/Update requests will attempt geocoding the address to
+      determine this value, but consumer supplied values will override.
+    example: "33.9227138"
+  lng:
+    type: number
+    description: |
+      The longitude of the store. Create/Update requests will attempt geocoding the address to
+      determine this value, but consumer supplied values will override.
+    example: "33.9227138"
+  created:
+    $ref: "#/components/schemas/Created"

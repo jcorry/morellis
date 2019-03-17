@@ -1,0 +1,30 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Morellis Flavor Notifications API
+  termsOfService: 'https://example.com/terms/'
+  contact:
+    email: jcorry@gmail.com
+    url: 'http://example.com/contact'
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+  x-logo:
+    url: 'https://apis.guru/openapi-template/logo.png'
+  description: >
+    A notifications API for informing customers when their favorite ice cream flavor is available at Morellis Gourmet Ice Cream, the best ice cream shop in Atlanta!
+externalDocs:
+  description: Find out how to create Github repo for your OpenAPI spec.
+  url: 'https://github.com/Rebilly/generator-openapi-repo'
+tags:
+  - name: Flavor
+    description: |
+      Flavors are ice cream flavors. Endpoints include simple CRUD operations.
+  - name: User
+    description: |
+      User management endpoints allow a user to manage themselves or an admin level user to manage any other user.
+  - name: Store
+    description: |
+      Store management endpoints allow a user to manage Store location data.
+servers:
+  - url: 'http://localhost:4001/api/v1'

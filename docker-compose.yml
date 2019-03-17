@@ -2,7 +2,7 @@ version: '3'
 services:
   db:
     container_name: morellis-mysql
-    image: mysql
+    image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: morellis
@@ -13,3 +13,15 @@ services:
       - ./data:/var/lib/mysql
     ports:
       - "33061:3306"
+  db-test:
+    container_name: morellis-mysql-test
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: morellistest
+      MYSQL_USER: morellistest
+      MYSQL_PASSWORD: testpass
+    volumes:
+      - ./sql/test:/docker-entrypoint-initdb.d
+    ports:
+      - "33062:3306"

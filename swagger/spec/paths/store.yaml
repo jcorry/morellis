@@ -1,0 +1,67 @@
+get:
+  tags:
+    - Store
+  summary: Get a list of stores
+  description: |
+    Get a paginated list of stores.
+  operationId: getStores
+  parameters:
+    - name: count
+      in: query
+      description: The number of User objects that will be returned. Defaults to 25 if no value is supplied.
+      schema:
+        type: integer
+    - name: start
+      in: query
+      description: The starting position in the recordset from which User objects will be retrieved and returned. Defaults to 0 if no value is supplied.
+      schema:
+        type: integer
+  security:
+    - bearer_auth:
+      - 'read:stores'
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/components/schemas/ListMeta'
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Store'
+    '403':
+      description: Forbidden
+    '404':
+      description: Store not found
+post:
+  tags:
+    - Store
+  summary: Create a new Store
+  description: |
+    Create a new Store
+  operationId: createStore
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Store'
+    description: Store payload
+    required: true
+  security:
+    - bearer_auth:
+      - 'write:stores'
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Store'
+    '403':
+      description: Forbidden
+    '404':
+      description: User not found

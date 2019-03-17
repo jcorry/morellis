@@ -6,7 +6,16 @@ jobs:
   build:
     docker:
     # specify the version
-    - image: circleci/golang:1.9
+    - image: circleci/golang:1.11
+      environment:
+        TEST_DSN: morellistest:testpass@tcp(127.0.0.1:3306)/morellistest?parseTime=true&multiStatements=true
+    
+    - image: circleci/mysql:5.7
+      environment:
+        MYSQL_ROOT_PASSWORD: password
+        MYSQL_DATABASE: morellistest
+        MYSQL_USER: morellistest
+        MYSQL_PASSWORD: testpass
 
     # Specify service dependencies here if necessary
     # CircleCI maintains a library of pre-built images
@@ -21,6 +30,14 @@ jobs:
     steps:
     - checkout
 
+    - run:
+          name: install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.3.0
+    - run:
+        name: Wait for db
+        command: dockerize -wait tcp://127.0.0.1:3306 -timeout 1m
     # specify any bash command here prefixed with `run: `
     - run: go get -v -t -d ./...
     - run: go test -v ./...
