@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 var (
@@ -34,7 +36,8 @@ type Ingredient struct {
 
 // User is a user of the system
 type User struct {
-	ID        int64     `json:"id"`
+	ID        int64     `json:"-"`
+	UUID      uuid.UUID `json:"uuid"`
 	FirstName string    `json:"firstName"`
 	LastName  string    `json:"lastName"`
 	Email     string    `json:"email"`

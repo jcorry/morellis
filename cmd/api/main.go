@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/google/uuid"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jcorry/morellis/pkg/models"
 	"github.com/jcorry/morellis/pkg/models/mysql"
@@ -16,9 +18,10 @@ type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
 	users    interface {
-		Insert(string, string, string, string, string) (*models.User, error)
+		Insert(uuid.UUID, string, string, string, string, string) (*models.User, error)
 		Update(*models.User) (*models.User, error)
 		Get(int) (*models.User, error)
+		GetByUUID(uuid.UUID) (*models.User, error)
 		List(int, int, string) ([]*models.User, error)
 		Delete(int) (bool, error)
 		Count() int

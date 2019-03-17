@@ -2,7 +2,7 @@ version: '3'
 services:
   db:
     container_name: morellis-mysql
-    image: mysql
+    image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: morellis
@@ -15,7 +15,7 @@ services:
       - "33061:3306"
   db-test:
     container_name: morellis-mysql-test
-    image: mysql
+    image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: morellistest

@@ -3,6 +3,8 @@ package mock
 import (
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/jcorry/morellis/pkg/models"
 )
 
@@ -18,9 +20,10 @@ var mockUser = &models.User{
 
 type UserModel struct{}
 
-func (m *UserModel) Insert(firstName string, lastName string, email string, phone string, password string) (*models.User, error) {
+func (m *UserModel) Insert(uid uuid.UUID, firstName string, lastName string, email string, phone string, password string) (*models.User, error) {
 	user := &models.User{
 		ID:        1,
+		UUID:      uid,
 		FirstName: firstName,
 		LastName:  lastName,
 		Email:     email,
@@ -51,6 +54,15 @@ func (m *UserModel) Get(id int) (*models.User, error) {
 	}
 
 	mockUser.ID = int64(id)
+	return mockUser, nil
+}
+
+func (m *UserModel) GetByUUID(id uuid.UUID) (*models.User, error) {
+	if id.String() == "" {
+		return nil, models.ErrNoRecord
+	}
+
+	mockUser.UUID = id
 	return mockUser, nil
 }
 

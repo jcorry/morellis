@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/jcorry/morellis/pkg/models"
 )
 
@@ -22,7 +23,12 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	user, err = app.users.Insert(user.FirstName, user.LastName, user.Email, user.Phone, user.Password)
+	uid, err := uuid.NewRandom()
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	user, err = app.users.Insert(uid, user.FirstName, user.LastName, user.Email, user.Phone, user.Password)
 	if err != nil {
 		if err == models.ErrDuplicateEmail {
 			app.badRequest(w, err)
@@ -32,6 +38,7 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
+	user.UUID = uid
 
 	app.jsonResponse(w, user)
 }
@@ -73,13 +80,13 @@ func (app *application) partialUpdateUser(w http.ResponseWriter, r *http.Request
 
 // Get a single user by ID.
 func (app *application) getUser(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
-	if err != nil || id < 1 {
+	id, err := uuid.Parse(r.URL.Query().Get(":uuid"))
+	if err != nil || id == uuid.Nil {
 		app.notFound(w)
 		return
 	}
 
-	user, err := app.users.Get(id)
+	user, err := app.users.GetByUUID(id)
 
 	if err == models.ErrNoRecord {
 		app.notFound(w)
