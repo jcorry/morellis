@@ -37,7 +37,7 @@ VALUES (
     'alice@example.com',
     '867-5309',
     2,
-    '$2a$12$NuTjWXm3KKntReFwyBVHyuf/to.HEwTy.eS206TNfkGfr6HzGJSWG',
+    '$2a$12$3/ZmSDnMwcfRcxgahkkNrOzyOv28HXbEu1vSVdkIbFId.AKJryrDC', -- 'password'
     '2019-02-24 17:25:25'
 );
 

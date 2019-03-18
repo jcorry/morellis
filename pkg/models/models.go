@@ -43,7 +43,7 @@ type User struct {
 	Email     string    `json:"email"`
 	Phone     string    `json:"phone"`
 	Status    string    `json:"status"`
-	Password  string    `json:"-"`
+	Password  string    `json:"password,omitempty"`
 	Created   time.Time `json:"created"`
 }
 

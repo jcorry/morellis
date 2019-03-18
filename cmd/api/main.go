@@ -25,7 +25,7 @@ type application struct {
 		List(int, int, string) ([]*models.User, error)
 		Delete(int) (bool, error)
 		Count() int
-		Authenticate(string, string) (*models.User, error)
+		GetByCredentials(*models.Credentials) (*models.User, error)
 	}
 	stores interface {
 		Insert(string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)

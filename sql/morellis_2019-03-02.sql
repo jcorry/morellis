@@ -167,7 +167,7 @@ CREATE TABLE `user` (
   `email` varchar(128) DEFAULT NULL,
   `phone` varchar(24) NOT NULL,
   `status_id` tinyint(3) unsigned NOT NULL DEFAULT '1',
-  `hashed_password` char(60) NOT NULL,
+  `hashed_password` CHAR(60) NOT NULL,d
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `updated` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
