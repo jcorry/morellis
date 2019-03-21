@@ -18,7 +18,6 @@ func TestCreateAuth(t *testing.T) {
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
-
 }
 
 func TestCreateUser(t *testing.T) {

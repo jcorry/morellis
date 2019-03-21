@@ -11,7 +11,7 @@ import (
 )
 
 func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
-	var creds *models.Credentials
+	var creds models.Credentials
 
 	err := json.NewDecoder(r.Body).Decode(&creds)
 	if err != nil {

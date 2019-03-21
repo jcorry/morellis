@@ -146,7 +146,7 @@ func (u *UserModel) GetByUUID(uuid uuid.UUID) (*models.User, error) {
 	return user, nil
 }
 
-func (u *UserModel) GetByCredentials(c *models.Credentials) (*models.User, error) {
+func (u *UserModel) GetByCredentials(c models.Credentials) (*models.User, error) {
 	var pwHash []byte = nil
 
 	stmt := `SELECT u.id, u.uuid, u.first_name, u.last_name, u.email, u.hashed_password, u.phone, s.slug, u.created
@@ -159,7 +159,7 @@ func (u *UserModel) GetByCredentials(c *models.Credentials) (*models.User, error
 	err := u.DB.QueryRow(stmt, &c.Email).Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &pwHash, &user.Phone, &user.Status, &user.Created)
 
 	if err == sql.ErrNoRows {
-		return nil, sql.ErrNoRows
+		return nil, models.ErrInvalidCredentials
 	} else if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func (u *UserModel) GetByCredentials(c *models.Credentials) (*models.User, error
 	err = bcrypt.CompareHashAndPassword(pwHash, []byte(c.Password))
 
 	if err == bcrypt.ErrMismatchedHashAndPassword {
-		return nil, bcrypt.ErrMismatchedHashAndPassword
+		return nil, models.ErrInvalidCredentials
 	} else if err != nil {
 		return nil, err
 	}

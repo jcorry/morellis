@@ -257,7 +257,7 @@ func TestUserModel_GetByCredentials(t *testing.T) {
 				Password: tt.password,
 			}
 
-			_, err := m.GetByCredentials(&c)
+			_, err := m.GetByCredentials(c)
 			if err != tt.wantError {
 				t.Error(err)
 			}

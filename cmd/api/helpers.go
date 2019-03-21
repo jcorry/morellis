@@ -1,23 +1,22 @@
 package main
 
 import (
+	"crypto/rand"
 	"crypto/rsa"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"runtime/debug"
 	"time"
 
+	"golang.org/x/crypto/ssh"
+
 	"github.com/jcorry/morellis/pkg/models"
 
-	jwt "github.com/dgrijalva/jwt-go"
-)
-
-const (
-	privKeyPath = "./rsa/app.rsa"
-	pubKeyPath  = "./rsa/app.rsa.pub"
+	"github.com/dgrijalva/jwt-go"
 )
 
 var (
@@ -26,17 +25,12 @@ var (
 )
 
 func init() {
-	signBytes, err := ioutil.ReadFile(privKeyPath)
+	privKey, err := getSignKey()
 	fatal(err)
 
-	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(signBytes)
-	fatal(err)
+	signKey = privKey
 
-	verifyBytes, err := ioutil.ReadFile(pubKeyPath)
-	fatal(err)
-
-	verifyKey, err = jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
-	fatal(err)
+	verifyKey = &privKey.PublicKey
 }
 
 func generateToken(user *models.User) (string, error) {
@@ -105,6 +99,40 @@ func (app *application) jsonResponse(w http.ResponseWriter, data interface{}) {
 
 func (app *application) noContentResponse(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func getSignKey() (*rsa.PrivateKey, error) {
+	if signKey != nil {
+		return signKey, nil
+	}
+
+	key, err := rsa.GenerateKey(rand.Reader, 4096)
+	fatal(err)
+
+	err = key.Validate()
+	fatal(err)
+
+	var privateKey = &pem.Block{
+		Type:  "PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(key),
+	}
+
+	key, err = jwt.ParseRSAPrivateKeyFromPEM(pem.EncodeToMemory(privateKey))
+	fatal(err)
+
+	return key, nil
+}
+
+func getVerifyKey(privateKey *rsa.PublicKey) (*rsa.PublicKey, error) {
+	publicRsaKey, err := ssh.NewPublicKey(privateKey)
+	fatal(err)
+
+	pubKeyBytes := ssh.MarshalAuthorizedKey(publicRsaKey)
+
+	key, err := jwt.ParseRSAPublicKeyFromPEM(pubKeyBytes)
+	fatal(err)
+
+	return key, nil
 }
 
 func fatal(err error) {

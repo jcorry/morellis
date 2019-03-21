@@ -78,7 +78,7 @@ func (m *UserModel) Count() int {
 	return 4
 }
 
-func (m *UserModel) GetByCredentials(credentials *models.Credentials) (*models.User, error) {
+func (m *UserModel) GetByCredentials(credentials models.Credentials) (*models.User, error) {
 	mockUser.Email = credentials.Email
 
 	if credentials.Email == "noauth@example.com" {
