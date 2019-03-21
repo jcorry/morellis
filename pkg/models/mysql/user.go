@@ -156,7 +156,7 @@ func (u *UserModel) GetByCredentials(c models.Credentials) (*models.User, error)
 
 	user := &models.User{}
 
-	err := u.DB.QueryRow(stmt, &c.Email).Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &pwHash, &user.Phone, &user.Status, &user.Created)
+	err := u.DB.QueryRow(stmt, c.Email).Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &pwHash, &user.Phone, &user.Status, &user.Created)
 
 	if err == sql.ErrNoRows {
 		return nil, models.ErrInvalidCredentials

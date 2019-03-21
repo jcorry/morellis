@@ -80,6 +80,11 @@ func (m *UserModel) Count() int {
 
 func (m *UserModel) GetByCredentials(credentials models.Credentials) (*models.User, error) {
 	mockUser.Email = credentials.Email
+	uid, err := uuid.NewRandom()
+	if err != nil {
+		return nil, err
+	}
+	mockUser.UUID = uid
 
 	if credentials.Email == "noauth@example.com" {
 		return nil, models.ErrInvalidCredentials
