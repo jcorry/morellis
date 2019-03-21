@@ -3,16 +3,12 @@ package main
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/x509"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
 	"log"
 	"net/http"
 	"runtime/debug"
 	"time"
-
-	"golang.org/x/crypto/ssh"
 
 	"github.com/jcorry/morellis/pkg/models"
 
@@ -29,7 +25,6 @@ func init() {
 	fatal(err)
 
 	signKey = privKey
-
 	verifyKey = &privKey.PublicKey
 }
 
@@ -110,26 +105,6 @@ func getSignKey() (*rsa.PrivateKey, error) {
 	fatal(err)
 
 	err = key.Validate()
-	fatal(err)
-
-	var privateKey = &pem.Block{
-		Type:  "PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(key),
-	}
-
-	key, err = jwt.ParseRSAPrivateKeyFromPEM(pem.EncodeToMemory(privateKey))
-	fatal(err)
-
-	return key, nil
-}
-
-func getVerifyKey(privateKey *rsa.PublicKey) (*rsa.PublicKey, error) {
-	publicRsaKey, err := ssh.NewPublicKey(privateKey)
-	fatal(err)
-
-	pubKeyBytes := ssh.MarshalAuthorizedKey(publicRsaKey)
-
-	key, err := jwt.ParseRSAPublicKeyFromPEM(pubKeyBytes)
 	fatal(err)
 
 	return key, nil
