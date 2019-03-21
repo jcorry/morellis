@@ -213,3 +213,54 @@ func TestUserModel_GetByUUID(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestUserModel_GetByCredentials(t *testing.T) {
+	if testing.Short() {
+		t.Skip("mysql: skipping integration test")
+	}
+
+	tests := []struct {
+		name      string
+		email     string
+		password  string
+		wantError error
+	}{
+		{
+			name:      "Found user",
+			email:     "alice@example.com",
+			password:  "password",
+			wantError: nil,
+		},
+		{
+			name:      "Wrong email",
+			email:     "bob@example.com",
+			password:  "password",
+			wantError: models.ErrInvalidCredentials,
+		},
+		{
+			name:      "Wrong password",
+			email:     "alice@example.com",
+			password:  "P@SSW0rd",
+			wantError: models.ErrInvalidCredentials,
+		},
+	}
+
+	db, teardown := newTestDB(t)
+	defer teardown()
+
+	m := UserModel{db}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := models.Credentials{
+				Email:    tt.email,
+				Password: tt.password,
+			}
+
+			_, err := m.GetByCredentials(c)
+			if err != tt.wantError {
+				t.Error(err)
+			}
+		})
+	}
+}

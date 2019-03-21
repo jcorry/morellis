@@ -78,8 +78,17 @@ func (m *UserModel) Count() int {
 	return 4
 }
 
-func (m *UserModel) Authenticate(email string, password string) (*models.User, error) {
-	mockUser.Email = email
+func (m *UserModel) GetByCredentials(credentials models.Credentials) (*models.User, error) {
+	mockUser.Email = credentials.Email
+	uid, err := uuid.NewRandom()
+	if err != nil {
+		return nil, err
+	}
+	mockUser.UUID = uid
+
+	if credentials.Email == "noauth@example.com" {
+		return nil, models.ErrInvalidCredentials
+	}
 
 	return mockUser, nil
 }

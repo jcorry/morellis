@@ -10,6 +10,37 @@ import (
 	"github.com/jcorry/morellis/pkg/models"
 )
 
+func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
+	var creds models.Credentials
+
+	err := json.NewDecoder(r.Body).Decode(&creds)
+	if err != nil {
+		app.serverError(w, err)
+	}
+	defer r.Body.Close()
+
+	user, err := app.users.GetByCredentials(creds)
+
+	if err != nil {
+		app.errorLog.Output(2, err.Error())
+		app.clientError(w, http.StatusNotFound)
+		return
+	}
+
+	token, err := generateToken(user)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	response := struct {
+		Token string
+	}{
+		token,
+	}
+	app.jsonResponse(w, response)
+}
+
 func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 	var user *models.User
 	err := json.NewDecoder(r.Body).Decode(&user)
@@ -34,6 +65,7 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
+	user.Password = ""
 	user.UUID = uid
 
 	app.jsonResponse(w, user)

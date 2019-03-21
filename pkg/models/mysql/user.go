@@ -146,6 +146,35 @@ func (u *UserModel) GetByUUID(uuid uuid.UUID) (*models.User, error) {
 	return user, nil
 }
 
+func (u *UserModel) GetByCredentials(c models.Credentials) (*models.User, error) {
+	var pwHash []byte = nil
+
+	stmt := `SELECT u.id, u.uuid, u.first_name, u.last_name, u.email, u.hashed_password, u.phone, s.slug, u.created
+			   FROM user AS u
+		  LEFT JOIN ref_user_status AS s ON u.status_id = s.id
+			  WHERE u.email = ?`
+
+	user := &models.User{}
+
+	err := u.DB.QueryRow(stmt, c.Email).Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &pwHash, &user.Phone, &user.Status, &user.Created)
+
+	if err == sql.ErrNoRows {
+		return nil, models.ErrInvalidCredentials
+	} else if err != nil {
+		return nil, err
+	}
+
+	err = bcrypt.CompareHashAndPassword(pwHash, []byte(c.Password))
+
+	if err == bcrypt.ErrMismatchedHashAndPassword {
+		return nil, models.ErrInvalidCredentials
+	} else if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 // List Users limiting results by `limit` beginning at `offset` and ordered by `order`
 func (u *UserModel) List(limit int, offset int, order string) ([]*models.User, error) {
 	orderOpts := map[string]string{
@@ -226,8 +255,4 @@ func (u *UserModel) Count() int {
 	}
 
 	return count
-}
-
-func (u *UserModel) Authenticate(email string, password string) (*models.User, error) {
-	return nil, nil
 }

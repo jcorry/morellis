@@ -14,6 +14,12 @@ var (
 	ErrDuplicateEmail     = errors.New("models: duplicate email")
 )
 
+// Credentials are used to authenticate with the API
+type Credentials struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 // Flavor is an ice cream flavor served by Morellis at any of it's Stores.
 type Flavor struct {
 	ID          int64        `json:"id"`
@@ -37,7 +43,7 @@ type User struct {
 	Email     string    `json:"email"`
 	Phone     string    `json:"phone"`
 	Status    string    `json:"status"`
-	Password  string    `json:"-"`
+	Password  string    `json:"password,omitempty"`
 	Created   time.Time `json:"created"`
 }
 

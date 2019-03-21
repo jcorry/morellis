@@ -1,0 +1,42 @@
+post:
+  tags:
+    - Auth
+  summary: Auth endpoint to exchange credentials for an auth token.
+  description: |-
+    Auth endpoint to exchange credentials for an auth token.
+
+    Post your email address and password, if found receive a JWT token in the response
+    to include in the `Authorization` header for protected requests.
+  operationId: authenticate
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+              description: The user's email address.
+              example: user@example.com
+            password:
+              type: string
+              description: The user's password.
+              example: S3cr3T
+    description: Auth credentials
+    required: true
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6ImM4ZjA0NjgxLWZiOGEtNDRiYi04MDk2LTEwYWNmOGNhMDU5NCIsInBlcm1pc3Npb25zIjp7ImFkbWluIjp0cnVlfSwiaWF0IjoxNTE2MjM5MDIyfQ.uaU7FD3wLtcXxeXsuHc_1kq3aFcgOlUC5yLyT48ypsc
+              expires:
+                type: string
+                format: date-time
+    '404':
+      description: User not found

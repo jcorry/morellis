@@ -1,8 +1,8 @@
 .DS_Store
 .idea/
 .env
+certs/
+cmd/dataloader
+cp.out
 data/
 morellis
-cp.out
-cmd/dataloader
-
