@@ -1,9 +1,45 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"strings"
+
+	"github.com/dgrijalva/jwt-go"
 )
+
+func (app *application) jwtVerification(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader != "" {
+			bearerToken := strings.Split(authHeader, " ")
+			if len(bearerToken) == 2 {
+				token, err := jwt.Parse(bearerToken[1], func(token *jwt.Token) (interface{}, error) {
+					if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+						return nil, fmt.Errorf("No RSA signing method found")
+					}
+
+					return verifyKey, nil
+				})
+
+				if err != nil {
+					app.errorLog.Output(2, err.Error())
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				if token.Valid {
+					ctx := context.WithValue(r.Context(), "Claims", token.Claims)
+					next.ServeHTTP(w, r.WithContext(ctx))
+					return
+				}
+			}
+		}
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	})
+}
 
 func secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

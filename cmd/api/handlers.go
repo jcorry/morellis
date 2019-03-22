@@ -410,8 +410,6 @@ func (app *application) listFlavor(w http.ResponseWriter, r *http.Request) {
 
 	sb := params.Get("sortBy")
 
-	//sd := params.Get("sortDir")
-
 	flavors, err := app.flavors.List(limit, offset, sb)
 
 	if err != nil {
