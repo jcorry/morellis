@@ -26,7 +26,8 @@ func TestCreateAuth(t *testing.T) {
 		wantBody []byte
 		wantCode int
 	}{
-		{"Valid credentials", "valid@example.com", "password", []byte(`{"Token":`), 200},
+		{"Valid credentials should have token", "valid@example.com", "password", []byte(`{"token":`), 200},
+		{"Valid credentials should expire", "valid@example.com", "password", []byte(`"expires":`), 200},
 		{"Invalid credentials", "noauth@example.com", "password", []byte("Not Found"), 404},
 	}
 
@@ -53,7 +54,6 @@ func TestCreateAuth(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestCreateUser(t *testing.T) {
