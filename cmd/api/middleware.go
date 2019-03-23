@@ -11,6 +11,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+var ContextKeyUser = "AuthUser"
+
 func (app *application) jwtVerification(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
@@ -42,7 +44,12 @@ func (app *application) jwtVerification(next http.Handler) http.Handler {
 					}
 
 					user, err := app.users.GetByUUID(uid)
-					ctx := context.WithValue(r.Context(), "AuthUser", user)
+					if err != nil {
+						app.errorLog.Output(2, err.Error())
+						w.WriteHeader(http.StatusUnauthorized)
+						return
+					}
+					ctx := context.WithValue(r.Context(), ContextKeyUser, user)
 					next.ServeHTTP(w, r.WithContext(ctx))
 					return
 				}

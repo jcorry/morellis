@@ -79,7 +79,6 @@ func (ts *testServer) request(t *testing.T, method string, urlPath string, reqBo
 		}
 
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
-
 	}
 
 	rs, err := ts.Client().Do(req)
