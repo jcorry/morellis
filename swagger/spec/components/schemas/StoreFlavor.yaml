@@ -1,0 +1,21 @@
+type: object
+properties:
+  storeId:
+    type: integer
+    example: 3
+  flavorId:
+    type: integer
+    example: 23
+  position:
+    description: |-
+      The position in the cooler where the active flavor will appear. Only 1 active
+      flavor may appear in a position at a store at a time.
+    type: integer
+    example: 6
+    required: true
+  activated:
+    description: |-
+      Datetime indicating when the flavor was activated.
+    type: string
+    format: date-time
+    example: 2019-03-01T18:12:25Z
