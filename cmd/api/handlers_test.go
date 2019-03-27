@@ -72,7 +72,7 @@ func TestCreateUser(t *testing.T) {
 		wantBody  []byte
 	}{
 		{"Valid submission", "Bob", "McTestFace", "867-5309", "bob@testy.com", "valid-password", http.StatusOK, []byte("Bob")},
-		{"Duplicate email", "Bob", "McTestFace", "867-5309", "dupe@example.com", "valid-password", http.StatusBadRequest, []byte("duplicate email")},
+		{"Duplicate email", "Bob", "McTestFace", "867-5309", "dupe@example.com", "valid-password", http.StatusBadRequest, []byte("Duplicate email")},
 	}
 
 	for _, tt := range tests {
@@ -120,7 +120,7 @@ func TestPartialUpdateUser(t *testing.T) {
 		wantBody  []byte
 	}{
 		{"Valid submission", 1, "Bob", "McTestFace", "867-5309", "bob@testy.com", "valid-password", http.StatusOK, []byte("Bob")},
-		{"Duplicate email", 1, "Bob", "McTestFace", "867-5309", "dupe@example.com", "valid-password", http.StatusBadRequest, []byte("duplicate email")},
+		{"Duplicate email", 1, "Bob", "McTestFace", "867-5309", "dupe@example.com", "valid-password", http.StatusBadRequest, []byte("Duplicate email")},
 		{"Invalid ID", 0, "Bob", "McTestFace", "867-5309", "dupe@example.com", "valid-password", http.StatusNotFound, nil},
 	}
 

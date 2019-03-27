@@ -33,6 +33,9 @@ type application struct {
 		Get(int) (*models.Store, error)
 		List(int, int, string) ([]*models.Store, error)
 		Count() int
+		ActivateFlavor(int, int, int) error
+		DeactivateFlavor(int, int) error
+		DeactivateFlavorAtPosition(int, int) error
 	}
 	flavors interface {
 		Count() int

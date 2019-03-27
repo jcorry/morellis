@@ -58,6 +58,9 @@ CREATE TABLE `store` (
     updated TIMESTAMP null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+INSERT INTO `store` (`id`, `name`, `phone`, `email`, `url`, `address`, `city`, `state`, `zip`, `lat`, `lng`, `created`, `updated`) VALUES (1, 'Morellis On Moreland', '404-622-0210', 'info@morellisicecream.com', 'http://www.morellisicecream.com/', '749 Moreland Ave SE', 'Atlanta', 'GA', '30316', 33.733951, -84.349625, '2019-03-27 00:15:25', NULL);
+INSERT INTO `store` (`id`, `name`, `phone`, `email`, `url`, `address`, `city`, `state`, `zip`, `lat`, `lng`, `created`, `updated`) VALUES (2, 'Dunwoody Farmburger', '404-622-0210', 'info@morellisicecream.com', 'http://www.morellisicecream.com/', '4514 Chamblee Dunwoody Rd', 'Dunwoody', 'GA', '30338', 33.922714, -84.315169, '2019-03-27 00:31:17', NULL);
+
 -- Create ingredient table
 CREATE TABLE `ingredient` (
     id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -75,6 +78,12 @@ CREATE TABLE `flavor` (
     updated TIMESTAMP null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+INSERT INTO `flavor` (`id`, `name`, `description`, `created`, `updated`)
+VALUES
+(1, 'Coconut Japaleno', 'One of our most unique flavors, it must be tasted to be believed!\nOur fresh made coconut ice cream is infused with just the right amount of fresh jalapenos. The experience of hot, sweet and cold hits your palate in pretty amazing ways; come try for yourself!', '2019-03-01 21:52:22', NULL),
+(2, 'Butter Pecan', 'Butter Pecan is an ice cream standard, but that doesnt mean the flavor has to be ordinary!\nOur buttery, nutty and savory ice cream is a rich and delicious fan favorite, blended with just the right amount of buttery goodness and fresh Georgia pecans.', '2019-03-02 21:36:19', NULL);
+
+
 -- Create flavor_ingredient table
 CREATE TABLE `flavor_ingredient` (
     id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -86,3 +95,14 @@ ALTER TABLE `flavor_ingredient` ADD FOREIGN KEY (flavor_id) REFERENCES flavor(id
 ALTER TABLE `flavor_ingredient` ADD FOREIGN KEY (ingredient_id) REFERENCES ingredient(id);
 ALTER TABLE `flavor_ingredient` ADD CONSTRAINT uk_flavor_id_ingredient_id UNIQUE (`flavor_id`, `ingredient_id`);
 
+CREATE TABLE `flavor_store` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `flavor_id` int(11) NOT NULL,
+    `store_id` int(11) NOT NULL,
+    `position` smallint(6) NOT NULL,
+    `is_active` tinyint(1) NOT NULL DEFAULT '0',
+    `activated` datetime NOT NULL,
+    `deactivated` datetime DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_flavor_store_is_active_store_id_position_id` (`store_id`,`position`,`is_active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

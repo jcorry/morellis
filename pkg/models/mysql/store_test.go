@@ -3,8 +3,6 @@ package mysql
 import (
 	"testing"
 	"time"
-
-	"github.com/jcorry/morellis/pkg/models"
 )
 
 func TestStoreModel_List(t *testing.T) {
@@ -15,42 +13,6 @@ func TestStoreModel_List(t *testing.T) {
 	defer teardown()
 
 	m := StoreModel{db}
-
-	stores := []*models.Store{
-		{
-			Name:    "Dunwoody Farmburger",
-			Email:   "info@morellisicecream.com",
-			Phone:   "404-622-0210",
-			URL:     "http://morellisicecream.com",
-			Address: "4514 Chamblee Dunwoody Rd",
-			City:    "Dunwoody",
-			State:   "GA",
-			Zip:     "30338",
-			Lat:     33.922714,
-			Lng:     -84.315169,
-		},
-		{
-			Name:    "Morellis On Moreland",
-			Phone:   "404-622-0210",
-			Email:   "info@morellisicecream.com",
-			URL:     "http://www.morellisicecream.com/",
-			Address: "749 Moreland Ave SE",
-			City:    "Atlanta",
-			State:   "GA",
-			Zip:     "30316",
-			Lat:     33.7339513,
-			Lng:     -84.3496246,
-		},
-	}
-
-	// setup the DB rows
-	for _, s := range stores {
-		_, err := m.Insert(s.Name, s.Phone, s.Email, s.URL, s.Address, s.City, s.State, s.Zip, s.Lat, s.Lng)
-		if err != nil {
-			t.Fatal(err.Error())
-		}
-		time.Sleep(time.Second)
-	}
 
 	tests := []struct {
 		name      string
@@ -87,5 +49,54 @@ func TestStoreModel_List(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestStoreModel_ActivateFlavor(t *testing.T) {
+
+}
+
+func TestStoreModel_GetActiveFlavors(t *testing.T) {
+	db, teardown := newTestDB(t)
+	defer teardown()
+
+	m := StoreModel{db}
+
+	// Insert into flavor_store a few rows for testing
+	flavorStoreEntries := []struct {
+		flavorID int64
+		storeID  int64
+		position int64
+		active   bool
+	}{
+		{1, 1, 1, true},
+		{2, 1, 2, true},
+	}
+
+	for _, entry := range flavorStoreEntries {
+		stmt := `INSERT INTO flavor_store 
+			(flavor_id, store_id, position, is_active, activated, deactivated) VALUES (?, ?, ?, ?, ?, ?)`
+
+		active := 0
+		now := time.Now()
+		var activated time.Time
+		deactivated := now.AddDate(0, 0, -1)
+
+		if entry.active {
+			active = 1
+			activated = now.AddDate(0, -1, 0)
+		}
+
+		if entry.active {
+			_, err := m.DB.Exec(stmt, entry.flavorID, entry.storeID, entry.position, active, activated, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+		} else {
+			_, err := m.DB.Exec(stmt, entry.flavorID, entry.storeID, entry.position, active, activated, deactivated)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
 	}
 }

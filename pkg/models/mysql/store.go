@@ -3,7 +3,10 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
+
+	"github.com/go-sql-driver/mysql"
 
 	"github.com/jcorry/morellis/pkg/models"
 )
@@ -158,4 +161,91 @@ func (s *StoreModel) Count() int {
 		panic(err)
 	}
 	return count
+}
+
+// ActivateFlavor adds an active Flavor to the indicated Position at a Store, deactivating the Flavor
+// currently occupying that Position.
+func (s *StoreModel) ActivateFlavor(storeID int, flavorID int, position int) error {
+	stmt := `INSERT INTO flavor_store (store_id, flavor_id, position, is_active, activated)
+			VALUES(?, ?, ?, 1, CURRENT_TIMESTAMP)`
+
+	_, err := s.DB.Exec(stmt, storeID, flavorID, position)
+	if mysqlErr, ok := err.(*mysql.MySQLError); ok {
+		if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_flavor_store_is_active_store_id_position_id") {
+			return models.ErrDuplicateFlavor
+		}
+	}
+
+	return err
+}
+
+// DeactivateFlavor deactivates the Flavor identified by its ID at the indicated Store.
+func (s *StoreModel) DeactivateFlavor(storeID int, flavorID int) error {
+	return nil
+}
+
+// DeactivateFlavorAtPosition deactivates the Flavor in the indicated Position at the indicated Store.
+func (s *StoreModel) DeactivateFlavorAtPosition(storeID int, position int) error {
+	return nil
+}
+
+// GetActiveFlavors returns a collection of the currently active flavors at a store.
+func (s *StoreModel) GetActiveFlavors(storeID int) ([]*models.Flavor, error) {
+	stmt := `SELECT f.id, f.name, f.description, f.created, i.id, i.name 
+			   FROM flavor AS f
+		  LEFT JOIN flavor_ingredient AS fi ON fi.flavor_id = f.id
+		  LEFT JOIN ingredient AS i ON fi.ingredient_id = i.id
+		  LEFT JOIN flavor_store AS fs ON fs.flavor_id = f.id
+			  WHERE fs.store_id = ?
+			    AND fs.is_active = 1
+		   ORDER BY fs.position ASC`
+
+	rows, err := s.DB.Query(stmt, storeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var flavors []*models.Flavor
+	flavor := &models.Flavor{}
+
+	var (
+		flavorID    int64
+		id          int64
+		name        string
+		description string
+		created     time.Time
+		ingredient  models.Ingredient
+	)
+
+	for rows.Next() {
+		err = rows.Scan(&id, &name, &description, &created, &ingredient.ID, &ingredient.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		if flavor != nil && flavor.ID == id {
+			flavor.Ingredients = append(flavor.Ingredients, ingredient)
+		} else {
+			flavor = &models.Flavor{
+				ID:          id,
+				Name:        name,
+				Description: description,
+				Created:     created,
+				Ingredients: []models.Ingredient{ingredient},
+			}
+		}
+
+		if flavor.ID != flavorID {
+			flavors = append(flavors, flavor)
+		}
+
+		flavorID = flavor.ID
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return flavors, nil
 }

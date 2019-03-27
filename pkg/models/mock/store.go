@@ -89,3 +89,19 @@ func (m *StoreModel) List(limit int, offset int, order string) ([]*models.Store,
 func (m *StoreModel) Count() int {
 	return len(MockStores)
 }
+
+// ActivateFlavor adds an active Flavor to the indicated Position at a Store, deactivating the Flavor
+// currently occupying that Position.
+func (m *StoreModel) ActivateFlavor(storeID int, flavorID int, position int) error {
+	return nil
+}
+
+// DeactivateFlavor deactivates the Flavor identified by its ID at the indicated Store.
+func (m *StoreModel) DeactivateFlavor(storeID int, flavorID int) error {
+	return nil
+}
+
+// DeactivateFlavorAtPosition deactivates the Flavor in the indicated Position at the indicated Store.
+func (m *StoreModel) DeactivateFlavorAtPosition(storeID int, position int) error {
+	return nil
+}
