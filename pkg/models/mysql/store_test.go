@@ -64,13 +64,14 @@ func TestStoreModel_GetActiveFlavors(t *testing.T) {
 
 	// Insert into flavor_store a few rows for testing
 	flavorStoreEntries := []struct {
-		flavorID int64
 		storeID  int64
+		flavorID int64
 		position int64
 		active   bool
 	}{
+		{1, 1, 1, false},
 		{1, 1, 1, true},
-		{2, 1, 2, true},
+		{1, 2, 2, true},
 	}
 
 	for _, entry := range flavorStoreEntries {
@@ -78,13 +79,13 @@ func TestStoreModel_GetActiveFlavors(t *testing.T) {
 			(flavor_id, store_id, position, is_active, activated, deactivated) VALUES (?, ?, ?, ?, ?, ?)`
 
 		active := 0
-		now := time.Now()
-		var activated time.Time
-		deactivated := now.AddDate(0, 0, -1)
+
+		activated := time.Now()
+		deactivated := activated.AddDate(0, 0, -1)
 
 		if entry.active {
 			active = 1
-			activated = now.AddDate(0, -1, 0)
+			activated = activated.AddDate(0, -1, 0)
 		}
 
 		if entry.active {
@@ -98,5 +99,27 @@ func TestStoreModel_GetActiveFlavors(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
+	}
+
+	tests := []struct {
+		name         string
+		storeID      int
+		wantRowCount int
+		wantError    error
+	}{
+		{"Get active rows", 1, 2, nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			flavors, err := m.GetActiveFlavors(tt.storeID)
+			if err != nil {
+				t.Errorf("Got MySQL error: %#v", err)
+			}
+
+			if len(flavors) != tt.wantRowCount {
+				t.Errorf("Want row count %d; got %d", tt.wantRowCount, len(flavors))
+			}
+		})
 	}
 }

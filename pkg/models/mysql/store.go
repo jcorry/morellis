@@ -201,6 +201,7 @@ func (s *StoreModel) GetActiveFlavors(storeID int) ([]*models.Flavor, error) {
 		   ORDER BY fs.position ASC`
 
 	rows, err := s.DB.Query(stmt, storeID)
+
 	if err != nil {
 		return nil, err
 	}

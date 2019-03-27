@@ -69,6 +69,14 @@ CREATE TABLE `ingredient` (
     updated TIMESTAMP null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+INSERT INTO `ingredient` (`id`, `name`, `created`, `updated`)
+VALUES
+(1, 'coconut', '2019-03-01 21:52:22', NULL),
+(2, 'jalapeno', '2019-03-01 21:52:22', NULL),
+(3, 'butter', '2019-03-02 21:36:19', NULL),
+(4, 'pecan', '2019-03-02 21:36:19', NULL),
+(5, 'nuts', '2019-03-02 21:36:19', NULL);
+
 -- Create flavor table
 CREATE TABLE `flavor` (
     id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -94,6 +102,14 @@ CREATE TABLE `flavor_ingredient` (
 ALTER TABLE `flavor_ingredient` ADD FOREIGN KEY (flavor_id) REFERENCES flavor(id);
 ALTER TABLE `flavor_ingredient` ADD FOREIGN KEY (ingredient_id) REFERENCES ingredient(id);
 ALTER TABLE `flavor_ingredient` ADD CONSTRAINT uk_flavor_id_ingredient_id UNIQUE (`flavor_id`, `ingredient_id`);
+
+INSERT INTO `flavor_ingredient` (`id`, `flavor_id`, `ingredient_id`)
+VALUES
+(1, 1, 1),
+(2, 1, 2),
+(3, 2, 3),
+(4, 2, 4),
+(5, 2, 5);
 
 CREATE TABLE `flavor_store` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
