@@ -15,6 +15,7 @@ type StoreModel struct {
 	DB *sql.DB
 }
 
+// List stores. Length of list is defined by `limit`, beginning at `offset`. List is sorted by `order`.
 func (s *StoreModel) List(limit int, offset int, order string) ([]*models.Store, error) {
 	stmt := fmt.Sprintf(`SELECT s.id, s.name, s.phone, s.email, s.url, s.address, s.city, s.state, s.zip, s.lat, s.lng, s.created
 								  FROM store AS s
@@ -48,6 +49,7 @@ func (s *StoreModel) List(limit int, offset int, order string) ([]*models.Store,
 	return stores, nil
 }
 
+// Insert a new Store
 func (s *StoreModel) Insert(name string, phone string, email string, url string, address string, city string, state string, zip string, lat float64, lng float64) (*models.Store, error) {
 	created := time.Now()
 	stmt := `INSERT INTO store (
@@ -103,7 +105,7 @@ func (s *StoreModel) Insert(name string, phone string, email string, url string,
 	return store, nil
 }
 
-// Get a single User by ID
+// Get a single Store by ID
 func (s *StoreModel) Get(id int) (*models.Store, error) {
 	stmt := `SELECT id, name, phone, email, url, phone, address, city, state, zip, lat, lng, created
 			   FROM store
@@ -121,7 +123,8 @@ func (s *StoreModel) Get(id int) (*models.Store, error) {
 	return store, nil
 }
 
-func (s *StoreModel) Update(id int, name string, phone string, email string, url string, address string, city string, state string, zip string, lat float64, lng float64) (*models.Store, error) {
+// Update a Store identified by it's ID.
+func (s *StoreModel) Update(ID int, name string, phone string, email string, url string, address string, city string, state string, zip string, lat float64, lng float64) (*models.Store, error) {
 	updated := time.Now()
 	stmt := `
 	UPDATE store SET
@@ -136,14 +139,14 @@ func (s *StoreModel) Update(id int, name string, phone string, email string, url
 		lat = ?,
 		lng = ?,
 		updated = ?
-	WHERE id = ?`
+	WHERE ID = ?`
 
-	_, err := s.DB.Exec(stmt, name, phone, email, url, address, city, state, zip, lat, lng, updated, id)
+	_, err := s.DB.Exec(stmt, name, phone, email, url, address, city, state, zip, lat, lng, updated, ID)
 	if err != nil {
 		return nil, err
 	}
 
-	store, err := s.Get(id)
+	store, err := s.Get(ID)
 	if err != nil {
 		return nil, err
 	}
@@ -165,32 +168,48 @@ func (s *StoreModel) Count() int {
 
 // ActivateFlavor adds an active Flavor to the indicated Position at a Store, deactivating the Flavor
 // currently occupying that Position.
-func (s *StoreModel) ActivateFlavor(storeID int, flavorID int, position int) error {
-	stmt := `INSERT INTO flavor_store (store_id, flavor_id, position, is_active, activated)
+func (s *StoreModel) ActivateFlavor(storeID int64, flavorID int64, position int) error {
+	tx, _ := s.DB.Begin()
+	defer tx.Rollback()
+
+	stmt := `UPDATE flavor_store 
+				SET is_active = 0, deactivated = CURRENT_TIMESTAMP 
+			  WHERE store_id = ?
+				AND position = ?`
+
+	_, err := s.DB.Exec(stmt, storeID, position)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	stmt = `INSERT INTO flavor_store (store_id, flavor_id, position, is_active, activated)
 			VALUES(?, ?, ?, 1, CURRENT_TIMESTAMP)`
 
-	_, err := s.DB.Exec(stmt, storeID, flavorID, position)
+	_, err = s.DB.Exec(stmt, storeID, flavorID, position)
 	if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 		if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_flavor_store_is_active_store_id_position_id") {
+			tx.Rollback()
 			return models.ErrDuplicateFlavor
 		}
 	}
+	tx.Commit()
 
 	return err
 }
 
 // DeactivateFlavor deactivates the Flavor identified by its ID at the indicated Store.
-func (s *StoreModel) DeactivateFlavor(storeID int, flavorID int) error {
+func (s *StoreModel) DeactivateFlavor(storeID int64, flavorID int64) error {
 	return nil
 }
 
 // DeactivateFlavorAtPosition deactivates the Flavor in the indicated Position at the indicated Store.
-func (s *StoreModel) DeactivateFlavorAtPosition(storeID int, position int) error {
+func (s *StoreModel) DeactivateFlavorAtPosition(storeID int64, position int) error {
 	return nil
 }
 
 // GetActiveFlavors returns a collection of the currently active flavors at a store.
-func (s *StoreModel) GetActiveFlavors(storeID int) ([]*models.Flavor, error) {
+func (s *StoreModel) GetActiveFlavors(storeID int64) ([]*models.Flavor, error) {
 	stmt := `SELECT f.id, f.name, f.description, f.created, i.id, i.name 
 			   FROM flavor AS f
 		  LEFT JOIN flavor_ingredient AS fi ON fi.flavor_id = f.id

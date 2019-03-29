@@ -1,9 +1,76 @@
 package mysql
 
 import (
+	"database/sql"
+	"fmt"
 	"testing"
 	"time"
+
+	"github.com/jcorry/morellis/pkg/models"
 )
+
+func TestStoreModel_Insert(t *testing.T) {
+	if testing.Short() {
+		t.Skip("mysql: skipping integration test")
+	}
+	db, teardown := newTestDB(t)
+	defer teardown()
+
+	name := "New Store"
+	phone := "867-5309"
+	email := "example@example.com"
+	url := "http://example.com"
+	address := "123 Any Ln"
+	city := "Anywhere"
+	state := "CA"
+	zip := "10111"
+	lat := 32.476
+	lng := -89.234
+
+	m := StoreModel{db}
+
+	store, err := m.Insert(name, phone, email, url, address, city, state, zip, lat, lng)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if store.Name != name {
+		t.Errorf("Want %s; Got %s", name, store.Name)
+	}
+
+	if store.ID <= 0 {
+		t.Error("Store ID wasn't set")
+	}
+}
+
+func TestStoreModel_Get(t *testing.T) {
+	if testing.Short() {
+		t.Skip("mysql: skipping integration test")
+	}
+	db, teardown := newTestDB(t)
+	defer teardown()
+
+	m := StoreModel{db}
+
+	tests := []struct {
+		name    string
+		id      int
+		wantErr error
+	}{
+		{"valid record", 1, nil},
+		{"no record found", 1000, sql.ErrNoRows},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := m.Get(tt.id)
+			if err != nil {
+				if fmt.Sprintf("%T", err) != fmt.Sprintf("%T", tt.wantErr) {
+					t.Errorf("Got %s; want %s", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
 
 func TestStoreModel_List(t *testing.T) {
 	if testing.Short() {
@@ -53,7 +120,39 @@ func TestStoreModel_List(t *testing.T) {
 }
 
 func TestStoreModel_ActivateFlavor(t *testing.T) {
+	db, teardown := newTestDB(t)
+	defer teardown()
 
+	s := StoreModel{db}
+	f := FlavorModel{db}
+
+	store, err := s.Get(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	flavor, err := f.Get(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = s.ActivateFlavor(store.ID, flavor.ID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activeFlavors, err := s.GetActiveFlavors(store.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(activeFlavors) != 1 {
+		t.Errorf("Want 1; Got %d", len(activeFlavors))
+	}
+
+	err = s.ActivateFlavor(store.ID, flavor.ID, 1)
+	if err != nil && err != models.ErrDuplicateFlavor {
+		t.Errorf("Want models.ErrDuplicateFlavor; Got %T", err)
+	}
 }
 
 func TestStoreModel_GetActiveFlavors(t *testing.T) {
@@ -74,6 +173,7 @@ func TestStoreModel_GetActiveFlavors(t *testing.T) {
 		{1, 2, 2, true},
 	}
 
+	// Insert some relationship data to test
 	for _, entry := range flavorStoreEntries {
 		stmt := `INSERT INTO flavor_store 
 			(flavor_id, store_id, position, is_active, activated, deactivated) VALUES (?, ?, ?, ?, ?, ?)`
@@ -103,7 +203,7 @@ func TestStoreModel_GetActiveFlavors(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		storeID      int
+		storeID      int64
 		wantRowCount int
 		wantError    error
 	}{

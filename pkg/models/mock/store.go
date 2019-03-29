@@ -92,16 +92,16 @@ func (m *StoreModel) Count() int {
 
 // ActivateFlavor adds an active Flavor to the indicated Position at a Store, deactivating the Flavor
 // currently occupying that Position.
-func (m *StoreModel) ActivateFlavor(storeID int, flavorID int, position int) error {
+func (m *StoreModel) ActivateFlavor(storeID int64, flavorID int64, position int) error {
 	return nil
 }
 
 // DeactivateFlavor deactivates the Flavor identified by its ID at the indicated Store.
-func (m *StoreModel) DeactivateFlavor(storeID int, flavorID int) error {
+func (m *StoreModel) DeactivateFlavor(storeID int64, flavorID int64) error {
 	return nil
 }
 
 // DeactivateFlavorAtPosition deactivates the Flavor in the indicated Position at the indicated Store.
-func (m *StoreModel) DeactivateFlavorAtPosition(storeID int, position int) error {
+func (m *StoreModel) DeactivateFlavorAtPosition(storeID int64, position int) error {
 	return nil
 }
