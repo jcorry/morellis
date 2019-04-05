@@ -151,6 +151,7 @@ func TestStoreModel_ActivateFlavor(t *testing.T) {
 
 	err = s.ActivateFlavor(store.ID, flavor.ID, 1)
 	if err != nil && err != models.ErrDuplicateFlavor {
+		t.Errorf("Error: %v", err)
 		t.Errorf("Want models.ErrDuplicateFlavor; Got %T", err)
 	}
 }

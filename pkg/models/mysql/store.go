@@ -173,7 +173,7 @@ func (s *StoreModel) ActivateFlavor(storeID int64, flavorID int64, position int)
 	defer tx.Rollback()
 
 	stmt := `UPDATE flavor_store 
-				SET is_active = 0, deactivated = CURRENT_TIMESTAMP 
+				SET is_active = NULL, deactivated = CURRENT_TIMESTAMP 
 			  WHERE store_id = ?
 				AND position = ?`
 
@@ -188,6 +188,7 @@ func (s *StoreModel) ActivateFlavor(storeID int64, flavorID int64, position int)
 
 	_, err = s.DB.Exec(stmt, storeID, flavorID, position)
 	if mysqlErr, ok := err.(*mysql.MySQLError); ok {
+		// If line 175 executed, this should never happen
 		if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_flavor_store_is_active_store_id_position_id") {
 			tx.Rollback()
 			return models.ErrDuplicateFlavor
