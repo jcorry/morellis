@@ -254,7 +254,7 @@ func TestActivateStoreFlavor(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			code, _, body := ts.request(t, "post", urlPath, bytes.NewBuffer(reqBytes))
+			code, _, body := ts.request(t, "post", urlPath, bytes.NewBuffer(reqBytes), true)
 
 			if code != tt.wantCode {
 				t.Errorf("Want %d; Got %d", tt.wantCode, code)
@@ -285,7 +285,7 @@ func TestDeactivateStoreFlavor(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			urlPath := fmt.Sprintf("/api/v1/store/%d/flavor/%d", tt.storeID, tt.flavorID)
-			code, _, _ := ts.request(t, "delete", urlPath, bytes.NewBuffer(nil))
+			code, _, _ := ts.request(t, "delete", urlPath, bytes.NewBuffer(nil), true)
 
 			if code != tt.wantCode {
 				t.Errorf("Want %d; Got %d", tt.wantCode, code)
