@@ -15,6 +15,11 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+type Claims struct {
+	UUID string `json:"uuid"`
+	jwt.StandardClaims
+}
+
 var (
 	verifyKey *rsa.PublicKey
 	signKey   *rsa.PrivateKey
@@ -29,11 +34,6 @@ func init() {
 }
 
 func generateToken(user *models.User) (string, error) {
-	type Claims struct {
-		UUID string `json:"uuid"`
-		jwt.StandardClaims
-	}
-
 	claims := Claims{
 		user.UUID.String(),
 		jwt.StandardClaims{
@@ -51,6 +51,26 @@ func generateToken(user *models.User) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func verifyToken(tokenString string) (*Claims, error) {
+	c := &Claims{}
+	token, err := jwt.ParseWithClaims(tokenString, c, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("No RSA signing method found")
+		}
+		return verifyKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if token.Valid {
+		return c, err
+	}
+
+	return nil, fmt.Errorf("Unable to verify token")
 }
 
 func (app *application) badRequest(w http.ResponseWriter, err error) {
