@@ -26,7 +26,8 @@ func TestCreateAuth(t *testing.T) {
 		wantBody []byte
 		wantCode int
 	}{
-		{"Valid credentials", "valid@example.com", "password", []byte(`{"Token":`), 200},
+		{"Valid credentials should have token", "valid@example.com", "password", []byte(`{"token":`), 200},
+		{"Valid credentials should expire", "valid@example.com", "password", []byte(`"expires":`), 200},
 		{"Invalid credentials", "noauth@example.com", "password", []byte("Not Found"), 404},
 	}
 
@@ -42,7 +43,7 @@ func TestCreateAuth(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			code, _, body := ts.request(t, "post", "/api/v1/auth", bytes.NewBuffer(reqBytes))
+			code, _, body := ts.request(t, "post", "/api/v1/auth", bytes.NewBuffer(reqBytes), false)
 
 			if code != tt.wantCode {
 				t.Errorf("want %d; got %d", tt.wantCode, code)
@@ -53,7 +54,6 @@ func TestCreateAuth(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestCreateUser(t *testing.T) {
@@ -90,7 +90,7 @@ func TestCreateUser(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			code, _, body := ts.request(t, "post", "/api/v1/user", bytes.NewBuffer(reqBytes))
+			code, _, body := ts.request(t, "post", "/api/v1/user", bytes.NewBuffer(reqBytes), true)
 
 			if code != tt.wantCode {
 				t.Errorf("want %d; got %d", tt.wantCode, code)
@@ -140,7 +140,7 @@ func TestPartialUpdateUser(t *testing.T) {
 			}
 
 			urlPath := fmt.Sprintf("/api/v1/user/%d", tt.id)
-			code, _, body := ts.request(t, "patch", urlPath, bytes.NewBuffer(reqBytes))
+			code, _, body := ts.request(t, "patch", urlPath, bytes.NewBuffer(reqBytes), true)
 
 			if code != tt.wantCode {
 				t.Errorf("want %d; got %d", tt.wantCode, code)
@@ -177,7 +177,7 @@ func TestGetUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			urlPath := fmt.Sprintf("/api/v1/user/%s", tt.id)
 
-			code, _, body := ts.get(t, urlPath)
+			code, _, body := ts.request(t, "get", urlPath, bytes.NewBuffer(nil), true)
 
 			if code != tt.wantCode {
 				t.Errorf("want %d; got %d", tt.wantCode, code)
@@ -208,7 +208,7 @@ func TestGetStore(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			urlPath := fmt.Sprintf("/api/v1/store/%d", tt.id)
-			code, _, body := ts.get(t, urlPath)
+			code, _, body := ts.request(t, "get", urlPath, bytes.NewBuffer(nil), true)
 
 			if code != tt.wantCode {
 				t.Errorf("want %d; got %d", tt.wantCode, code)
@@ -262,7 +262,7 @@ func TestCreateFlavor(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			code, _, body := ts.request(t, "post", "/api/v1/flavor", bytes.NewBuffer(reqBytes))
+			code, _, body := ts.request(t, "post", "/api/v1/flavor", bytes.NewBuffer(reqBytes), true)
 
 			if code != tt.wantCode {
 				t.Errorf("want %d; got %d", tt.wantCode, code)
@@ -299,7 +299,7 @@ func TestGetFlavor(t *testing.T) {
 				wantBody = "Not Found"
 			}
 
-			code, _, body := ts.get(t, urlPath)
+			code, _, body := ts.request(t, "get", urlPath, bytes.NewBuffer(nil), true)
 
 			if code != tt.wantCode {
 				t.Errorf("want %d; got %d", tt.wantCode, code)
@@ -318,7 +318,7 @@ func TestListFlavor(t *testing.T) {
 	defer ts.Close()
 
 	urlPath := "/api/v1/flavor"
-	code, _, body := ts.get(t, urlPath)
+	code, _, body := ts.request(t, "get", urlPath, bytes.NewBuffer(nil), true)
 
 	if code != 200 {
 		t.Errorf("want %d, got %d", 200, code)
@@ -337,7 +337,7 @@ func TestListStore(t *testing.T) {
 	defer ts.Close()
 
 	urlPath := "/api/v1/store"
-	code, _, body := ts.get(t, urlPath)
+	code, _, body := ts.request(t, "get", urlPath, bytes.NewBuffer(nil), true)
 
 	if code != 200 {
 		t.Errorf("want %d, got %d", 200, code)

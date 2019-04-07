@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jcorry/morellis/pkg/models"
@@ -33,11 +34,22 @@ func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	claims, err := verifyToken(token)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	exp := time.Unix(claims.ExpiresAt, 0)
+
 	response := struct {
-		Token string
+		Token   string    `json:"token"`
+		Expires time.Time `json:"expires"`
 	}{
 		token,
+		exp,
 	}
+
 	app.jsonResponse(w, response)
 }
 
@@ -409,8 +421,6 @@ func (app *application) listFlavor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sb := params.Get("sortBy")
-
-	//sd := params.Get("sortDir")
 
 	flavors, err := app.flavors.List(limit, offset, sb)
 
