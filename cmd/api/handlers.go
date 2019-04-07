@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -376,10 +376,33 @@ func (app *application) activateStoreFlavor(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if req.FlavorID != int64(flavorID) || req.StoreID != int64(storeID) {
-		app.serverError(w, errors.New("Request body must match URL params"))
+	if req.FlavorID != int64(flavorID) {
+		app.errorLog.Output(2, fmt.Sprintf("Request body flavor_id (%d) must match URL query :flavorID (%d)", req.FlavorID, flavorID))
+		app.clientError(w, http.StatusBadRequest)
+		return
 	}
 
+	if req.StoreID != int64(storeID) {
+		app.errorLog.Output(2, fmt.Sprintf("Request body store_id (%d) must match URL query :storeID (%d)", req.StoreID, storeID))
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Is it even an available Flavor?
+	_, err = app.flavors.Get(flavorID)
+	if err == models.ErrNoRecord {
+		app.clientError(w, http.StatusNotFound)
+		return
+	}
+
+	// Is it a valid store?
+	_, err = app.stores.Get(storeID)
+	if err == models.ErrNoRecord {
+		app.clientError(w, http.StatusNotFound)
+		return
+	}
+
+	// Make the association link
 	err = app.stores.ActivateFlavor(req.StoreID, req.FlavorID, req.Position)
 	if err != nil {
 		app.serverError(w, err)
@@ -401,6 +424,12 @@ func (app *application) deactivateStoreFlavor(w http.ResponseWriter, r *http.Req
 	if err != nil || flavorID < 1 {
 		app.notFound(w)
 		return
+	}
+
+	_, err = app.stores.DeactivateFlavor(int64(storeID), int64(flavorID))
+	if err != nil {
+		app.errorLog.Output(2, err.Error())
+		app.clientError(w, http.StatusBadRequest)
 	}
 
 	app.noContentResponse(w)

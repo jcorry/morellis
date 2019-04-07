@@ -224,3 +224,77 @@ func TestStoreModel_GetActiveFlavors(t *testing.T) {
 		})
 	}
 }
+
+func TestStoreModel_DeactivateFlavor(t *testing.T) {
+	db, teardown := newTestDB(t)
+	defer teardown()
+
+	s := StoreModel{db}
+
+	tests := []struct {
+		name     string
+		storeID  int64
+		flavorID int64
+		wantErr  error
+		wantRes  bool
+	}{
+		{"Deactivate a non existent row", 1, 1, nil, false},
+		{"Deactivate an existing row", 1, 1, nil, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantRes {
+				// If we want a true result, we have to seed a row...
+				err := s.ActivateFlavor(tt.storeID, tt.flavorID, 1)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			res, err := s.DeactivateFlavor(tt.storeID, tt.flavorID)
+			if err != tt.wantErr {
+				t.Errorf("Want err %s, Got err %s", tt.wantErr, err)
+			}
+			if res != tt.wantRes {
+				t.Errorf("Want result %v, Got result %v", tt.wantRes, res)
+			}
+		})
+	}
+}
+
+func TestStoreModel_DeactivateFlavorAtPosition(t *testing.T) {
+	db, teardown := newTestDB(t)
+	defer teardown()
+
+	s := StoreModel{db}
+
+	tests := []struct {
+		name     string
+		storeID  int64
+		position int
+		wantErr  error
+		wantRes  bool
+	}{
+		{"Deactivate a non existent row", 1, 1, nil, false},
+		{"Deactivate an existing row", 1, 1, nil, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantRes {
+				// If we want a true result, we have to seed a row...
+				err := s.ActivateFlavor(tt.storeID, 1, tt.position)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			res, err := s.DeactivateFlavorAtPosition(tt.storeID, tt.position)
+			if err != tt.wantErr {
+				t.Errorf("Want err %s, Got err %s", tt.wantErr, err)
+			}
+			if res != tt.wantRes {
+				t.Errorf("Want result %v, Got result %v", tt.wantRes, res)
+			}
+		})
+	}
+}

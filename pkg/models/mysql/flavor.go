@@ -25,9 +25,12 @@ func (m *FlavorModel) Get(id int) (*models.Flavor, error) {
 
 	rows, err := m.DB.Query(stmt, id)
 
-	if err != nil {
+	if err == sql.ErrNoRows {
+		return nil, models.ErrNoRecord
+	} else if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	for rows.Next() {

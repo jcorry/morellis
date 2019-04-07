@@ -200,13 +200,56 @@ func (s *StoreModel) ActivateFlavor(storeID int64, flavorID int64, position int)
 }
 
 // DeactivateFlavor deactivates the Flavor identified by its ID at the indicated Store.
-func (s *StoreModel) DeactivateFlavor(storeID int64, flavorID int64) error {
-	return nil
+// note that if there are more than one instance of the flavor active at the store, all
+// instances will be deactivated. To deactivate a single instance, use `DeactivateFlavorAtPosition`
+func (s *StoreModel) DeactivateFlavor(storeID int64, flavorID int64) (bool, error) {
+	stmt := `UPDATE flavor_store
+				SET is_active = NULL, deactivated = CURRENT_TIMESTAMP
+			  WHERE store_id = ?
+				AND flavor_id = ?`
+	res, err := s.DB.Exec(stmt, storeID, flavorID)
+	if err != nil {
+		return false, err
+	}
+
+	a, err := res.RowsAffected()
+
+	if err != nil {
+		return false, err
+	}
+
+	if a < 1 {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 // DeactivateFlavorAtPosition deactivates the Flavor in the indicated Position at the indicated Store.
-func (s *StoreModel) DeactivateFlavorAtPosition(storeID int64, position int) error {
-	return nil
+// returns false if no rows were updated, true if rows were updated, error otherwise
+func (s *StoreModel) DeactivateFlavorAtPosition(storeID int64, position int) (bool, error) {
+	stmt := `UPDATE flavor_store
+				SET is_active = NULL, deactivated = CURRENT_TIMESTAMP
+			  WHERE store_id = ?
+			    AND position = ?`
+
+	res, err := s.DB.Exec(stmt, storeID, position)
+
+	if err != nil {
+		return false, err
+	}
+
+	a, err := res.RowsAffected()
+
+	if err != nil {
+		return false, err
+	}
+
+	if a < 1 {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 // GetActiveFlavors returns a collection of the currently active flavors at a store.

@@ -221,6 +221,79 @@ func TestGetStore(t *testing.T) {
 	}
 }
 
+func TestActivateStoreFlavor(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	tests := []struct {
+		name      string
+		qStoreID  int
+		qFlavorID int
+		bStoreID  int
+		bFlavorID int
+		position  int
+		wantCode  int
+		wantBody  []byte
+	}{
+		{"Successful Activation", 1, 2, 1, 2, 3, 200, []byte("")},
+		{"Duplicate Flavor", 1, 1, 1, 1, 3, http.StatusInternalServerError, []byte("")},
+		{"Mismatched Store IDs", 1, 1, 2, 1, 3, http.StatusBadRequest, []byte("")},
+		{"Mismatched Flavor IDs", 1, 1, 1, 2, 3, http.StatusBadRequest, []byte("")},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			urlPath := fmt.Sprintf("/api/v1/store/%d/flavor/%d", tt.qStoreID, tt.qFlavorID)
+			reqBody := map[string]interface{}{
+				"position":  tt.position,
+				"store_id":  tt.bStoreID,
+				"flavor_id": tt.bFlavorID,
+			}
+			reqBytes, err := json.Marshal(reqBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+			code, _, body := ts.request(t, "post", urlPath, bytes.NewBuffer(reqBytes))
+
+			if code != tt.wantCode {
+				t.Errorf("Want %d; Got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+		})
+	}
+}
+
+func TestDeactivateStoreFlavor(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	tests := []struct {
+		name     string
+		storeID  int
+		flavorID int
+		wantCode int
+	}{
+		{"Successful deactivation", 1, 1, 204},
+		{"Deactivation: no rows affected", 3, 3, 204},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			urlPath := fmt.Sprintf("/api/v1/store/%d/flavor/%d", tt.storeID, tt.flavorID)
+			code, _, _ := ts.request(t, "delete", urlPath, bytes.NewBuffer(nil))
+
+			if code != tt.wantCode {
+				t.Errorf("Want %d; Got %d", tt.wantCode, code)
+			}
+		})
+	}
+}
+
 func TestCreateFlavor(t *testing.T) {
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())
