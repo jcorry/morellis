@@ -139,7 +139,7 @@ func (s *StoreModel) Update(ID int, name string, phone string, email string, url
 		lat = ?,
 		lng = ?,
 		updated = ?
-	WHERE ID = ?`
+	WHERE id = ?`
 
 	_, err := s.DB.Exec(stmt, name, phone, email, url, address, city, state, zip, lat, lng, updated, ID)
 	if err != nil {
