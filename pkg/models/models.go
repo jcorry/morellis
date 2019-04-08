@@ -9,9 +9,10 @@ import (
 )
 
 var (
-	ErrNoRecord           = errors.New("models: no matching record(s) found")
-	ErrInvalidCredentials = errors.New("models: invalid credentials")
-	ErrDuplicateEmail     = errors.New("models: duplicate email")
+	ErrNoRecord           = errors.New("models: No matching record(s) found")
+	ErrInvalidCredentials = errors.New("models: Invalid credentials")
+	ErrDuplicateEmail     = errors.New("models: Duplicate email")
+	ErrDuplicateFlavor    = errors.New("models: Only one flavor may be active at a position at a time.")
 )
 
 // Credentials are used to authenticate with the API

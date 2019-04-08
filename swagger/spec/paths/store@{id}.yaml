@@ -2,7 +2,7 @@ get:
   tags:
     - Store
   summary: Get store by store ID
-  description: |
+  description: |-
     Lookup a single store by its unique ID.
   operationId: getStoreByID
   parameters:

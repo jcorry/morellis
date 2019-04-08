@@ -30,9 +30,12 @@ type application struct {
 	stores interface {
 		Insert(string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
 		Update(int, string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
-		Get(int) (*models.Store, error)
+		Get(storeID int) (*models.Store, error)
 		List(int, int, string) ([]*models.Store, error)
 		Count() int
+		ActivateFlavor(storeID int64, flavorID int64, position int) error
+		DeactivateFlavor(storeID int64, flavorID int64) (bool, error)
+		DeactivateFlavorAtPosition(storeID int64, position int) (bool, error)
 	}
 	flavors interface {
 		Count() int

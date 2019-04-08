@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -355,6 +356,94 @@ func (app *application) getStore(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.jsonResponse(w, store)
+}
+
+func (app *application) activateStoreFlavor(w http.ResponseWriter, r *http.Request) {
+	storeID, err := strconv.Atoi(r.URL.Query().Get(":storeID"))
+	if err != nil || storeID < 1 {
+		app.notFound(w)
+		return
+	}
+
+	flavorID, err := strconv.Atoi(r.URL.Query().Get(":flavorID"))
+	if err != nil || flavorID < 1 {
+		app.notFound(w)
+		return
+	}
+
+	type activationRequestBody struct {
+		StoreID  int64     `json:"store_id"`
+		FlavorID int64     `json:"flavor_id"`
+		Position int       `json:"position"`
+		Created  time.Time `json:"created,omitempty"`
+	}
+
+	var req activationRequestBody
+
+	err = json.NewDecoder(r.Body).Decode(&req)
+
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	if req.FlavorID != int64(flavorID) {
+		app.errorLog.Output(2, fmt.Sprintf("Request body flavor_id (%d) must match URL query :flavorID (%d)", req.FlavorID, flavorID))
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	if req.StoreID != int64(storeID) {
+		app.errorLog.Output(2, fmt.Sprintf("Request body store_id (%d) must match URL query :storeID (%d)", req.StoreID, storeID))
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Is it even an available Flavor?
+	_, err = app.flavors.Get(flavorID)
+	if err == models.ErrNoRecord {
+		app.clientError(w, http.StatusNotFound)
+		return
+	}
+
+	// Is it a valid store?
+	_, err = app.stores.Get(storeID)
+	if err == models.ErrNoRecord {
+		app.clientError(w, http.StatusNotFound)
+		return
+	}
+
+	// Make the association link
+	err = app.stores.ActivateFlavor(req.StoreID, req.FlavorID, req.Position)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	req.Created = time.Now()
+
+	app.jsonResponse(w, req)
+}
+
+func (app *application) deactivateStoreFlavor(w http.ResponseWriter, r *http.Request) {
+	storeID, err := strconv.Atoi(r.URL.Query().Get(":storeID"))
+	if err != nil || storeID < 1 {
+		app.notFound(w)
+		return
+	}
+
+	flavorID, err := strconv.Atoi(r.URL.Query().Get(":flavorID"))
+	if err != nil || flavorID < 1 {
+		app.notFound(w)
+		return
+	}
+
+	_, err = app.stores.DeactivateFlavor(int64(storeID), int64(flavorID))
+	if err != nil {
+		app.errorLog.Output(2, err.Error())
+		app.clientError(w, http.StatusBadRequest)
+	}
+
+	app.noContentResponse(w)
 }
 
 // Flavor handlers

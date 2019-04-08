@@ -1,0 +1,66 @@
+post:
+  tags:
+    - Flavor
+    - Store
+  summary: Activates a flavor at a store
+  description: Make a Flavor presently active at a Store.
+  operationId: activateFlavorByStore
+  parameters:
+    - name: storeId
+      in: path
+      description: The ID of the Store at which the Flavor is being activated.
+      required: true
+      schema:
+        type: integer
+    - name: flavorId
+      in: path
+      description: The ID of the Flavor being activated.
+      required: true
+      schema:
+        type: integer
+  security:
+    - bearer_auth:
+        - 'write:stores'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/StoreFlavor'
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StoreFlavor'
+delete:
+  tags:
+    - Flavor
+    - Store
+  summary: Deactivates the flavor at a store.
+  description: Make a Flavor presently inactive at a Store.
+  operationId: deactivateFlavorByStore
+  parameters:
+    - name: storeId
+      in: path
+      description: |-
+        The ID of the Store at which the Flavor is being deactivated.
+      required: true
+      schema:
+        type: integer
+    - name: flavorId
+      in: path
+      description: The ID of the Flavor being deactivated.
+      required: true
+      schema:
+        type: integer
+  security:
+    - bearer_auth:
+        - 'write:stores'
+  responses:
+    '204':
+      description: No Content
+    '400':
+      description: Invalid Store or Flavor supplied
+    '404':
+      description: Store or Flavor not found

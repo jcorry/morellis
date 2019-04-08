@@ -25,6 +25,8 @@ func (app *application) routes() http.Handler {
 	mux.Patch("/api/v1/store/:id", app.jwtVerification(http.HandlerFunc(app.partialUpdateStore)))
 	mux.Put("/api/v1/store/:id", app.jwtVerification(http.HandlerFunc(app.updateStore)))
 	mux.Get("/api/v1/store/:id", app.jwtVerification(http.HandlerFunc(app.getStore)))
+	mux.Post("/api/v1/store/:storeID/flavor/:flavorID", app.jwtVerification(http.HandlerFunc(app.activateStoreFlavor)))
+	mux.Del("/api/v1/store/:storeID/flavor/:flavorID", app.jwtVerification(http.HandlerFunc(app.deactivateStoreFlavor)))
 	// delete store
 
 	// Flavor routes
