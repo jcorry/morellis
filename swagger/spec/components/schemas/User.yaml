@@ -24,5 +24,11 @@ properties:
     description: The current status of the user in the system
     type: string
     example: "verified"
+  permissions:
+    description: Permissions represent the read/write privileges the User has in the API
+    type: array
+    items:
+      type: string
+      example: "user:read"
   created:
     $ref: '#/components/schemas/Created'

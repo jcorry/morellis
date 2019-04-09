@@ -48,34 +48,22 @@ func (m *UserModel) Update(user *models.User) (*models.User, error) {
 	}
 }
 
-func (m *UserModel) Get(id int) (*models.User, error) {
-	if id == 0 {
+func (m *UserModel) Get(ID int) (*models.User, error) {
+	if ID == 0 {
 		return nil, models.ErrNoRecord
 	}
 
-	mockUser.ID = int64(id)
+	mockUser.ID = int64(ID)
 	return mockUser, nil
 }
 
-func (m *UserModel) GetByUUID(id uuid.UUID) (*models.User, error) {
-	if id.String() == "" {
+func (m *UserModel) GetByUUID(ID uuid.UUID) (*models.User, error) {
+	if ID.String() == "" {
 		return nil, models.ErrNoRecord
 	}
 
-	mockUser.UUID = id
+	mockUser.UUID = ID
 	return mockUser, nil
-}
-
-func (m *UserModel) List(limit int, offset int, order string) ([]*models.User, error) {
-	return nil, nil
-}
-
-func (m *UserModel) Delete(id int) (bool, error) {
-	return true, nil
-}
-
-func (m *UserModel) Count() int {
-	return 4
 }
 
 func (m *UserModel) GetByCredentials(credentials models.Credentials) (*models.User, error) {
@@ -91,4 +79,30 @@ func (m *UserModel) GetByCredentials(credentials models.Credentials) (*models.Us
 	}
 
 	return mockUser, nil
+}
+
+func (m *UserModel) List(limit int, offset int, order string) ([]*models.User, error) {
+	return nil, nil
+}
+
+func (m *UserModel) Delete(ID int) (bool, error) {
+	return true, nil
+}
+
+func (m *UserModel) Count() int {
+	return 4
+}
+
+func (u *UserModel) GetPermissions(ID int) ([]models.Permission, error) {
+	return []models.Permission{}, nil
+}
+
+// AddPermission adds a Permission to a User
+func (u *UserModel) AddPermission(userID int, p models.Permission) (bool, error) {
+	return true, nil
+}
+
+// RemovePermission removes a Permission from a User
+func (u *UserModel) RemovePermission(userID int, p models.Permission) (bool, error) {
+	return true, nil
 }

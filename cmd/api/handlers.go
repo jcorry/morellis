@@ -22,10 +22,15 @@ func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	user, err := app.users.GetByCredentials(creds)
-
 	if err != nil {
 		app.errorLog.Output(2, err.Error())
 		app.clientError(w, http.StatusNotFound)
+		return
+	}
+
+	user.Permissions, err = app.users.GetPermissions(int(user.ID))
+	if err != nil {
+		app.serverError(w, err)
 		return
 	}
 

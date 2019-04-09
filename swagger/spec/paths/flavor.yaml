@@ -18,7 +18,7 @@ get:
         type: integer
   security:
     - bearer_auth:
-      - 'read:flavors'
+      - 'flavor:read'
   responses:
     '200':
       description: Success
@@ -53,7 +53,7 @@ post:
     required: true
   security:
     - bearer_auth:
-      - 'write:flavors'
+      - 'flavor:write'
   responses:
     '200':
       description: Success

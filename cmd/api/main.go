@@ -22,10 +22,11 @@ type application struct {
 		Update(*models.User) (*models.User, error)
 		Get(int) (*models.User, error)
 		GetByUUID(uuid.UUID) (*models.User, error)
+		GetByCredentials(models.Credentials) (*models.User, error)
 		List(int, int, string) ([]*models.User, error)
 		Delete(int) (bool, error)
 		Count() int
-		GetByCredentials(models.Credentials) (*models.User, error)
+		GetPermissions(ID int) ([]models.Permission, error)
 	}
 	stores interface {
 		Insert(string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)

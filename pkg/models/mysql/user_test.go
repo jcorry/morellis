@@ -138,7 +138,7 @@ func TestUserModel_List(t *testing.T) {
 		}
 		user.UUID = uid
 		toD = append(toD, user.ID)
-		time.Sleep(time.Second)
+		time.Sleep(time.Millisecond * 100)
 	}
 
 	tests := []struct {
@@ -263,4 +263,151 @@ func TestUserModel_GetByCredentials(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestUserModel_GetPermissions(t *testing.T) {
+	if testing.Short() {
+		t.Skip("mysql: skipping integration test")
+	}
+
+	db, teardown := newTestDB(t)
+	defer teardown()
+
+	m := UserModel{db}
+
+	tests := []struct {
+		name     string
+		minCount int
+		wantErr  error
+	}{
+		{"With Permissions", 1, nil},
+		{"No Permissions", 0, nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			user := &models.User{
+				ID: 1,
+			}
+
+			if tt.minCount > 0 {
+				stmt := `INSERT INTO permission_user (user_id, permission_id)
+					SELECT ?, id FROM permission WHERE name LIKE "self%"`
+
+				_, err := m.DB.Exec(stmt, user.ID)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+
+			// Setup complete...test it!
+			permissions, err := m.GetPermissions(int(user.ID))
+			if err != tt.wantErr {
+				t.Errorf("Want err %v; Got err %v", tt.wantErr, err)
+			}
+
+			if len(permissions) < tt.minCount {
+				t.Errorf("Want at least %d items; Got %d items", tt.minCount, len(permissions))
+			}
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			stmt := `DELETE FROM permission_user WHERE user_id = ?`
+
+			_, err = m.DB.Exec(stmt, user.ID)
+
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
+func TestUserModel_AddPermission(t *testing.T) {
+	if testing.Short() {
+		t.Skip("mysql: skipping integration test")
+	}
+
+	db, teardown := newTestDB(t)
+	defer teardown()
+
+	m := UserModel{db}
+
+	tests := []struct {
+		name    string
+		userID  int
+		perm    models.Permission
+		wantErr error
+		wantRes bool
+	}{
+		{"Valid Permission", 1, models.Permission("flavor:read"), nil, true},
+		{"Invalid Permission", 1, models.Permission("foo:write"), models.ErrInvalidPermission, false},
+		{"Invalid User", 100, models.Permission("user:read"), models.ErrInvalidUser, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := m.AddPermission(tt.userID, tt.perm)
+			if err != tt.wantErr {
+				t.Errorf("Want err %v; Got err %v", tt.wantErr, err)
+			}
+
+			if res != tt.wantRes {
+				t.Errorf("Want res %v; Got res %v", tt.wantRes, res)
+			}
+		})
+	}
+}
+
+func TestUserModel_RemovePermission(t *testing.T) {
+	if testing.Short() {
+		t.Skip("mysql: skipping integration test")
+	}
+
+	db, teardown := newTestDB(t)
+	defer teardown()
+
+	m := UserModel{db}
+
+	tests := []struct {
+		name    string
+		userID  int
+		perm    models.Permission
+		wantRes bool
+		wantErr error
+	}{
+		{"Valid Permission", 1, models.Permission("user:read"), true, nil},
+		{"Invalid Permission", 1, models.Permission("foo:write"), false, nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up by adding the permission
+			if m.checkValidPermission(tt.perm) {
+				res, err := m.AddPermission(tt.userID, tt.perm)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !res {
+					t.Fatalf("Permission %v was not inserted", tt.perm)
+				}
+			}
+
+			// Setup complete! Test it out!
+			res, err := m.RemovePermission(tt.userID, tt.perm)
+			if err != tt.wantErr {
+				t.Errorf("Want err %v; Got err %v", tt.wantErr, err)
+			}
+
+			if res != tt.wantRes {
+				t.Errorf("Want res %v; Got res %v", tt.wantRes, res)
+			}
+		})
+	}
+}
+
+func TestUserModel_checkValidPermission(t *testing.T) {
+	// @TODO write tests for checkValidPermission
 }

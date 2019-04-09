@@ -16,7 +16,8 @@ import (
 )
 
 type Claims struct {
-	UUID string `json:"uuid"`
+	UUID        string              `json:"uuid"`
+	Permissions []models.Permission `json:"permissions"`
 	jwt.StandardClaims
 }
 
@@ -36,6 +37,7 @@ func init() {
 func generateToken(user *models.User) (string, error) {
 	claims := Claims{
 		user.UUID.String(),
+		user.Permissions,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 12).Unix(),
 			Issuer:    "morellisicecream.com",

@@ -14,8 +14,7 @@ get:
         type: integer
   security:
     - bearer_auth:
-        - 'read:flavors'
-    - api_key: []
+        - 'flavor:read'
   responses:
     '200':
       description: Success
@@ -49,7 +48,7 @@ patch:
         type: integer
   security:
     - bearer_auth:
-        - 'write:flavors'
+        - 'flavor:write'
   requestBody:
     content:
       application/json:
@@ -79,7 +78,7 @@ put:
         type: integer
   security:
     - bearer_auth:
-      - 'write:flavors'
+      - 'flavor:write'
   requestBody:
     content:
       application/json:
@@ -109,7 +108,7 @@ delete:
         type: integer
   security:
     - bearer_auth:
-        - 'write:flavors'
+       - 'flavor:write'
   responses:
     '204':
       description: No Content

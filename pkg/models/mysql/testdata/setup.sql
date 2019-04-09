@@ -1,6 +1,6 @@
 
 CREATE TABLE `user` (
-    id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    id INTEGER UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
     uuid VARCHAR(36) NOT NULL,
     first_name VARCHAR(24) NULL,
     last_name VARCHAR(24) NULL,
@@ -40,6 +40,37 @@ VALUES (
     '$2a$12$3/ZmSDnMwcfRcxgahkkNrOzyOv28HXbEu1vSVdkIbFId.AKJryrDC', -- 'password'
     '2019-02-24 17:25:25'
 );
+
+-- Create syntax for TABLE 'permission'
+CREATE TABLE `permission` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `name` varchar(32) NOT NULL DEFAULT '',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `permission` (`id`, `name`)
+VALUES
+(1, 'store:read'),
+(2, 'store:write'),
+(3, 'user:read'),
+(4, 'user:write'),
+(5, 'flavor:read'),
+(6, 'flavor:write'),
+(7, 'self:write'),
+(8, 'self:read');
+
+-- Create syntax for TABLE 'permission_user'
+CREATE TABLE `permission_user` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `user_id` int(11) unsigned NOT NULL,
+    `permission_id` int(11) unsigned NOT NULL,
+    `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_permission_user_permission_id_user_id` (`user_id`,`permission_id`),
+    KEY `idx_permission_user_user_id` (`user_id`),
+    CONSTRAINT `fk_user_permission_permission_id_permission_id` FOREIGN KEY (`id`) REFERENCES `permission` (`id`),
+    CONSTRAINT `fk_user_permission_user_id_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
 -- CREATE store table
 CREATE TABLE `store` (

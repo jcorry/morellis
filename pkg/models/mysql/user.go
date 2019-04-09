@@ -256,3 +256,120 @@ func (u *UserModel) Count() int {
 
 	return count
 }
+
+func (u *UserModel) GetPermissions(ID int) ([]models.Permission, error) {
+	var permissions []models.Permission
+
+	stmt := `SELECT p.name
+			   FROM permission AS p
+		  LEFT JOIN permission_user AS pu ON pu.permission_id = p.id
+		  LEFT JOIN user AS u ON pu.user_id = u.id
+			  WHERE u.id = ?
+		   ORDER BY name DESC`
+
+	rows, err := u.DB.Query(stmt, ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var p models.Permission
+		err = rows.Scan(&p)
+		if err != nil {
+			return nil, err
+		}
+		permissions = append(permissions, p)
+	}
+
+	return permissions, nil
+}
+
+// AddPermission adds a Permission to a User
+func (u *UserModel) AddPermission(userID int, p models.Permission) (bool, error) {
+	if !u.checkValidPermission(p) {
+		return false, models.ErrInvalidPermission
+	}
+
+	if !u.checkValidUser(userID) {
+		return false, models.ErrInvalidUser
+	}
+
+	stmt := `INSERT INTO permission_user (user_id, permission_id, created)
+				  VALUES (?, (SELECT id FROM permission WHERE name = ?), CURRENT_TIMESTAMP)`
+
+	res, err := u.DB.Exec(stmt, userID, p)
+
+	if err != nil {
+		return false, err
+	}
+
+	a, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	if a == 0 {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+// RemovePermission removes a Permission from a User
+func (u *UserModel) RemovePermission(userID int, p models.Permission) (bool, error) {
+	stmt := `DELETE FROM permission_user 
+	  			   WHERE user_id = ? 
+				     AND permission_id = (
+						SELECT id FROM permission WHERE name = ?
+					 )`
+	res, err := u.DB.Exec(stmt, userID, p)
+
+	if err != nil {
+		return false, err
+	}
+
+	a, err := res.RowsAffected()
+
+	if err != nil {
+		return false, err
+	}
+
+	if a == 0 {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (u *UserModel) checkValidPermission(p models.Permission) bool {
+	var isValid bool
+	stmt := `SELECT IF(COUNT(*), 'true', 'false') 
+			   FROM permission 
+			  WHERE name = ?`
+
+	err := u.DB.QueryRow(stmt, p).Scan(&isValid)
+
+	if err != nil {
+		return false
+	}
+
+	return isValid
+}
+
+func (u *UserModel) checkValidUser(userID int) bool {
+	var isValid bool
+	stmt := `SELECT IF(COUNT(*), 'true', 'false')
+			   FROM user
+			  WHERE id = ? 
+		  		AND status_id = ?`
+
+	err := u.DB.QueryRow(stmt, userID, models.USER_STATUS_VERIFIED).Scan(&isValid)
+	if err != nil {
+		return false
+	}
+
+	return isValid
+}
