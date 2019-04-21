@@ -1,0 +1,18 @@
+delete:
+  tags:
+    - User
+    - Permission
+  summary: Removes a Permission from a User
+  description: |-
+    For the User identified by the userId parameter, removes the
+    Permission identified by the id parameter.
+  operationId: removeUserPermission
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: |-
+        The User Permission record identifier linking the User to the Permission.
+      type: integer
+      example: 117
+

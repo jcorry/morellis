@@ -28,7 +28,6 @@ properties:
     description: Permissions represent the read/write privileges the User has in the API
     type: array
     items:
-      type: string
-      example: "user:read"
+      $ref: '#/components/schemas/UserPermission'
   created:
     $ref: '#/components/schemas/Created'

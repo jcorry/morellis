@@ -1,0 +1,15 @@
+type: object
+properties:
+  id:
+    type: integer
+    description: |-
+      The Permission ID.
+    example: 104
+    required: false
+  value:
+    type: string
+    description: |-
+      The Permission value, these represent the read/write privileges a
+      User has in the API.
+    example: "user:read"
+    required: true

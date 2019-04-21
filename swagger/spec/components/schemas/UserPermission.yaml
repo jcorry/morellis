@@ -1,0 +1,9 @@
+type: object
+properties:
+  id:
+    description: |-
+      The UserPermission record ID. This is the ID of the association between the User and the Permission.
+    type: integer
+    example: 17
+  permission:
+    $ref: "#/components/schemas/Permission"
