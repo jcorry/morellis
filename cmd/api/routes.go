@@ -16,7 +16,7 @@ func (app *application) routes() http.Handler {
 	mux.Get("/api/v1/user/:uuid", app.jwtVerification(http.HandlerFunc(app.getUser)))
 	mux.Patch("/api/v1/user/:id", app.jwtVerification(http.HandlerFunc(app.partialUpdateUser)))
 	mux.Get("/api/v1/user", app.jwtVerification(http.HandlerFunc(app.listUser)))
-	mux.Del("/api/v1/user/:id", app.jwtVerification(http.HandlerFunc(app.deleteUser)))
+	mux.Del("/api/v1/user/:uuid", app.jwtVerification(http.HandlerFunc(app.deleteUser)))
 
 	// Store routes
 	// list stores

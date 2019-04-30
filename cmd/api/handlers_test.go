@@ -62,30 +62,42 @@ func TestCreateUser(t *testing.T) {
 	defer ts.Close()
 
 	tests := []struct {
-		name      string
-		firstName string
-		lastName  string
-		phone     string
-		email     string
-		password  string
-		wantCode  int
-		wantBody  []byte
+		name        string
+		firstName   string
+		lastName    string
+		phone       string
+		email       string
+		password    string
+		permissions []string
+		wantCode    int
+		wantBody    []byte
 	}{
-		{"Valid submission", "Bob", "McTestFace", "867-5309", "bob@testy.com", "valid-password", http.StatusOK, []byte("Bob")},
-		{"Duplicate email", "Bob", "McTestFace", "867-5309", "dupe@example.com", "valid-password", http.StatusBadRequest, []byte("Duplicate email")},
+		{"Valid submission", "Bob", "McTestFace", "867-5309", "bob@testy.com", "valid-password", []string{"user:read", "user:write"}, http.StatusOK, []byte("Bob")},
+		{"Duplicate email", "Bob", "McTestFace", "867-5309", "dupe@example.com", "valid-password", []string{"user:read", "user:write"}, http.StatusBadRequest, []byte("Duplicate email")},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			permissions := []models.UserPermission{}
+
+			for _, n := range tt.permissions {
+				p := models.Permission{Name: n}
+				up := models.UserPermission{Permission: p}
+				permissions = append(permissions, up)
+			}
+
 			reqBody := map[string]interface{}{
-				"firstName": tt.firstName,
-				"lastName":  tt.lastName,
-				"phone":     tt.phone,
-				"email":     tt.email,
-				"password":  tt.password,
+				"firstName":   tt.firstName,
+				"lastName":    tt.lastName,
+				"phone":       tt.phone,
+				"email":       tt.email,
+				"password":    tt.password,
+				"permissions": permissions,
 			}
 
 			reqBytes, err := json.Marshal(reqBody)
+			t.Log(fmt.Sprintf("%s", reqBytes))
 			if err != nil {
 				t.Fatal(err)
 			}

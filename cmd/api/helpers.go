@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"reflect"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"github.com/jcorry/morellis/pkg/models"
@@ -16,8 +18,8 @@ import (
 )
 
 type Claims struct {
-	UUID        string              `json:"uuid"`
-	Permissions []models.Permission `json:"permissions"`
+	UUID        string                  `json:"uuid"`
+	Permissions []models.UserPermission `json:"userPermissions"`
 	jwt.StandardClaims
 }
 
@@ -136,4 +138,20 @@ func fatal(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// Is target found in list
+func Contains(target interface{}, list interface{}) (bool, int) {
+	if reflect.TypeOf(list).Kind() == reflect.Slice || reflect.TypeOf(list).Kind() == reflect.Array {
+		listvalue := reflect.ValueOf(list)
+		for i := 0; i < listvalue.Len(); i++ {
+			if target == listvalue.Index(i).Interface() {
+				return true, i
+			}
+		}
+	}
+	if reflect.TypeOf(target).Kind() == reflect.String && reflect.TypeOf(list).Kind() == reflect.String {
+		return strings.Contains(list.(string), target.(string)), strings.Index(list.(string), target.(string))
+	}
+	return false, -1
 }

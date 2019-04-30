@@ -18,7 +18,7 @@ type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
 	users    interface {
-		Insert(uuid.UUID, string, string, string, string, string) (*models.User, error)
+		Insert(uid uuid.UUID, firstName string, lastName string, email string, phone string, statusID int, password string) (*models.User, error)
 		Update(*models.User) (*models.User, error)
 		Get(int) (*models.User, error)
 		GetByUUID(uuid.UUID) (*models.User, error)
@@ -26,7 +26,10 @@ type application struct {
 		List(int, int, string) ([]*models.User, error)
 		Delete(int) (bool, error)
 		Count() int
-		GetPermissions(ID int) ([]models.Permission, error)
+		GetPermissions(userID int) ([]models.UserPermission, error)
+		AddPermission(userID int, p models.Permission) (int, error)
+		RemovePermission(userPermissionID int) (bool, error)
+		RemoveAllPermissions(userID int) error
 	}
 	stores interface {
 		Insert(string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
