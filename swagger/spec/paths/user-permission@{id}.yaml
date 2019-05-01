@@ -4,8 +4,8 @@ delete:
     - Permission
   summary: Removes a Permission from a User
   description: |-
-    For the User identified by the userId parameter, removes the
-    Permission identified by the id parameter.
+    For the User Permission identified by the id parameter, removes the
+    Permission.
   operationId: removeUserPermission
   parameters:
     - name: id

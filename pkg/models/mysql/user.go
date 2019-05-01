@@ -304,7 +304,7 @@ func (u *UserModel) AddPermission(userID int, p models.Permission) (int, error) 
 	}
 
 	stmt := `INSERT INTO permission_user (user_id, permission_id, created)
-				  VALUES (?, (SELECT id FROM permission WHERE name = ?), CURRENT_TIMESTAMP)`
+				  VALUES (?, (SELECT id FROM permission WHERE name = ? LIMIT 1), CURRENT_TIMESTAMP)`
 
 	res, err := u.DB.Exec(stmt, userID, p.Name)
 

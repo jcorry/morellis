@@ -138,7 +138,7 @@ func TestUserModel_List(t *testing.T) {
 		}
 		user.UUID = uid
 		toD = append(toD, user.ID)
-		time.Sleep(time.Millisecond * 100)
+		time.Sleep(time.Millisecond * 1000)
 	}
 
 	tests := []struct {
