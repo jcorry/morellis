@@ -22,10 +22,15 @@ func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	user, err := app.users.GetByCredentials(creds)
-
 	if err != nil {
 		app.errorLog.Output(2, err.Error())
 		app.clientError(w, http.StatusNotFound)
+		return
+	}
+
+	user.Permissions, err = app.users.GetPermissions(int(user.ID))
+	if err != nil {
+		app.serverError(w, err)
 		return
 	}
 
@@ -55,20 +60,26 @@ func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
-	var user *models.User
-	err := json.NewDecoder(r.Body).Decode(&user)
+	var reqUser *models.User
+	err := json.NewDecoder(r.Body).Decode(&reqUser)
 
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 	defer r.Body.Close()
 
 	uid, err := uuid.NewRandom()
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
-	user, err = app.users.Insert(uid, user.FirstName, user.LastName, user.Email, user.Phone, user.Password)
+	var userStatus models.UserStatus
+
+	var user *models.User
+	user, err = app.users.Insert(uid, reqUser.FirstName, reqUser.LastName, reqUser.Email, reqUser.Phone, int(userStatus.GetID(reqUser.Status)), reqUser.Password)
+
 	if err != nil {
 		if err == models.ErrDuplicateEmail {
 			app.badRequest(w, err)
@@ -80,6 +91,14 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user.Password = ""
 	user.UUID = uid
+
+	for _, up := range reqUser.Permissions {
+		_, err = app.users.AddPermission(int(user.ID), up.Permission)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+	}
 
 	app.jsonResponse(w, user)
 }
@@ -137,6 +156,11 @@ func (app *application) getUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user.Permissions, err = app.users.GetPermissions(int(user.ID))
+	if err != nil {
+		app.serverError(w, err)
+	}
+
 	app.jsonResponse(w, user)
 }
 
@@ -188,22 +212,36 @@ func (app *application) listUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteUser(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
-	if err != nil || id < 1 {
+	id, err := uuid.Parse(r.URL.Query().Get(":uuid"))
+	if err != nil || id == uuid.Nil {
 		app.notFound(w)
 		return
 	}
 
-	res, err := app.users.Delete(id)
+	user, err := app.users.GetByUUID(id)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	userID := int(user.ID)
+	// Remove all of the User Permissions
+	err = app.users.RemoveAllPermissions(userID)
 	if err != nil {
 		app.serverError(w, err)
+		return
+	}
+
+	res, err := app.users.Delete(userID)
+	if err != nil {
+		app.serverError(w, err)
+		return
 	}
 
 	if res {
 		app.noContentResponse(w)
+		return
 	}
-
-	app.notFound(w)
 }
 
 // Store handlers

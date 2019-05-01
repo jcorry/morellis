@@ -1,0 +1,44 @@
+post:
+  tags:
+    - User
+    - Permission
+  summary: Adds Permissions to a user
+  description: Add a collection of Permissions to a User.
+  operationId: addUserPermissions
+  parameters:
+    - name: userId
+      in: path
+      description: The ID of the User for which the Permissions are being added.
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: "e6fc6b5a-882c-40ba-b860-b11a413ec2df"
+  security:
+    - bearer_auth:
+        - 'write:users'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/UserPermission'
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: int
+                  description: |-
+                    The identifier of the User Permission record.
+                  example: 124
+                name:
+                  type: string
+                  description: |-
+                    The name of the Permission
+                  example: 'store:read'

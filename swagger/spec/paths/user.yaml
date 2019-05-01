@@ -17,9 +17,8 @@ get:
       schema:
         type: integer
   security:
-    - main_auth:
-        - 'read:users'
-    - api_key: []
+    - bearer_auth:
+      - 'user:read'
   responses:
     '200':
       description: Success
@@ -53,9 +52,8 @@ post:
     description: User payload
     required: true
   security:
-    - main_auth:
-        - 'write:users'
-    - api_key: []
+    - bearer_auth:
+      - 'user:write'
   responses:
     '200':
       description: Success

@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.25)
 # Database: morellis
-# Generation Time: 2019-04-05 14:05:31 +0000
+# Generation Time: 2019-04-09 03:09:36 +0000
 # ************************************************************
 
 
@@ -26,7 +26,7 @@
 DROP TABLE IF EXISTS `flavor`;
 
 CREATE TABLE `flavor` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(128) NOT NULL,
   `description` text,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -52,14 +52,14 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `flavor_ingredient`;
 
 CREATE TABLE `flavor_ingredient` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `flavor_id` int(11) NOT NULL,
-  `ingredient_id` int(11) NOT NULL,
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `flavor_id` int(11) unsigned NOT NULL,
+  `ingredient_id` int(11) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_flavor_id_ingredient_id` (`flavor_id`,`ingredient_id`),
   KEY `ingredient_id` (`ingredient_id`),
-  CONSTRAINT `flavor_ingredient_ibfk_1` FOREIGN KEY (`flavor_id`) REFERENCES `flavor` (`id`),
-  CONSTRAINT `flavor_ingredient_ibfk_2` FOREIGN KEY (`ingredient_id`) REFERENCES `ingredient` (`id`)
+  CONSTRAINT `fk_flavor_ingredient_fid_flavor_id` FOREIGN KEY (`flavor_id`) REFERENCES `flavor` (`id`),
+  CONSTRAINT `fk_flavor_ingredient_iid_ingredient_id` FOREIGN KEY (`ingredient_id`) REFERENCES `ingredient` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 LOCK TABLES `flavor_ingredient` WRITE;
@@ -84,14 +84,17 @@ DROP TABLE IF EXISTS `flavor_store`;
 
 CREATE TABLE `flavor_store` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `flavor_id` int(11) NOT NULL,
-  `store_id` int(11) NOT NULL,
+  `flavor_id` int(11) unsigned NOT NULL,
+  `store_id` int(11) unsigned NOT NULL,
   `position` smallint(6) NOT NULL,
   `is_active` tinyint(1) DEFAULT '0',
   `activated` datetime NOT NULL,
   `deactivated` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_flavor_store_is_active_store_id_position_id` (`store_id`,`position`,`is_active`)
+  UNIQUE KEY `uk_flavor_store_is_active_store_id_position_id` (`store_id`,`position`,`is_active`),
+  KEY `fk_flavor_store_flavor_id_flavor_id` (`flavor_id`),
+  CONSTRAINT `fk_flavor_store_flavor_id_flavor_id` FOREIGN KEY (`flavor_id`) REFERENCES `flavor` (`id`),
+  CONSTRAINT `fk_flavor_store_store_id_store_id` FOREIGN KEY (`store_id`) REFERENCES `store` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 LOCK TABLES `flavor_store` WRITE;
@@ -99,12 +102,17 @@ LOCK TABLES `flavor_store` WRITE;
 
 INSERT INTO `flavor_store` (`id`, `flavor_id`, `store_id`, `position`, `is_active`, `activated`, `deactivated`)
 VALUES
-	(3,2,1,1,NULL,'2019-03-29 03:08:44','2019-04-05 13:57:18'),
-	(4,2,1,1,NULL,'2019-03-29 03:09:00','2019-04-05 13:57:18'),
-	(5,2,1,1,NULL,'2019-04-05 13:57:14','2019-04-05 13:57:18'),
-	(6,2,1,1,NULL,'2019-04-05 13:57:15','2019-04-05 13:57:18'),
-	(7,2,1,1,NULL,'2019-04-05 13:57:17','2019-04-05 13:57:18'),
-	(8,2,1,1,1,'2019-04-05 13:57:18',NULL);
+	(3,2,1,1,NULL,'2019-03-29 03:08:44','2019-04-07 03:02:54'),
+	(4,2,1,1,NULL,'2019-03-29 03:09:00','2019-04-07 03:02:54'),
+	(5,2,1,1,NULL,'2019-04-05 13:57:14','2019-04-07 03:02:54'),
+	(6,2,1,1,NULL,'2019-04-05 13:57:15','2019-04-07 03:02:54'),
+	(7,2,1,1,NULL,'2019-04-05 13:57:17','2019-04-07 03:02:54'),
+	(8,2,1,1,NULL,'2019-04-05 13:57:18','2019-04-07 03:02:54'),
+	(9,2,1,1,NULL,'2019-04-06 20:48:34','2019-04-07 03:02:54'),
+	(12,2,1,1,NULL,'2019-04-06 20:55:10','2019-04-07 03:02:54'),
+	(13,2,1,1,NULL,'2019-04-06 20:55:12','2019-04-07 03:02:54'),
+	(14,2,1,1,NULL,'2019-04-06 20:55:15','2019-04-07 03:02:54'),
+	(15,2,1,1,NULL,'2019-04-07 03:01:49','2019-04-07 03:02:54');
 
 /*!40000 ALTER TABLE `flavor_store` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -116,7 +124,7 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `ingredient`;
 
 CREATE TABLE `ingredient` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(128) NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `updated` timestamp NULL DEFAULT NULL,
@@ -135,6 +143,63 @@ VALUES
 	(5,'nuts','2019-03-02 21:36:19',NULL);
 
 /*!40000 ALTER TABLE `ingredient` ENABLE KEYS */;
+UNLOCK TABLES;
+
+
+# Dump of table permission
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `permission`;
+
+CREATE TABLE `permission` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(32) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+LOCK TABLES `permission` WRITE;
+/*!40000 ALTER TABLE `permission` DISABLE KEYS */;
+
+INSERT INTO `permission` (`id`, `name`)
+VALUES
+	(1,'store:read'),
+	(2,'store:write'),
+	(3,'user:read'),
+	(4,'user:write'),
+	(5,'flavor:read'),
+	(6,'flavor:write'),
+	(7,'self:write'),
+	(8,'self:read');
+
+/*!40000 ALTER TABLE `permission` ENABLE KEYS */;
+UNLOCK TABLES;
+
+
+# Dump of table permission_user
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `permission_user`;
+
+CREATE TABLE `permission_user` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) unsigned NOT NULL,
+  `permission_id` int(11) unsigned NOT NULL,
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_permission_user_permission_id_user_id` (`user_id`,`permission_id`),
+  KEY `idx_permission_user_user_id` (`user_id`),
+  CONSTRAINT `fk_user_permission_permission_id_permission_id` FOREIGN KEY (`id`) REFERENCES `permission` (`id`),
+  CONSTRAINT `fk_user_permission_user_id_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+LOCK TABLES `permission_user` WRITE;
+/*!40000 ALTER TABLE `permission_user` DISABLE KEYS */;
+
+INSERT INTO `permission_user` (`id`, `user_id`, `permission_id`, `created`)
+VALUES
+	(1,9,7,'2019-04-08 02:36:19');
+
+/*!40000 ALTER TABLE `permission_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
 
@@ -169,7 +234,7 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `store`;
 
 CREATE TABLE `store` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(128) NOT NULL,
   `phone` varchar(32) DEFAULT NULL,
   `email` varchar(32) DEFAULT NULL,
@@ -203,7 +268,7 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `user`;
 
 CREATE TABLE `user` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) NOT NULL,
   `first_name` varchar(24) DEFAULT NULL,
   `last_name` varchar(24) DEFAULT NULL,
@@ -216,7 +281,7 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_user_email` (`email`),
   KEY `status_id` (`status_id`),
-  CONSTRAINT `user_ibfk_1` FOREIGN KEY (`status_id`) REFERENCES `ref_user_status` (`id`)
+  CONSTRAINT `fk_user_status_id_ref_user_status_id` FOREIGN KEY (`status_id`) REFERENCES `ref_user_status` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 LOCK TABLES `user` WRITE;

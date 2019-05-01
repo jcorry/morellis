@@ -13,23 +13,15 @@ get:
       schema:
         type: integer
   security:
-    - main_auth:
-        - 'read:users'
-    - api_key: []
+    - bearer_auth:
+      - 'read:users'
   responses:
     '200':
       description: Success
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              meta:
-                $ref: '#/components/schemas/ListMeta'
-              items:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+            $ref: '#/components/schemas/User'
     '403':
       description: Forbidden
     '404':
@@ -48,8 +40,8 @@ patch:
       schema:
         type: integer
   security:
-    - main_auth:
-        - 'write:users'
+    - bearer_auth:
+      - 'write:users'
   requestBody:
     content:
       application/json:
@@ -78,8 +70,8 @@ delete:
         schema:
           type: integer
   security:
-    - main_auth:
-        - 'write:users'
+    - bearer_auth:
+      - 'write:users'
   responses:
     '204':
       description: No Content

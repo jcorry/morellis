@@ -24,7 +24,7 @@ const (
 )
 
 // Insert a new User
-func (u *UserModel) Insert(uid uuid.UUID, firstName string, lastName string, email string, phone string, password string) (*models.User, error) {
+func (u *UserModel) Insert(uid uuid.UUID, firstName string, lastName string, email string, phone string, statusID int, password string) (*models.User, error) {
 	created := time.Now()
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
@@ -50,7 +50,7 @@ func (u *UserModel) Insert(uid uuid.UUID, firstName string, lastName string, ema
 		?
 	)`
 
-	result, err := u.DB.Exec(stmt, uid.String(), firstName, lastName, email, phone, models.USER_STATUS_UNVERIFIED, hashedPassword, created)
+	result, err := u.DB.Exec(stmt, uid.String(), firstName, lastName, email, phone, statusID, hashedPassword, created)
 	if err != nil {
 		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 			if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_user_email") {
@@ -64,13 +64,16 @@ func (u *UserModel) Insert(uid uuid.UUID, firstName string, lastName string, ema
 	if err != nil {
 		return nil, err
 	}
+
+	userStatus := models.UserStatus(statusID)
+
 	user := &models.User{
 		ID:        id,
 		FirstName: firstName,
 		LastName:  lastName,
 		Email:     email,
 		Phone:     phone,
-		Status:    models.USER_STATUS_UNVERIFIED.Slug(),
+		Status:    userStatus.Slug(),
 		Created:   created,
 	}
 
@@ -255,4 +258,180 @@ func (u *UserModel) Count() int {
 	}
 
 	return count
+}
+
+func (u *UserModel) GetPermissions(userID int) ([]models.UserPermission, error) {
+	var userPermissions []models.UserPermission
+
+	stmt := `SELECT pu.id AS "userPermissionId", p.id, p.name
+			   FROM permission AS p
+		  LEFT JOIN permission_user AS pu ON pu.permission_id = p.id
+		  LEFT JOIN user AS u ON pu.user_id = u.id
+			  WHERE u.id = ?
+		   ORDER BY name DESC`
+
+	rows, err := u.DB.Query(stmt, userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var p models.Permission
+		var up models.UserPermission
+
+		err = rows.Scan(&up.UserPermissionID, &p.ID, &p.Name)
+		if err != nil {
+			return nil, err
+		}
+		up.Permission = p
+		userPermissions = append(userPermissions, up)
+	}
+
+	return userPermissions, nil
+}
+
+// AddPermission adds a Permission to a User
+func (u *UserModel) AddPermission(userID int, p models.Permission) (int, error) {
+	if !u.checkValidPermission(p) {
+		return 0, models.ErrInvalidPermission
+	}
+
+	if !u.checkValidUser(userID) {
+		return 0, models.ErrInvalidUser
+	}
+
+	stmt := `INSERT INTO permission_user (user_id, permission_id, created)
+				  VALUES (?, (SELECT id FROM permission WHERE name = ? LIMIT 1), CURRENT_TIMESTAMP)`
+
+	res, err := u.DB.Exec(stmt, userID, p.Name)
+
+	if err != nil {
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
+			if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_permission_user_permission_id_user_id") {
+				return 0, models.ErrDuplicateUserPermission
+			}
+		}
+		return 0, err
+	}
+
+	a, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	if a == 0 {
+		return 0, nil
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(id), nil
+}
+
+// RemovePermission removes a Permission from a User
+func (u *UserModel) RemovePermission(userPermissionID int) (bool, error) {
+	stmt := `DELETE FROM permission_user 
+	  			   WHERE id = ?`
+
+	res, err := u.DB.Exec(stmt, userPermissionID)
+
+	if err != nil {
+		return false, err
+	}
+
+	a, err := res.RowsAffected()
+
+	if err != nil {
+		return false, err
+	}
+
+	if a == 0 {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (u *UserModel) RemoveAllPermissions(userID int) error {
+	stmt, err := u.DB.Prepare(`DELETE FROM permission_user WHERE user_id = ?`)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(userID)
+	return err
+}
+
+func (u *UserModel) UpdatePermissions(userID int, permissions []*models.UserPermission) error {
+	var IDs []int
+	for _, p := range permissions {
+		IDs = append(IDs, p.Permission.ID)
+	}
+
+	tx, _ := u.DB.Begin()
+	defer tx.Rollback()
+
+	stmt := `DELETE FROM permission_user WHERE user_id = ? AND permission_id NOT IN (?` + strings.Repeat(", ?", len(IDs)-1) + `)`
+	_, err := u.DB.Exec(stmt, userID, IDs)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	for _, id := range IDs {
+		stmt := `INSERT INTO permission_user (user_id, permission_id)
+			 SELECT ?, ? 
+			 FROM DUAL
+			 WHERE NOT EXISTS (
+				SELECT 1
+				FROM permission_user
+				WHERE user_id = ? AND permission_id = ?
+			 )
+			LIMIT 1`
+
+		_, err = u.DB.Exec(stmt, userID, id, userID, id)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	tx.Commit()
+	return nil
+}
+
+func (u *UserModel) checkValidPermission(p models.Permission) bool {
+	var isValid bool
+	stmt := `SELECT IF(COUNT(*), 'true', 'false') 
+			   FROM permission 
+			  WHERE name = ?`
+
+	err := u.DB.QueryRow(stmt, p.Name).Scan(&isValid)
+
+	if err != nil {
+		return false
+	}
+
+	return isValid
+}
+
+func (u *UserModel) checkValidUser(userID int) bool {
+	var isValid bool
+	stmt := `SELECT IF(COUNT(*), 'true', 'false')
+			   FROM user
+			  WHERE id = ? 
+		  		AND status_id = ?`
+
+	err := u.DB.QueryRow(stmt, userID, models.USER_STATUS_VERIFIED).Scan(&isValid)
+	if err != nil {
+		return false
+	}
+
+	return isValid
 }

@@ -9,10 +9,13 @@ import (
 )
 
 var (
-	ErrNoRecord           = errors.New("models: No matching record(s) found")
-	ErrInvalidCredentials = errors.New("models: Invalid credentials")
-	ErrDuplicateEmail     = errors.New("models: Duplicate email")
-	ErrDuplicateFlavor    = errors.New("models: Only one flavor may be active at a position at a time.")
+	ErrNoRecord                = errors.New("models: No matching record(s) found")
+	ErrInvalidCredentials      = errors.New("models: Invalid credentials")
+	ErrDuplicateEmail          = errors.New("models: Duplicate email")
+	ErrDuplicateFlavor         = errors.New("models: Only one flavor may be active at a position at a time.")
+	ErrInvalidPermission       = errors.New("models: Not a valid Permission")
+	ErrDuplicateUserPermission = errors.New("models: User already has that Permission")
+	ErrInvalidUser             = errors.New("models: Not a valid User")
 )
 
 // Credentials are used to authenticate with the API
@@ -37,15 +40,26 @@ type Ingredient struct {
 
 // User is a user of the system
 type User struct {
-	ID        int64     `json:"-"`
-	UUID      uuid.UUID `json:"uuid"`
-	FirstName string    `json:"firstName"`
-	LastName  string    `json:"lastName"`
-	Email     string    `json:"email"`
-	Phone     string    `json:"phone"`
-	Status    string    `json:"status"`
-	Password  string    `json:"password,omitempty"`
-	Created   time.Time `json:"created"`
+	ID          int64            `json:"-"`
+	UUID        uuid.UUID        `json:"uuid"`
+	FirstName   string           `json:"firstName"`
+	LastName    string           `json:"lastName"`
+	Email       string           `json:"email"`
+	Phone       string           `json:"phone"`
+	Status      string           `json:"status"`
+	Permissions []UserPermission `json:"permissions"`
+	Password    string           `json:"password,omitempty"`
+	Created     time.Time        `json:"created"`
+}
+
+type UserPermission struct {
+	UserPermissionID int `json:"userPermissionId,omitempty"`
+	Permission       `json:"permission"`
+}
+
+type Permission struct {
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name"`
 }
 
 type UserStatus int
