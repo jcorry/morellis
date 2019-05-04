@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -121,4 +122,64 @@ func TestJwtVerificationAddsUserToContext(t *testing.T) {
 	}
 
 	handlerToTest.ServeHTTP(httptest.NewRecorder(), &req)
+}
+
+func TestNewPermissionsCheck(t *testing.T) {
+	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+	})
+
+	tests := []struct {
+		name       string
+		permission []string
+		wantCode   int
+	}{
+		{"Valid permission", []string{"user:read"}, 200},
+		{"Invalid permission", []string{"foo:bar"}, 401},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := newTestApplication(t)
+			ts := newTestServer(t, app.routes())
+			defer ts.Close()
+
+			uid, err := uuid.NewRandom()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			user, err := app.users.GetByUUID(uid)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			reqToken, err := generateToken(user)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			handlerToTest := NewPermissionsCheck(nextHandler, tt.permission)
+
+			testUrl, err := url.Parse("http://testing")
+			if err != nil {
+				t.Fatal(err)
+			}
+			req := http.Request{
+				URL: testUrl,
+				Header: map[string][]string{
+					"Content-Type":  {"application/json"},
+					"Authorization": {fmt.Sprintf("Bearer %s", reqToken)},
+				},
+			}
+			ctx := context.WithValue(req.Context(), ContextKeyUser, user)
+
+			w := httptest.NewRecorder()
+
+			handlerToTest.ServeHTTP(w, req.WithContext(ctx))
+			if w.Result().StatusCode != tt.wantCode {
+				t.Errorf("Want code %d, Got code %d", tt.wantCode, w.Result().StatusCode)
+			}
+		})
+	}
 }

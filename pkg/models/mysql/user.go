@@ -21,12 +21,13 @@ type UserModel struct {
 
 const (
 	DEFAULT_LIMIT int = 25
+	PW_HASH_COST  int = 12
 )
 
 // Insert a new User
 func (u *UserModel) Insert(uid uuid.UUID, firstName string, lastName string, email string, phone string, statusID int, password string) (*models.User, error) {
 	created := time.Now()
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), PW_HASH_COST)
 	if err != nil {
 		return nil, err
 	}

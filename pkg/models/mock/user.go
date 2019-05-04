@@ -16,6 +16,14 @@ var mockUser = &models.User{
 	Phone:     "867-5309",
 	Status:    models.USER_STATUS_VERIFIED.Slug(),
 	Created:   time.Now(),
+	Permissions: []models.UserPermission{
+		{
+			Permission: models.Permission{Name: "user:read"},
+		},
+		{
+			Permission: models.Permission{Name: "user:write"},
+		},
+	},
 }
 
 type UserModel struct{}
@@ -94,7 +102,14 @@ func (m *UserModel) Count() int {
 }
 
 func (u *UserModel) GetPermissions(ID int) ([]models.UserPermission, error) {
-	return []models.UserPermission{}, nil
+	return []models.UserPermission{
+		{
+			Permission: models.Permission{Name: "user:read"},
+		},
+		{
+			Permission: models.Permission{Name: "user:write"},
+		},
+	}, nil
 }
 
 // AddPermission adds a Permission to a User

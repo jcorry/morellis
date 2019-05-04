@@ -70,7 +70,19 @@ func (ts *testServer) request(t *testing.T, method string, urlPath string, reqBo
 		}
 
 		user := models.User{
-			UUID: uid,
+			ID:     4,
+			Status: "Verified",
+			UUID:   uid,
+			Permissions: []models.UserPermission{
+				{
+					17,
+					models.Permission{ID: 1, Name: "user:read"},
+				},
+				{
+					24,
+					models.Permission{ID: 2, Name: "user:write"},
+				},
+			},
 		}
 
 		token, err := generateToken(&user)
