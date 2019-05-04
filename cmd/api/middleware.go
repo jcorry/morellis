@@ -69,11 +69,6 @@ func (app *application) jwtVerification(next http.Handler) http.Handler {
 						w.WriteHeader(http.StatusUnauthorized)
 						return
 					}
-					user.Permissions, err = app.users.GetPermissions(int(user.ID))
-					if err != nil {
-						app.errorLog.Output(2, err.Error())
-						w.WriteHeader(http.StatusUnauthorized)
-					}
 
 					ctx := context.WithValue(r.Context(), ContextKeyUser, user)
 					next.ServeHTTP(w, r.WithContext(ctx))

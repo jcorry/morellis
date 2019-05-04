@@ -63,6 +63,15 @@ func (m *UserModel) GetByUUID(ID uuid.UUID) (*models.User, error) {
 	}
 
 	mockUser.UUID = ID
+	mockUser.Permissions = []models.UserPermission{
+		{
+			Permission: models.Permission{Name: "user:read"},
+		},
+		{
+			Permission: models.Permission{Name: "user:write"},
+		},
+	}
+
 	return mockUser, nil
 }
 
