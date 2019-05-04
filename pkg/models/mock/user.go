@@ -16,14 +16,6 @@ var mockUser = &models.User{
 	Phone:     "867-5309",
 	Status:    models.USER_STATUS_VERIFIED.Slug(),
 	Created:   time.Now(),
-	Permissions: []models.UserPermission{
-		{
-			Permission: models.Permission{Name: "user:read"},
-		},
-		{
-			Permission: models.Permission{Name: "user:write"},
-		},
-	},
 }
 
 type UserModel struct{}

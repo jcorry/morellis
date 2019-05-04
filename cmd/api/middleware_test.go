@@ -92,6 +92,11 @@ func TestJwtVerificationAddsUserToContext(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	user.Permissions, err = app.users.GetPermissions(int(user.ID))
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	reqToken, err := generateToken(user)
 	if err != nil {
 		t.Fatal(err)
@@ -150,6 +155,11 @@ func TestNewPermissionsCheck(t *testing.T) {
 			}
 
 			user, err := app.users.GetByUUID(uid)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			user.Permissions, err = app.users.GetPermissions(int(user.ID))
 			if err != nil {
 				t.Fatal(err)
 			}
