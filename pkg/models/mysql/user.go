@@ -250,7 +250,6 @@ func (u *UserModel) List(limit int, offset int, order string) ([]*models.User, e
 // Delete the user identified by id.
 func (u *UserModel) Delete(id int) (bool, error) {
 	tx, _ := u.DB.Begin()
-	defer tx.Rollback()
 
 	stmt := `DELETE FROM permission_user WHERE user_id = ?`
 	_, err := u.DB.Exec(stmt, id)
@@ -275,6 +274,8 @@ func (u *UserModel) Delete(id int) (bool, error) {
 		tx.Commit()
 		return true, nil
 	}
+
+	tx.Rollback()
 	return false, nil
 }
 
