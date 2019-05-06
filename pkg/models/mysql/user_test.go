@@ -342,7 +342,7 @@ func TestUserModel_AddPermission(t *testing.T) {
 		wantErr error
 		wantRes int
 	}{
-		{"Valid Permission", 1, models.Permission{1, "user:read"}, nil, 1},
+		{"Valid Permission", 1, models.Permission{1, "flavor:read"}, nil, 1},
 		{"Invalid Permission", 1, models.Permission{0, "foo:write"}, models.ErrInvalidPermission, 0},
 		{"Invalid User", 100, models.Permission{0, "user:read"}, models.ErrInvalidUser, 0},
 	}

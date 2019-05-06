@@ -72,6 +72,11 @@ CREATE TABLE `permission_user` (
     CONSTRAINT `fk_user_permission_user_id_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
+INSERT INTO `permission_user` (`permission_id`, `user_id`)
+VALUES
+(3, 1),
+(4, 1);
+
 -- CREATE store table
 CREATE TABLE `store` (
     id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,

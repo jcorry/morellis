@@ -7,11 +7,31 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/jcorry/morellis/pkg/models"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
 var ContextKeyUser = "AuthUser"
+
+type PermissionsCheck struct {
+	handler     http.Handler
+	permissions []string
+}
+
+func NewPermissionsCheck(handler http.Handler, permissions []string) *PermissionsCheck {
+	return &PermissionsCheck{handler, permissions}
+}
+
+func (pc *PermissionsCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value(ContextKeyUser).(*models.User)
+	if !checkPermissions(user, pc.permissions) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	pc.handler.ServeHTTP(w, r)
+}
 
 func (app *application) jwtVerification(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -48,11 +68,6 @@ func (app *application) jwtVerification(next http.Handler) http.Handler {
 						app.errorLog.Output(2, err.Error())
 						w.WriteHeader(http.StatusUnauthorized)
 						return
-					}
-					user.Permissions, err = app.users.GetPermissions(int(user.ID))
-					if err != nil {
-						app.errorLog.Output(2, err.Error())
-						w.WriteHeader(http.StatusUnauthorized)
 					}
 
 					ctx := context.WithValue(r.Context(), ContextKeyUser, user)
@@ -93,4 +108,15 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 		}()
 		next.ServeHTTP(w, r)
 	})
+}
+
+func checkPermissions(user *models.User, permissions []string) bool {
+	for _, userPermission := range user.Permissions {
+		for _, requiredPermission := range permissions {
+			if userPermission.Permission.Name == requiredPermission {
+				return true
+			}
+		}
+	}
+	return false
 }

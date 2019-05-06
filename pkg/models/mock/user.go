@@ -63,6 +63,15 @@ func (m *UserModel) GetByUUID(ID uuid.UUID) (*models.User, error) {
 	}
 
 	mockUser.UUID = ID
+	mockUser.Permissions = []models.UserPermission{
+		{
+			Permission: models.Permission{Name: "user:read"},
+		},
+		{
+			Permission: models.Permission{Name: "user:write"},
+		},
+	}
+
 	return mockUser, nil
 }
 
@@ -94,7 +103,14 @@ func (m *UserModel) Count() int {
 }
 
 func (u *UserModel) GetPermissions(ID int) ([]models.UserPermission, error) {
-	return []models.UserPermission{}, nil
+	return []models.UserPermission{
+		{
+			Permission: models.Permission{Name: "user:read"},
+		},
+		{
+			Permission: models.Permission{Name: "user:write"},
+		},
+	}, nil
 }
 
 // AddPermission adds a Permission to a User

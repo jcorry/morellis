@@ -12,11 +12,11 @@ func (app *application) routes() http.Handler {
 	mux.Post("/api/v1/auth", http.HandlerFunc(app.createAuth))
 
 	// User routes
-	mux.Post("/api/v1/user", app.jwtVerification(http.HandlerFunc(app.createUser)))
-	mux.Get("/api/v1/user/:uuid", app.jwtVerification(http.HandlerFunc(app.getUser)))
-	mux.Patch("/api/v1/user/:id", app.jwtVerification(http.HandlerFunc(app.partialUpdateUser)))
-	mux.Get("/api/v1/user", app.jwtVerification(http.HandlerFunc(app.listUser)))
-	mux.Del("/api/v1/user/:uuid", app.jwtVerification(http.HandlerFunc(app.deleteUser)))
+	mux.Post("/api/v1/user", app.jwtVerification(NewPermissionsCheck(http.HandlerFunc(app.createUser), []string{"user:write"})))
+	mux.Get("/api/v1/user/:uuid", app.jwtVerification(NewPermissionsCheck(http.HandlerFunc(app.getUser), []string{"user:read"})))
+	mux.Patch("/api/v1/user/:id", app.jwtVerification(NewPermissionsCheck(http.HandlerFunc(app.partialUpdateUser), []string{"user:write"})))
+	mux.Get("/api/v1/user", app.jwtVerification(NewPermissionsCheck(http.HandlerFunc(app.listUser), []string{"user:read"})))
+	mux.Del("/api/v1/user/:uuid", app.jwtVerification(NewPermissionsCheck(http.HandlerFunc(app.deleteUser), []string{"user:write"})))
 
 	// Store routes
 	// list stores

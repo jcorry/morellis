@@ -21,12 +21,13 @@ type UserModel struct {
 
 const (
 	DEFAULT_LIMIT int = 25
+	PW_HASH_COST  int = 12
 )
 
 // Insert a new User
 func (u *UserModel) Insert(uid uuid.UUID, firstName string, lastName string, email string, phone string, statusID int, password string) (*models.User, error) {
 	created := time.Now()
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), PW_HASH_COST)
 	if err != nil {
 		return nil, err
 	}
@@ -132,13 +133,32 @@ func (u *UserModel) Get(id int) (*models.User, error) {
 
 // Get a single User by UUID
 func (u *UserModel) GetByUUID(uuid uuid.UUID) (*models.User, error) {
-	stmt := `SELECT u.id, u.uuid, u.first_name, u.last_name, u.email, u.phone, s.slug, u.created
+	stmt := `SELECT u.id, u.uuid, u.first_name, u.last_name, u.email, u.phone, s.slug, u.created, pu.id AS "pu_id", p.id AS "p_id", p.name
 			   FROM user AS u
 		  LEFT JOIN ref_user_status AS s ON u.status_id = s.id
+		  	   JOIN permission_user AS pu ON pu.user_id = u.id
+		       JOIN permission AS p ON pu.permission_id = p.id
 			  WHERE u.uuid = ?`
 
+	rows, err := u.DB.Query(stmt, uuid)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
 	user := &models.User{}
-	err := u.DB.QueryRow(stmt, uuid).Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &user.Phone, &user.Status, &user.Created)
+
+	for rows.Next() {
+		p := &models.UserPermission{}
+
+		err = rows.Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &user.Phone, &user.Status, &user.Created, &p.UserPermissionID, &p.ID, &p.Name)
+
+		if err != nil {
+			return nil, err
+		}
+		user.Permissions = append(user.Permissions, *p)
+	}
 
 	if err == sql.ErrNoRows {
 		return nil, models.ErrNoRecord
@@ -229,21 +249,33 @@ func (u *UserModel) List(limit int, offset int, order string) ([]*models.User, e
 
 // Delete the user identified by id.
 func (u *UserModel) Delete(id int) (bool, error) {
-	stmt, err := u.DB.Prepare(`DELETE FROM user WHERE id = ?`)
+	tx, _ := u.DB.Begin()
+
+	stmt := `DELETE FROM permission_user WHERE user_id = ?`
+	_, err := u.DB.Exec(stmt, id)
 	if err != nil {
+		tx.Rollback()
 		return false, err
 	}
-	res, err := stmt.Exec(id)
+
+	stmt = `DELETE FROM user WHERE id = ?`
+
+	res, err := u.DB.Exec(stmt, id)
 	if err != nil {
+		tx.Rollback()
 		return false, err
 	}
 	affect, err := res.RowsAffected()
 	if err != nil {
+		tx.Rollback()
 		return false, err
 	}
 	if affect > 0 {
+		tx.Commit()
 		return true, nil
 	}
+
+	tx.Rollback()
 	return false, nil
 }
 
