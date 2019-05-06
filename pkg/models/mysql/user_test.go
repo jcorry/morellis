@@ -1,7 +1,6 @@
 package mysql
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -213,7 +212,6 @@ func TestUserModel_GetByUUID(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	t.Log(fmt.Sprintf("User: %+v", u))
 }
 
 func TestUserModel_GetByCredentials(t *testing.T) {
