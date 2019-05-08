@@ -1,0 +1,54 @@
+get:
+  tags:
+    - Ingredient
+  summary: Get a list of Ingredients
+  description: |
+    Get a paginated list of Ingredients.
+  operationId: getIngredients
+  security:
+    - bearer_auth:
+        - 'flavor:read'
+  parameters:
+    - name: count
+      in: query
+      description: The number of User objects that will be returned. Defaults to 25 if no value is supplied.
+      schema:
+        type: integer
+        example: 100
+        default: 25
+    - name: start
+      in: query
+      description: The starting position in the recordset from which User objects will be retrieved and returned. Defaults to 0 if no value is supplied.
+      schema:
+        type: integer
+        example: 26
+        default: 0
+    - name: searchTerm
+      in: query
+      description: |-
+        A string (or strings) used to search for matching Ingrdients. Partial matches on the Ingredient's
+        Name field
+      schema:
+        type: array
+        collectionFormat: csv
+        items:
+          type: string
+        example: chocolate,coconut,van
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/components/schemas/ListMeta'
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ingredient'
+    '403':
+      description: Forbidden
+    '404':
+      description: User not found

@@ -1,9 +1,10 @@
 type: object
 properties:
-  id:
+  uuid:
     description: Unique identifier for User
-    type: integer
-    example: 1
+    type: string
+    format: uuid
+    example: e6fc6b5a-882c-40ba-b860-b11a413ec2df
   firstName:
     description: User first name
     type: string
