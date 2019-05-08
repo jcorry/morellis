@@ -1,0 +1,34 @@
+delete:
+  tags:
+    - User
+    - Ingredient
+  summary: Deletes a User Ingredient association.
+  description: Deletes a User Ingredient association.
+  operationId: removeUserIngredient
+  security:
+    - bearer_auth:
+        - 'write:users'
+  parameters:
+    - name: userId
+      in: path
+      description: The Uuid of the User for which the Ingredient is being added.
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: e6fc6b5a-882c-40ba-b860-b11a413ec2df
+    - name: userIngredientId
+      in: path
+      description: |-
+        The unique identifier for the UserIngredient. This is the ID of the
+        association row in the `ingredient_user` table.
+      required: true
+      schema:
+        type: integer
+      example: 3154
+  responses:
+    '204':
+      description: No Content
+    '404':
+      description: User or UserIngredient not found
+

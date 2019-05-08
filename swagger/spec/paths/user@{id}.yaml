@@ -63,12 +63,12 @@ delete:
   description: Delete a User by ID
   operationId: partiallyUpdateUser
   parameters:
-      - name: id
-        in: path
-        description: The ID of the user to delete
-        required: true
-        schema:
-          type: integer
+    - name: id
+      in: path
+      description: The ID of the user to delete
+      required: true
+      schema:
+        type: integer
   security:
     - bearer_auth:
       - 'write:users'

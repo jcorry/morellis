@@ -1,0 +1,33 @@
+post:
+  tags:
+    - User
+    - Ingredient
+  summary: Adds an Ingredient association to a User
+  description: |-
+    Add an Ingredient to a User's saved Ingredients. These will be used to determine notifications
+    to send to Users advising them of Flavor updates at the Stores.
+  operationId: addUserIngredient
+  security:
+    - bearer_auth:
+        - 'write:users'
+  parameters:
+    - name: userId
+      in: path
+      description: The Uuid of the User for which the Ingredient is being added.
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: e6fc6b5a-882c-40ba-b860-b11a413ec2df
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/UserIngredient'
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserIngredient'
