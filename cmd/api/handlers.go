@@ -1,11 +1,14 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -564,6 +567,66 @@ func (app *application) listFlavor(w http.ResponseWriter, r *http.Request) {
 	response := make(map[string]interface{})
 	response["meta"] = meta
 	response["items"] = flavors
+
+	app.jsonResponse(w, response)
+}
+
+func (app *application) listIngredient(w http.ResponseWriter, r *http.Request) {
+	var err error
+	params := r.URL.Query()
+
+	l := params.Get("count")
+	limit := 0
+	if l != "" {
+		limit, err = strconv.Atoi(l)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+	}
+
+	o := params.Get("start")
+	offset := 0
+	if o != "" {
+		offset, err = strconv.Atoi(o)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+	}
+
+	sb := params.Get("sortBy")
+
+	s := params.Get("searchTerms")
+
+	t := csv.NewReader(strings.NewReader(s))
+
+	var terms []string
+	for {
+		r, err := t.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			app.serverError(w, err)
+		}
+		terms = r
+	}
+
+	ingredients, err := app.ingredients.Search(limit, offset, sb, terms)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	meta := make(map[string]interface{})
+	meta["totalRecords"] = app.flavors.Count()
+	meta["count"] = len(ingredients)
+	meta["start"] = offset
+	meta["sortBy"] = sb
+
+	response := make(map[string]interface{})
+	response["meta"] = meta
+	response["items"] = ingredients
 
 	app.jsonResponse(w, response)
 }

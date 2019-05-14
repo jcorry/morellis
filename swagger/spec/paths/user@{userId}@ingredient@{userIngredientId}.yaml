@@ -31,4 +31,3 @@ delete:
       description: No Content
     '404':
       description: User or UserIngredient not found
-

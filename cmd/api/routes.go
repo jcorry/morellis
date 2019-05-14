@@ -34,5 +34,7 @@ func (app *application) routes() http.Handler {
 	mux.Get("/api/v1/flavor", app.jwtVerification(http.HandlerFunc(app.listFlavor)))
 	mux.Get("/api/v1/flavor/:id", app.jwtVerification(http.HandlerFunc(app.getFlavor)))
 
+	mux.Get("/api/v1/ingredient", app.jwtVerification(http.HandlerFunc(app.listIngredient)))
+
 	return app.logRequest(mux)
 }

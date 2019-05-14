@@ -2,6 +2,8 @@ package mysql
 
 import (
 	"database/sql"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jcorry/morellis/pkg/models"
@@ -24,6 +26,50 @@ func (m *IngredientModel) GetByName(name string) (*models.Ingredient, error) {
 		return nil, err
 	}
 	return ingredient, nil
+}
+
+func (m *IngredientModel) Search(limit int, offset int, order string, search []string) ([]*models.Ingredient, error) {
+	args := make([]interface{}, len(search))
+	for i, term := range search {
+		term = strings.ToLower(strings.TrimSpace(term))
+		args[i] = fmt.Sprintf("%%%s%%", term)
+	}
+
+	stmt := `SELECT id, name FROM ingredient WHERE LOWER(name) LIKE ?`
+
+	for i := 1; i <= len(args)-1; i++ {
+		stmt += ` OR LOWER(name) LIKE ?`
+	}
+
+	// Only order by one of the available field names
+	fields := []string{"id", "name", "created"}
+	for _, field := range fields {
+		if order == field {
+			stmt += fmt.Sprintf(" ORDER BY %s", field)
+		}
+	}
+
+	stmt += ` LIMIT ? OFFSET ?`
+
+	args = append(args, limit, offset)
+
+	rows, err := m.DB.Query(stmt, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	ingredients := []*models.Ingredient{}
+	for rows.Next() {
+		ingredient := &models.Ingredient{}
+		err = rows.Scan(&ingredient.ID, &ingredient.Name)
+		if err != nil {
+			return nil, err
+		}
+		ingredients = append(ingredients, ingredient)
+	}
+
+	return ingredients, nil
 }
 
 // Insert inserts a new Ingredient into the DB

@@ -54,6 +54,7 @@ type application struct {
 	ingredients interface {
 		GetByName(string) (*models.Ingredient, error)
 		Insert(*models.Ingredient) (*models.Ingredient, error)
+		Search(limit int, offset int, order string, search []string) ([]*models.Ingredient, error)
 	}
 	mapsApiKey string
 }
