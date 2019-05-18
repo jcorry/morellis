@@ -15,6 +15,7 @@ import (
 	"github.com/jcorry/morellis/pkg/models"
 )
 
+// Auth handlers
 func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
 	var creds models.Credentials
 
@@ -62,6 +63,7 @@ func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
 	app.jsonResponse(w, response)
 }
 
+// User handlers
 func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 	var reqUser *models.User
 	err := json.NewDecoder(r.Body).Decode(&reqUser)
@@ -141,7 +143,6 @@ func (app *application) partialUpdateUser(w http.ResponseWriter, r *http.Request
 	app.jsonResponse(w, user)
 }
 
-// Get a single user by ID.
 func (app *application) getUser(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(r.URL.Query().Get(":uuid"))
 	if err != nil || id == uuid.Nil {
@@ -245,6 +246,10 @@ func (app *application) deleteUser(w http.ResponseWriter, r *http.Request) {
 		app.noContentResponse(w)
 		return
 	}
+}
+
+func (app *application) userIngredientAssociation(w http.ResponseWriter, r *http.Request) {
+
 }
 
 // Store handlers
@@ -571,6 +576,7 @@ func (app *application) listFlavor(w http.ResponseWriter, r *http.Request) {
 	app.jsonResponse(w, response)
 }
 
+// Ingredient handlers
 func (app *application) listIngredient(w http.ResponseWriter, r *http.Request) {
 	var err error
 	params := r.URL.Query()

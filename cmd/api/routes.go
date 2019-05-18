@@ -17,6 +17,7 @@ func (app *application) routes() http.Handler {
 	mux.Patch("/api/v1/user/:id", app.jwtVerification(NewPermissionsCheck(http.HandlerFunc(app.partialUpdateUser), []string{"user:write"})))
 	mux.Get("/api/v1/user", app.jwtVerification(NewPermissionsCheck(http.HandlerFunc(app.listUser), []string{"user:read"})))
 	mux.Del("/api/v1/user/:uuid", app.jwtVerification(NewPermissionsCheck(http.HandlerFunc(app.deleteUser), []string{"user:write"})))
+	mux.Post("/api/v1/user/:uuid/ingredient", app.jwtVerification(NewPermissionsCheck(http.HandlerFunc(app.userIngredientAssociation), []string{"user:write"})))
 
 	// Store routes
 	// list stores
