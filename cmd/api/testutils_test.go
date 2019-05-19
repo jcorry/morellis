@@ -21,11 +21,12 @@ type testServer struct {
 
 func newTestApplication(t *testing.T) *application {
 	return &application{
-		errorLog: log.New(ioutil.Discard, "", 0),
-		infoLog:  log.New(ioutil.Discard, "", 0),
-		users:    &mock.UserModel{},
-		stores:   &mock.StoreModel{},
-		flavors:  &mock.FlavorModel{},
+		errorLog:    log.New(ioutil.Discard, "", 0),
+		infoLog:     log.New(ioutil.Discard, "", 0),
+		users:       &mock.UserModel{},
+		stores:      &mock.StoreModel{},
+		flavors:     &mock.FlavorModel{},
+		ingredients: &mock.IngredientModel{},
 	}
 }
 

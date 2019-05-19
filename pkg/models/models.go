@@ -15,6 +15,7 @@ var (
 	ErrDuplicateFlavor         = errors.New("models: Only one flavor may be active at a position at a time.")
 	ErrInvalidPermission       = errors.New("models: Not a valid Permission")
 	ErrDuplicateUserPermission = errors.New("models: User already has that Permission")
+	ErrDuplicateUserIngredient = errors.New("models: User already has that Ingredient")
 	ErrInvalidUser             = errors.New("models: Not a valid User")
 )
 
@@ -48,8 +49,15 @@ type User struct {
 	Phone       string           `json:"phone"`
 	Status      string           `json:"status"`
 	Permissions []UserPermission `json:"permissions"`
+	Ingredients []UserIngredient `json:"ingredients,omitempty"`
 	Password    string           `json:"password,omitempty"`
 	Created     time.Time        `json:"created"`
+}
+
+type UserIngredient struct {
+	UserIngredientID int64 `json:"userIngredientId,omitempty"`
+	*Ingredient      `json:"ingredient"`
+	Created          time.Time `json:"created"`
 }
 
 type UserPermission struct {

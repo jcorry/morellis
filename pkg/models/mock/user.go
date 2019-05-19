@@ -58,8 +58,12 @@ func (m *UserModel) Get(ID int) (*models.User, error) {
 }
 
 func (m *UserModel) GetByUUID(ID uuid.UUID) (*models.User, error) {
-	if ID.String() == "" {
+	if ID.String() == "" || ID.String() == "e6fc6b5a-882c-40ba-b860-b11a413ec2df" {
 		return nil, models.ErrNoRecord
+	}
+
+	if ID.String() == "df97802e-79e8-11e9-8f9e-2a86e4085a59" {
+		mockUser.ID = 1001
 	}
 
 	mockUser.UUID = ID
@@ -124,5 +128,31 @@ func (u *UserModel) RemovePermission(userPermissionID int) (bool, error) {
 }
 
 func (u *UserModel) RemoveAllPermissions(userID int) error {
+	return nil
+}
+
+// AddIngredient creates a UserIngredient association. This is used for allowing Users to
+// save Ingredient preferences for notifications.
+func (u *UserModel) AddIngredient(userID int64, ingredient *models.Ingredient, keyword string) (*models.UserIngredient, error) {
+	if userID == 1001 {
+		return nil, models.ErrDuplicateUserIngredient
+	}
+
+	userIngredient := &models.UserIngredient{
+		UserIngredientID: 10,
+		Ingredient:       ingredient,
+		Created:          time.Now(),
+	}
+
+	return userIngredient, nil
+}
+
+// GetIngredients gets all of the UserIngredient associations for the User
+func (u *UserModel) GetIngredients(userID int64) ([]*models.UserIngredient, error) {
+	return nil, nil
+}
+
+// RemoveIngredient removes the UserIngredient association
+func (u *UserModel) RemoveIngredient(userID int64, ingredientID int) error {
 	return nil
 }

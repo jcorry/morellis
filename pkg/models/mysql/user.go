@@ -390,6 +390,7 @@ func (u *UserModel) RemovePermission(userPermissionID int) (bool, error) {
 	return true, nil
 }
 
+// RemoveAllPermissions removes all Permissions from a User
 func (u *UserModel) RemoveAllPermissions(userID int) error {
 	stmt, err := u.DB.Prepare(`DELETE FROM permission_user WHERE user_id = ?`)
 	if err != nil {
@@ -400,6 +401,7 @@ func (u *UserModel) RemoveAllPermissions(userID int) error {
 	return err
 }
 
+// UpdatePermissions replaces all of a Users Permissions with new Permissions
 func (u *UserModel) UpdatePermissions(userID int, permissions []*models.UserPermission) error {
 	var IDs []int
 	for _, p := range permissions {
@@ -435,6 +437,52 @@ func (u *UserModel) UpdatePermissions(userID int, permissions []*models.UserPerm
 	}
 
 	tx.Commit()
+	return nil
+}
+
+// AddIngredient creates a UserIngredient association. This is used for allowing Users to
+// save Ingredient preferences for notifications.
+func (u *UserModel) AddIngredient(userID int64, ingredient *models.Ingredient, keyword string) (*models.UserIngredient, error) {
+	stmt := `INSERT INTO ingredient_user (ingredient_id, user_id, keyword) VALUES (?, ?, ?)`
+	res, err := u.DB.Exec(stmt, ingredient.ID, userID, keyword)
+	if err != nil {
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
+			if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_ingredient_user_ingredient") {
+				return nil, models.ErrDuplicateUserIngredient
+			}
+		}
+		return nil, err
+	}
+
+	lastInsertId, err := res.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	var userIngredient = &models.UserIngredient{
+		UserIngredientID: lastInsertId,
+		Ingredient:       ingredient,
+	}
+
+	stmt = `SELECT id, created 
+			   FROM ingredient_user 
+			  WHERE id = ?`
+
+	err = u.DB.QueryRow(stmt, lastInsertId).Scan(&userIngredient.UserIngredientID, &userIngredient.Created)
+	if err != nil {
+		return nil, err
+	}
+
+	return userIngredient, nil
+}
+
+// GetIngredients gets all of the UserIngredient associations for the User
+func (u *UserModel) GetIngredients(userID int64) ([]*models.UserIngredient, error) {
+	return nil, nil
+}
+
+// RemoveIngredient removes the UserIngredient association
+func (u *UserModel) RemoveIngredient(userID int64, ingredientID int) error {
 	return nil
 }
 

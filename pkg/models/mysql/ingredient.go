@@ -14,6 +14,22 @@ type IngredientModel struct {
 	DB *sql.DB
 }
 
+// Get retrieves a single Ingredient by its ID
+func (m *IngredientModel) Get(ID int64) (*models.Ingredient, error) {
+	var i = &models.Ingredient{}
+	stmt := `SELECT id, name FROM ingredient WHERE id = ?`
+
+	err := m.DB.QueryRow(stmt, ID).Scan(&i.ID, &i.Name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+
+	return i, nil
+}
+
 // GetByName retrieves an Ingredient by its Name.
 func (m *IngredientModel) GetByName(name string) (*models.Ingredient, error) {
 	var ingredient = &models.Ingredient{}

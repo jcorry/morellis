@@ -434,3 +434,85 @@ func TestListStore(t *testing.T) {
 		t.Errorf("want %s, got %s", wantString, body)
 	}
 }
+
+func TestCreateUserIngredientAssociation(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	userUuid, err := uuid.NewRandom()
+	if err != nil {
+		t.Errorf("Unexpected error: %s", err)
+	}
+
+	tests := []struct {
+		name         string
+		userUuid     string
+		ingredientId int
+		wantCode     int
+		wantBody     []byte
+	}{
+		{
+			"Success",
+			userUuid.String(),
+			12,
+			200,
+			[]byte("chocolate"),
+		},
+		{
+			"Ingredient not found",
+			userUuid.String(),
+			102,
+			404,
+			nil,
+		},
+		{
+			"Uuid doesn't parse",
+			"foo",
+			12,
+			404,
+			nil,
+		},
+		{
+			"User not found",
+			"e6fc6b5a-882c-40ba-b860-b11a413ec2df",
+			12,
+			404,
+			nil,
+		},
+		{
+			"Duplicate record",
+			"df97802e-79e8-11e9-8f9e-2a86e4085a59",
+			12,
+			http.StatusConflict,
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reqBody := map[string]interface{}{
+				"userUuid":     tt.userUuid,
+				"ingredientId": tt.ingredientId,
+				"storeId":      100,
+				"keyword":      "chocolate",
+			}
+
+			reqBytes, err := json.Marshal(reqBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			url := fmt.Sprintf("/api/v1/user/%s/ingredient", tt.userUuid)
+			code, _, body := ts.request(t, "post", url, bytes.NewBuffer(reqBytes), true)
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+
+		})
+	}
+}

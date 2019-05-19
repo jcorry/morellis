@@ -248,7 +248,62 @@ func (app *application) deleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) userIngredientAssociation(w http.ResponseWriter, r *http.Request) {
+func (app *application) createUserIngredientAssociation(w http.ResponseWriter, r *http.Request) {
+	userUUID, err := uuid.Parse(r.URL.Query().Get(":uuid"))
+	if err != nil || userUUID == uuid.Nil {
+		fmt.Println("No user found")
+		app.notFound(w)
+		return
+	}
+
+	user, err := app.users.GetByUUID(userUUID)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	type UserIngredientBody struct {
+		ID           int64     `json:"id"`
+		UserUUID     uuid.UUID `json:"userUuid"`
+		IngredientID int64     `json:"ingredientId"`
+		StoreID      int64     `json:"storeId"`
+		Keyword      string    `json:"keyword"`
+		Created      time.Time `json:"created"`
+	}
+
+	var userIngredient UserIngredientBody
+
+	err = json.NewDecoder(r.Body).Decode(&userIngredient)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// If that's not an actual Ingredient: 404
+	ingredient, err := app.ingredients.Get(userIngredient.IngredientID)
+	if err != nil {
+		app.infoLog.Output(2, fmt.Sprintf("No ingredient found for ID: %d", userIngredient.IngredientID))
+		app.notFound(w)
+		return
+	}
+
+	ui, err := app.users.AddIngredient(user.ID, ingredient, userIngredient.Keyword)
+	if err != nil {
+		if err == models.ErrDuplicateUserIngredient {
+			app.clientError(w, http.StatusConflict)
+			return
+		} else {
+			app.serverError(w, err)
+			return
+		}
+	}
+	userIngredient.ID = ui.UserIngredientID
+	userIngredient.Created = ui.Created
+
+	app.jsonResponse(w, &userIngredient)
+}
+
+func (app *application) deleteUserIngredientAssociation(w http.ResponseWriter, r *http.Request) {
 
 }
 

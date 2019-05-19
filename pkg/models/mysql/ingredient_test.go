@@ -11,6 +11,64 @@ import (
 	"github.com/jcorry/morellis/pkg/models"
 )
 
+func TestIngredientModel_Get(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening stub DB connection", err)
+	}
+	defer db.Close()
+
+	cols := []string{"id", "name"}
+
+	tests := []struct {
+		name     string
+		id       int64
+		wantErr  error
+		wantRows *sqlmock.Rows
+	}{
+		{
+			"Found a row",
+			10,
+			nil,
+			sqlmock.NewRows(cols).AddRow(10, "Chocolate"),
+		},
+		{
+			"No rows",
+			10,
+			sql.ErrNoRows,
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantErr == nil {
+				mock.ExpectQuery(`^SELECT id, name FROM ingredient WHERE id = (.+)?`).WithArgs(tt.id).WillReturnRows(tt.wantRows)
+			} else {
+				mock.ExpectQuery(`^SELECT id, name FROM ingredient WHERE id = (.+)?`).WithArgs(tt.id).WillReturnError(tt.wantErr)
+			}
+
+			ing := IngredientModel{DB: db}
+
+			ingredient, err := ing.Get(tt.id)
+			if tt.wantErr == sql.ErrNoRows {
+				if err != models.ErrNoRecord {
+					t.Errorf("Got unexpected error: %s", err)
+				}
+			}
+
+			if ingredient != nil && ingredient.ID != tt.id {
+				t.Errorf("Got unexpected Ingredient")
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("There were unfulfilled expectations: %s", err)
+			}
+
+		})
+	}
+}
+
 func TestIngredientModel_GetByName(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {

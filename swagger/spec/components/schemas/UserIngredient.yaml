@@ -6,7 +6,7 @@ properties:
       association row in the `ingredient_user` table.
     type: integer
     example: 3154
-  userId:
+  userUUID:
     description: Unique identifier for User
     type: string
     format: uuid

@@ -294,7 +294,18 @@ VALUES
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
-
+CREATE TABLE `ingredient_user` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `ingredient_id` int(11) unsigned NOT NULL,
+    `user_id` int(11) unsigned NOT NULL,
+    `keyword` varchar(16) DEFAULT NULL,
+    `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_ingredient_user_ingredient_id_user_id` (`ingredient_id`,`user_id`),
+    KEY `fk_ingredient_user_user_id` (`user_id`),
+    CONSTRAINT `fk_ingredient_user_ingredient_id` FOREIGN KEY (`ingredient_id`) REFERENCES `ingredient` (`id`),
+    CONSTRAINT `fk_ingredient_user_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
