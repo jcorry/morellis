@@ -39,5 +39,15 @@ jobs:
         name: Wait for db
         command: dockerize -wait tcp://127.0.0.1:3306 -timeout 1m
     # specify any bash command here prefixed with `run: `
+    - run:
+        name: "Create temp dir for artifacts"
+        command: |
+          mkdir -p /tmp/artifacts
     - run: go get -v -t -d ./...
-    - run: go test -v ./...
+    - run:
+        command: |
+          go test -v -coverprofile=c.out ./...
+          go tool cover -html=c.out -o coverage.html
+          mv coverage.html /tmp/articacts
+    - store_artifacts:
+        path: /tmp/artifacts
