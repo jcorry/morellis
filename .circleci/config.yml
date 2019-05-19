@@ -48,6 +48,6 @@ jobs:
         command: |
           go test -v -coverprofile=c.out ./...
           go tool cover -html=c.out -o coverage.html
-          mv coverage.html /tmp/articacts
+          mv coverage.html /tmp/artifacts
     - store_artifacts:
         path: /tmp/artifacts
