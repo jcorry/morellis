@@ -611,7 +611,7 @@ func TestUserModel_GetIngredients(t *testing.T) {
 			query := `^SELECT iu.id, iu.created, i.id, i.name
 			   FROM ingredient_user iu
 	      LEFT JOIN ingredient i ON iu.ingredient_id = i.id
-              WHERE user_id = (.+) AND deleted IS NULL$`
+              WHERE user_id = (.+) AND deleted = 0$`
 
 			if tt.wantErr == nil {
 				mock.ExpectQuery(query).WithArgs(tt.userId).WillReturnRows(tt.wantRows)
@@ -679,14 +679,15 @@ func TestUserModel_RemoveUserIngredient(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			query := `^UPDATE ingredient_user 
 						  SET deleted = (.+)
-					    WHERE id = (.+)$`
+					    WHERE id = (.+) 
+						  AND deleted = 0$`
 
 			userIngredientId := int64(7)
 
 			if tt.wantErr == nil {
-				mock.ExpectExec(query).WithArgs(AnyTime{}, userIngredientId).WillReturnResult(sqlmock.NewResult(1, tt.affected))
+				mock.ExpectExec(query).WithArgs(AnyInt64{}, userIngredientId).WillReturnResult(sqlmock.NewResult(1, tt.affected))
 			} else {
-				mock.ExpectExec(query).WithArgs(AnyTime{}, userIngredientId).WillReturnError(tt.wantErr)
+				mock.ExpectExec(query).WithArgs(AnyInt64{}, userIngredientId).WillReturnError(tt.wantErr)
 			}
 
 			m := UserModel{DB: db}

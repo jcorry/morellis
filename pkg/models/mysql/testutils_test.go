@@ -70,3 +70,11 @@ func (a AnyTime) Match(v driver.Value) bool {
 	_, ok := v.(time.Time)
 	return ok
 }
+
+type AnyInt64 struct{}
+
+// Match satisfies sqlmock.Argument interface
+func (a AnyInt64) Match(v driver.Value) bool {
+	_, ok := v.(int64)
+	return ok
+}

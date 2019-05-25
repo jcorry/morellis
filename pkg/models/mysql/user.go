@@ -515,7 +515,8 @@ func (u *UserModel) GetIngredients(userID int64) ([]*models.UserIngredient, erro
 func (u *UserModel) RemoveUserIngredient(userIngredientID int64) error {
 	stmt := `UPDATE ingredient_user 
 				SET deleted = ?
-			  WHERE id = ? AND deleted = 0`
+			  WHERE id = ? 
+			    AND deleted = 0`
 
 	res, err := u.DB.Exec(stmt, int32(time.Now().Unix()), userIngredientID)
 	if err != nil {
