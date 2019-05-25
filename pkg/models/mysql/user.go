@@ -478,11 +478,59 @@ func (u *UserModel) AddIngredient(userID int64, ingredient *models.Ingredient, k
 
 // GetIngredients gets all of the UserIngredient associations for the User
 func (u *UserModel) GetIngredients(userID int64) ([]*models.UserIngredient, error) {
-	return nil, nil
+	stmt := `SELECT iu.id, iu.created, i.id, i.name
+			   FROM ingredient_user iu
+	      LEFT JOIN ingredient i ON iu.ingredient_id = i.id
+              WHERE user_id = ? AND deleted = 0`
+
+	rows, err := u.DB.Query(stmt, userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	var userIngredients []*models.UserIngredient
+
+	for rows.Next() {
+		i := &models.Ingredient{}
+		ui := &models.UserIngredient{}
+
+		err = rows.Scan(&ui.UserIngredientID, &ui.Created, &i.ID, &i.Name)
+
+		if err != nil {
+			return nil, err
+		}
+
+		ui.Ingredient = i
+		userIngredients = append(userIngredients, ui)
+	}
+
+	return userIngredients, nil
 }
 
 // RemoveIngredient removes the UserIngredient association
-func (u *UserModel) RemoveIngredient(userID int64, ingredientID int) error {
+func (u *UserModel) RemoveUserIngredient(userIngredientID int64) error {
+	stmt := `UPDATE ingredient_user 
+				SET deleted = ?
+			  WHERE id = ? AND deleted = 0`
+
+	res, err := u.DB.Exec(stmt, int32(time.Now().Unix()), userIngredientID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows < 1 {
+		return models.ErrNoneAffected
+	}
+
 	return nil
 }
 
@@ -505,8 +553,7 @@ func (u *UserModel) checkValidUser(userID int) bool {
 	var isValid bool
 	stmt := `SELECT IF(COUNT(*), 'true', 'false')
 			   FROM user
-			  WHERE id = ? 
-		  		AND status_id = ?`
+			  WHERE id = ? AND status_id = ?`
 
 	err := u.DB.QueryRow(stmt, userID, models.USER_STATUS_VERIFIED).Scan(&isValid)
 	if err != nil {

@@ -17,6 +17,7 @@ var (
 	ErrDuplicateUserPermission = errors.New("models: User already has that Permission")
 	ErrDuplicateUserIngredient = errors.New("models: User already has that Ingredient")
 	ErrInvalidUser             = errors.New("models: Not a valid User")
+	ErrNoneAffected            = errors.New("models: No rows affected")
 )
 
 // Credentials are used to authenticate with the API

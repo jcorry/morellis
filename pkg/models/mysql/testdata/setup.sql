@@ -120,8 +120,9 @@ CREATE TABLE `ingredient_user` (
     `user_id` int(11) unsigned NOT NULL,
     `keyword` varchar(16) DEFAULT NULL,
     `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `deleted` int(8) DEFAULT '0',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ingredient_user_ingredient_id_user_id` (`ingredient_id`,`user_id`),
+    UNIQUE KEY `uk_ingredient_user_ingredient_id_user_id` (`ingredient_id`,`user_id`,`deleted`),
     KEY `fk_ingredient_user_user_id` (`user_id`),
     CONSTRAINT `fk_ingredient_user_ingredient_id` FOREIGN KEY (`ingredient_id`) REFERENCES `ingredient` (`id`),
     CONSTRAINT `fk_ingredient_user_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)

@@ -64,6 +64,8 @@ func (m *UserModel) GetByUUID(ID uuid.UUID) (*models.User, error) {
 
 	if ID.String() == "df97802e-79e8-11e9-8f9e-2a86e4085a59" {
 		mockUser.ID = 1001
+	} else {
+		mockUser.ID = 1
 	}
 
 	mockUser.UUID = ID
@@ -149,10 +151,33 @@ func (u *UserModel) AddIngredient(userID int64, ingredient *models.Ingredient, k
 
 // GetIngredients gets all of the UserIngredient associations for the User
 func (u *UserModel) GetIngredients(userID int64) ([]*models.UserIngredient, error) {
-	return nil, nil
+	if userID >= 1000 {
+		return nil, models.ErrNoRecord
+	}
+
+	uiSlice := []*models.UserIngredient{}
+
+	ingredientNames := []string{"vanilla", "almonds", "jalapeno", "coconut", "chocolate"}
+
+	for i := 0; i < 3; i++ {
+		ui := &models.UserIngredient{
+			UserIngredientID: int64(i),
+			Ingredient: &models.Ingredient{
+				ID:   int64(i * 3),
+				Name: ingredientNames[i],
+			},
+			Created: time.Now(),
+		}
+		uiSlice = append(uiSlice, ui)
+	}
+	return uiSlice, nil
 }
 
 // RemoveIngredient removes the UserIngredient association
-func (u *UserModel) RemoveIngredient(userID int64, ingredientID int) error {
+func (u *UserModel) RemoveUserIngredient(userIngredientID int64) error {
+	if userIngredientID >= 1000 {
+		return models.ErrNoneAffected
+	}
+
 	return nil
 }

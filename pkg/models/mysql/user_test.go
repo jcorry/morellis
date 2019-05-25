@@ -573,3 +573,133 @@ func TestUserModel_AddIngredient(t *testing.T) {
 	}
 
 }
+
+func TestUserModel_GetIngredients(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening stub DB connection", err)
+	}
+	defer db.Close()
+
+	cols := []string{"id", "created", "id", "name"}
+
+	tests := []struct {
+		name     string
+		userId   int64
+		numRows  int
+		wantErr  error
+		wantRows *sqlmock.Rows
+	}{
+		{
+			"2 rows",
+			17,
+			2,
+			nil,
+			sqlmock.NewRows(cols).AddRow(1, randomTimestamp(), 12, "caramel").AddRow(2, randomTimestamp(), 12, "fudge"),
+		},
+		{
+			"Deleted",
+			17,
+			0,
+			sql.ErrNoRows,
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			query := `^SELECT iu.id, iu.created, i.id, i.name
+			   FROM ingredient_user iu
+	      LEFT JOIN ingredient i ON iu.ingredient_id = i.id
+              WHERE user_id = (.+) AND deleted IS NULL$`
+
+			if tt.wantErr == nil {
+				mock.ExpectQuery(query).WithArgs(tt.userId).WillReturnRows(tt.wantRows)
+			} else {
+				mock.ExpectQuery(query).WithArgs(tt.userId).WillReturnError(tt.wantErr)
+			}
+
+			m := UserModel{DB: db}
+
+			userIngedients, err := m.GetIngredients(tt.userId)
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("There were unfulfilled expectations: %s", err)
+			}
+
+			if tt.wantErr == sql.ErrNoRows {
+				if err != models.ErrNoRecord {
+					t.Errorf("Got unexpected error: %s", err)
+				}
+			}
+
+			if tt.numRows != len(userIngedients) {
+				t.Errorf("Unexpected return length: want %d, got %d", tt.numRows, len(userIngedients))
+			}
+
+		})
+
+	}
+}
+
+func TestUserModel_RemoveUserIngredient(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening stub DB connection", err)
+	}
+	defer db.Close()
+
+	tests := []struct {
+		name          string
+		affected      int64
+		wantErr       error
+		wantResultErr error
+	}{
+		{
+			"Successful Delete",
+			1,
+			nil,
+			nil,
+		},
+		{
+			"Failed delete",
+			1,
+			mysql.ErrMalformPkt,
+			mysql.ErrMalformPkt,
+		},
+		{
+			"None Affected",
+			0,
+			nil,
+			models.ErrNoneAffected,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			query := `^UPDATE ingredient_user 
+						  SET deleted = (.+)
+					    WHERE id = (.+)$`
+
+			userIngredientId := int64(7)
+
+			if tt.wantErr == nil {
+				mock.ExpectExec(query).WithArgs(AnyTime{}, userIngredientId).WillReturnResult(sqlmock.NewResult(1, tt.affected))
+			} else {
+				mock.ExpectExec(query).WithArgs(AnyTime{}, userIngredientId).WillReturnError(tt.wantErr)
+			}
+
+			m := UserModel{DB: db}
+
+			err := m.RemoveUserIngredient(userIngredientId)
+			if err != tt.wantResultErr {
+				t.Errorf("Unexpected error: want %s; Got %s", tt.wantResultErr, err)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("There were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+
+}

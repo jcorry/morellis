@@ -75,7 +75,7 @@ func (m *IngredientModel) Search(limit int, offset int, order string, search []s
 	}
 	defer rows.Close()
 
-	ingredients := []*models.Ingredient{}
+	var ingredients []*models.Ingredient
 	for rows.Next() {
 		ingredient := &models.Ingredient{}
 		err = rows.Scan(&ingredient.ID, &ingredient.Name)

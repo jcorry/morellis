@@ -32,7 +32,7 @@ type application struct {
 		RemoveAllPermissions(userID int) error
 		AddIngredient(userID int64, ingredient *models.Ingredient, keyword string) (*models.UserIngredient, error)
 		GetIngredients(userID int64) ([]*models.UserIngredient, error)
-		RemoveIngredient(userID int64, ingredientID int) error
+		RemoveUserIngredient(userIngredientID int64) error
 	}
 	stores interface {
 		Insert(string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)

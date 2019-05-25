@@ -15,6 +15,15 @@ import (
 	"github.com/jcorry/morellis/pkg/models"
 )
 
+type UserIngredientBody struct {
+	ID           int64     `json:"id"`
+	UserUUID     uuid.UUID `json:"userUuid"`
+	IngredientID int64     `json:"ingredientId"`
+	StoreID      int64     `json:"storeId,omitempty"`
+	Keyword      string    `json:"keyword,omitempty"`
+	Created      time.Time `json:"created"`
+}
+
 // Auth handlers
 func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
 	var creds models.Credentials
@@ -262,15 +271,6 @@ func (app *application) createUserIngredientAssociation(w http.ResponseWriter, r
 		return
 	}
 
-	type UserIngredientBody struct {
-		ID           int64     `json:"id"`
-		UserUUID     uuid.UUID `json:"userUuid"`
-		IngredientID int64     `json:"ingredientId"`
-		StoreID      int64     `json:"storeId"`
-		Keyword      string    `json:"keyword"`
-		Created      time.Time `json:"created"`
-	}
-
 	var userIngredient UserIngredientBody
 
 	err = json.NewDecoder(r.Body).Decode(&userIngredient)
@@ -304,7 +304,87 @@ func (app *application) createUserIngredientAssociation(w http.ResponseWriter, r
 }
 
 func (app *application) deleteUserIngredientAssociation(w http.ResponseWriter, r *http.Request) {
+	userUUID, err := uuid.Parse(r.URL.Query().Get(":uuid"))
+	if err != nil || userUUID == uuid.Nil {
+		fmt.Println("No user found")
+		app.notFound(w)
+		return
+	}
 
+	_, err = app.users.GetByUUID(userUUID)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	userIngredientId, err := strconv.Atoi(r.URL.Query().Get(":userIngredientID"))
+	if err != nil {
+		app.infoLog.Output(2, "No userIngredientID found in URL")
+		app.notFound(w)
+		return
+	}
+
+	err = app.users.RemoveUserIngredient(int64(userIngredientId))
+
+	if err != nil {
+		app.errorLog.Output(2, err.Error())
+
+		if err == models.ErrNoneAffected {
+			app.notFound(w)
+			return
+		}
+
+		app.serverError(w, err)
+		return
+	}
+
+	app.noContentResponse(w)
+	return
+}
+
+func (app *application) listUserIngredient(w http.ResponseWriter, r *http.Request) {
+	userUUID, err := uuid.Parse(r.URL.Query().Get(":uuid"))
+	if err != nil || userUUID == uuid.Nil {
+		fmt.Println("No user found")
+		app.notFound(w)
+		return
+	}
+
+	user, err := app.users.GetByUUID(userUUID)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+	fmt.Println(fmt.Sprintf("User UUID: %s", userUUID))
+	fmt.Println(fmt.Sprintf("UserID: %d", user.ID))
+
+	userIngredients, err := app.users.GetIngredients(user.ID)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	userIngredientResponses := []*UserIngredientBody{}
+
+	for _, ui := range userIngredients {
+		userIngredientResponses = append(userIngredientResponses, &UserIngredientBody{
+			ID:           ui.UserIngredientID,
+			UserUUID:     userUUID,
+			IngredientID: ui.Ingredient.ID,
+			Created:      ui.Created,
+		})
+	}
+
+	meta := make(map[string]interface{})
+	meta["totalRecords"] = len(userIngredientResponses)
+	meta["count"] = len(userIngredientResponses)
+
+	response := make(map[string]interface{})
+	response["meta"] = meta
+	response["items"] = userIngredientResponses
+
+	app.jsonResponse(w, response)
+	return
 }
 
 // Store handlers

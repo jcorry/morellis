@@ -516,3 +516,102 @@ func TestCreateUserIngredientAssociation(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteUserIngredientAssociation(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	userUuid, err := uuid.NewRandom()
+	if err != nil {
+		t.Errorf("Unexpected error: %s", err)
+	}
+
+	tests := []struct {
+		name             string
+		userUuid         string
+		userIngredientId int
+		wantCode         int
+		wantBody         []byte
+	}{
+		{
+			"Success",
+			userUuid.String(),
+			7,
+			204,
+			nil,
+		},
+		{
+			"None Affected",
+			userUuid.String(),
+			1000,
+			404,
+			[]byte("Not Found"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			url := fmt.Sprintf("/api/v1/user/%s/ingredient/%d", tt.userUuid, tt.userIngredientId)
+			code, _, body := ts.request(t, "delete", url, bytes.NewBuffer(nil), true)
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+		})
+	}
+}
+
+func TestListUserIngredients(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	userUuid, err := uuid.NewRandom()
+	if err != nil {
+		t.Errorf("Unexpected error: %s", err)
+	}
+
+	tests := []struct {
+		name     string
+		userUuid string
+		wantCode int
+		wantBody []byte
+	}{
+		{
+			"Success",
+			userUuid.String(),
+			200,
+			nil,
+		},
+		{
+			"No Records",
+			"df97802e-79e8-11e9-8f9e-2a86e4085a59",
+			404,
+			[]byte("Not Found"),
+		},
+		{
+			"No User",
+			"e6fc6b5a-882c-40ba-b860-b11a413ec2df",
+			404,
+			[]byte("Not Found"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			url := fmt.Sprintf("/api/v1/user/%s/ingredient", tt.userUuid)
+			code, _, body := ts.request(t, "get", url, bytes.NewBuffer(nil), true)
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+		})
+	}
+}
