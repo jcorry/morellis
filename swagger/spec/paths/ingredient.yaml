@@ -26,7 +26,7 @@ get:
     - name: searchTerm
       in: query
       description: |-
-        A string (or strings) used to search for matching Ingrdients. Partial matches on the Ingredient's
+        A string (or strings) used to search for matching Ingredients. Partial matches on the Ingredient's
         Name field
       schema:
         type: array
