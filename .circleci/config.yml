@@ -49,6 +49,6 @@ jobs:
           go test -v -coverprofile=c.out -covermode=atomic ./...
           go tool cover -html=c.out -o coverage.html
           mv coverage.html /tmp/artifacts
-          bash <(curl -s https://codecov.io/bash)
+          bash <(curl -s https://codecov.io/bash) -f c.out
     - store_artifacts:
         path: /tmp/artifacts
