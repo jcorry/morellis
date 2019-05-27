@@ -108,14 +108,6 @@ func (m *FlavorModel) Delete(id int) (bool, error) {
 	return true, nil
 }
 
-func (m *FlavorModel) AddIngredient(id int, ingredient *models.Ingredient) (*models.Ingredient, error) {
-	return nil, nil
-}
-
-func (m *FlavorModel) RemoveIngredient(id int, ingredient *models.Ingredient) (*models.Ingredient, error) {
-	return nil, nil
-}
-
 func (m *FlavorModel) Count() int {
 	return len(MockFlavors)
 }

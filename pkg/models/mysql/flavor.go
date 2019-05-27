@@ -184,18 +184,6 @@ func (m *FlavorModel) Delete(id int) (bool, error) {
 	return false, nil
 }
 
-// AddIngredient adds an Ingredient to a Flavor.
-func (m *FlavorModel) AddIngredient(flavorId int, ingredient *models.Ingredient) (*models.Ingredient, error) {
-
-	// Add Ingredient ID to flavor_ingredient table
-	return ingredient, nil
-}
-
-// RemoveIngredient removes an Ingredient from a Flavor.
-func (m *FlavorModel) RemoveIngredient(id int, ingredient *models.Ingredient) (*models.Ingredient, error) {
-	return nil, nil
-}
-
 // Count returns the total number of Flavors
 func (m *FlavorModel) Count() int {
 	var count int
@@ -203,7 +191,7 @@ func (m *FlavorModel) Count() int {
 
 	err := row.Scan(&count)
 	if err != nil {
-		panic(err)
+		return 0
 	}
 
 	return count
