@@ -235,6 +235,55 @@ func TestFlavorModel_Insert_ShouldRollbackOnFlavorInsertFail(t *testing.T) {
 	}
 }
 
+func TestFlavorModel_Insert_ShouldRollbackOnFlavorIngredientInsertFail(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening stub DB connection", err)
+	}
+	defer db.Close()
+
+	flavorID := int64(100)
+
+	flavor := &models.Flavor{
+		Name: "Vanilla",
+		Ingredients: []models.Ingredient{
+			{
+				Name: "vanilla",
+			},
+			{
+				Name: "sugar",
+			},
+		},
+	}
+
+	mock.ExpectBegin()
+
+	mock.ExpectExec(`^INSERT INTO flavor \(name, description, created\) VALUES \((.+), (.+), (.+)\)$`).
+		WillReturnResult(sqlmock.NewResult(flavorID, 1))
+
+	getByNameQuery := `^SELECT id, name FROM ingredient WHERE LOWER\(name\) = (.+)$`
+	insertIngredientQuery := `^INSERT INTO flavor_ingredient \(flavor_id, ingredient_id\) VALUES \((.+), (.+)\)$`
+	idx := 1
+	i := flavor.Ingredients[idx-1]
+
+	rows := sqlmock.NewRows([]string{"id", "name"}).AddRow(idx, i.Name)
+	mock.ExpectQuery(getByNameQuery).WithArgs(i.Name).WillReturnRows(rows)
+
+	mock.ExpectExec(insertIngredientQuery).
+		WithArgs(flavorID, idx).
+		WillReturnError(fmt.Errorf("flavor ingredient insert err"))
+
+	mock.ExpectRollback()
+
+	f := FlavorModel{DB: db}
+
+	_, err = f.Insert(flavor)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
 func TestFlavorModel_Insert_ShouldRollbackOnIngredientInsertFail(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
