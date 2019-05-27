@@ -1,3 +1,4 @@
+[![codecov](https://codecov.io/gh/jcorry/morellis/branch/develop/graph/badge.svg?token=kpW5vEgvD5)](https://codecov.io/gh/jcorry/morellis)
 [![CircleCI](https://circleci.com/gh/jcorry/morellis/tree/master.svg?style=svg&circle-token=c66443d46cc348481a050ce58e1fb2c41a8803b9)](https://circleci.com/gh/jcorry/morellis/tree/master)
 # Morellis API
 
