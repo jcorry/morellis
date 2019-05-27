@@ -30,6 +30,8 @@ func (pc *PermissionsCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// @TODO: https://github.com/jcorry/morellis/issues/44
+
 	pc.handler.ServeHTTP(w, r)
 }
 

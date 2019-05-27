@@ -30,6 +30,9 @@ type application struct {
 		AddPermission(userID int, p models.Permission) (int, error)
 		RemovePermission(userPermissionID int) (bool, error)
 		RemoveAllPermissions(userID int) error
+		AddIngredient(userID int64, ingredient *models.Ingredient, keyword string) (*models.UserIngredient, error)
+		GetIngredients(userID int64) ([]*models.UserIngredient, error)
+		RemoveUserIngredient(userIngredientID int64) error
 	}
 	stores interface {
 		Insert(string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
@@ -52,8 +55,10 @@ type application struct {
 		RemoveIngredient(int, *models.Ingredient) (*models.Ingredient, error)
 	}
 	ingredients interface {
+		Get(ID int64) (*models.Ingredient, error)
 		GetByName(string) (*models.Ingredient, error)
 		Insert(*models.Ingredient) (*models.Ingredient, error)
+		Search(limit int, offset int, order string, search []string) ([]*models.Ingredient, error)
 	}
 	mapsApiKey string
 }

@@ -1,6 +1,6 @@
 
 CREATE TABLE `user` (
-    id INTEGER UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    id INT(11) UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
     uuid VARCHAR(36) NOT NULL,
     first_name VARCHAR(24) NULL,
     last_name VARCHAR(24) NULL,
@@ -31,14 +31,14 @@ ALTER TABLE `user` ADD FOREIGN KEY (status_id) REFERENCES ref_user_status(id);
 -- Insert dummy user
 INSERT INTO user (uuid, first_name, last_name, email, phone, status_id, hashed_password, created)
 VALUES (
-    UUID(),
-    'Alice',
-    'Jones',
-    'alice@example.com',
-    '867-5309',
-    2,
-    '$2a$12$3/ZmSDnMwcfRcxgahkkNrOzyOv28HXbEu1vSVdkIbFId.AKJryrDC', -- 'password'
-    '2019-02-24 17:25:25'
+   UUID(),
+   'Alice',
+   'Jones',
+   'alice@example.com',
+   '867-5309',
+   2,
+   '$2a$12$3/ZmSDnMwcfRcxgahkkNrOzyOv28HXbEu1vSVdkIbFId.AKJryrDC', -- 'password'
+   '2019-02-24 17:25:25'
 );
 
 -- Create syntax for TABLE 'permission'
@@ -99,7 +99,7 @@ INSERT INTO `store` (`id`, `name`, `phone`, `email`, `url`, `address`, `city`, `
 
 -- Create ingredient table
 CREATE TABLE `ingredient` (
-    id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    id INT(11) UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(128) NOT NULL,
     created TIMESTAMP NOT NULL,
     updated TIMESTAMP null
@@ -113,9 +113,24 @@ VALUES
 (4, 'pecan', '2019-03-02 21:36:19', NULL),
 (5, 'nuts', '2019-03-02 21:36:19', NULL);
 
+-- Creat ingredient_user table
+CREATE TABLE `ingredient_user` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `ingredient_id` int(11) unsigned NOT NULL,
+    `user_id` int(11) unsigned NOT NULL,
+    `keyword` varchar(16) DEFAULT NULL,
+    `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `deleted` int(8) DEFAULT '0',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_ingredient_user_ingredient_id_user_id` (`ingredient_id`,`user_id`,`deleted`),
+    KEY `fk_ingredient_user_user_id` (`user_id`),
+    CONSTRAINT `fk_ingredient_user_ingredient_id` FOREIGN KEY (`ingredient_id`) REFERENCES `ingredient` (`id`),
+    CONSTRAINT `fk_ingredient_user_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Create flavor table
 CREATE TABLE `flavor` (
-    id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    id INT(11) UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(128) NOT NULL,
     description TEXT NULL,
     created TIMESTAMP NOT NULL,
@@ -130,9 +145,9 @@ VALUES
 
 -- Create flavor_ingredient table
 CREATE TABLE `flavor_ingredient` (
-    id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    flavor_id INTEGER NOT NULL,
-    ingredient_id INTEGER NOT NULL
+    id INT(11) UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    flavor_id INT(11) UNSIGNED NOT NULL,
+    ingredient_id INT(11) UNSIGNED  NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE `flavor_ingredient` ADD FOREIGN KEY (flavor_id) REFERENCES flavor(id);

@@ -1,17 +1,30 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jcorry/morellis/pkg/models"
 )
 
+type UserIngredientBody struct {
+	ID           int64     `json:"id"`
+	UserUUID     uuid.UUID `json:"userUuid"`
+	IngredientID int64     `json:"ingredientId"`
+	StoreID      int64     `json:"storeId,omitempty"`
+	Keyword      string    `json:"keyword,omitempty"`
+	Created      time.Time `json:"created"`
+}
+
+// Auth handlers
 func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
 	var creds models.Credentials
 
@@ -59,6 +72,7 @@ func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
 	app.jsonResponse(w, response)
 }
 
+// User handlers
 func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 	var reqUser *models.User
 	err := json.NewDecoder(r.Body).Decode(&reqUser)
@@ -138,7 +152,6 @@ func (app *application) partialUpdateUser(w http.ResponseWriter, r *http.Request
 	app.jsonResponse(w, user)
 }
 
-// Get a single user by ID.
 func (app *application) getUser(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(r.URL.Query().Get(":uuid"))
 	if err != nil || id == uuid.Nil {
@@ -242,6 +255,136 @@ func (app *application) deleteUser(w http.ResponseWriter, r *http.Request) {
 		app.noContentResponse(w)
 		return
 	}
+}
+
+func (app *application) createUserIngredientAssociation(w http.ResponseWriter, r *http.Request) {
+	userUUID, err := uuid.Parse(r.URL.Query().Get(":uuid"))
+	if err != nil || userUUID == uuid.Nil {
+		fmt.Println("No user found")
+		app.notFound(w)
+		return
+	}
+
+	user, err := app.users.GetByUUID(userUUID)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	var userIngredient UserIngredientBody
+
+	err = json.NewDecoder(r.Body).Decode(&userIngredient)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// If that's not an actual Ingredient: 404
+	ingredient, err := app.ingredients.Get(userIngredient.IngredientID)
+	if err != nil {
+		app.infoLog.Output(2, fmt.Sprintf("No ingredient found for ID: %d", userIngredient.IngredientID))
+		app.notFound(w)
+		return
+	}
+
+	ui, err := app.users.AddIngredient(user.ID, ingredient, userIngredient.Keyword)
+	if err != nil {
+		if err == models.ErrDuplicateUserIngredient {
+			app.clientError(w, http.StatusConflict)
+			return
+		} else {
+			app.serverError(w, err)
+			return
+		}
+	}
+	userIngredient.ID = ui.UserIngredientID
+	userIngredient.Created = ui.Created
+
+	app.jsonResponse(w, &userIngredient)
+}
+
+func (app *application) deleteUserIngredientAssociation(w http.ResponseWriter, r *http.Request) {
+	userUUID, err := uuid.Parse(r.URL.Query().Get(":uuid"))
+	if err != nil || userUUID == uuid.Nil {
+		fmt.Println("No user found")
+		app.notFound(w)
+		return
+	}
+
+	_, err = app.users.GetByUUID(userUUID)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	userIngredientId, err := strconv.Atoi(r.URL.Query().Get(":userIngredientID"))
+	if err != nil {
+		app.infoLog.Output(2, "No userIngredientID found in URL")
+		app.notFound(w)
+		return
+	}
+
+	err = app.users.RemoveUserIngredient(int64(userIngredientId))
+
+	if err != nil {
+		app.errorLog.Output(2, err.Error())
+
+		if err == models.ErrNoneAffected {
+			app.notFound(w)
+			return
+		}
+
+		app.serverError(w, err)
+		return
+	}
+
+	app.noContentResponse(w)
+	return
+}
+
+func (app *application) listUserIngredient(w http.ResponseWriter, r *http.Request) {
+	userUUID, err := uuid.Parse(r.URL.Query().Get(":uuid"))
+	if err != nil || userUUID == uuid.Nil {
+		fmt.Println("No user found")
+		app.notFound(w)
+		return
+	}
+
+	user, err := app.users.GetByUUID(userUUID)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+	fmt.Println(fmt.Sprintf("User UUID: %s", userUUID))
+	fmt.Println(fmt.Sprintf("UserID: %d", user.ID))
+
+	userIngredients, err := app.users.GetIngredients(user.ID)
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	userIngredientResponses := []*UserIngredientBody{}
+
+	for _, ui := range userIngredients {
+		userIngredientResponses = append(userIngredientResponses, &UserIngredientBody{
+			ID:           ui.UserIngredientID,
+			UserUUID:     userUUID,
+			IngredientID: ui.Ingredient.ID,
+			Created:      ui.Created,
+		})
+	}
+
+	meta := make(map[string]interface{})
+	meta["totalRecords"] = len(userIngredientResponses)
+	meta["count"] = len(userIngredientResponses)
+
+	response := make(map[string]interface{})
+	response["meta"] = meta
+	response["items"] = userIngredientResponses
+
+	app.jsonResponse(w, response)
+	return
 }
 
 // Store handlers
@@ -564,6 +707,67 @@ func (app *application) listFlavor(w http.ResponseWriter, r *http.Request) {
 	response := make(map[string]interface{})
 	response["meta"] = meta
 	response["items"] = flavors
+
+	app.jsonResponse(w, response)
+}
+
+// Ingredient handlers
+func (app *application) listIngredient(w http.ResponseWriter, r *http.Request) {
+	var err error
+	params := r.URL.Query()
+
+	l := params.Get("count")
+	limit := 0
+	if l != "" {
+		limit, err = strconv.Atoi(l)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+	}
+
+	o := params.Get("start")
+	offset := 0
+	if o != "" {
+		offset, err = strconv.Atoi(o)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+	}
+
+	sb := params.Get("sortBy")
+
+	s := params.Get("searchTerms")
+
+	t := csv.NewReader(strings.NewReader(s))
+
+	var terms []string
+	for {
+		r, err := t.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			app.serverError(w, err)
+		}
+		terms = r
+	}
+
+	ingredients, err := app.ingredients.Search(limit, offset, sb, terms)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	meta := make(map[string]interface{})
+	meta["totalRecords"] = app.flavors.Count()
+	meta["count"] = len(ingredients)
+	meta["start"] = offset
+	meta["sortBy"] = sb
+
+	response := make(map[string]interface{})
+	response["meta"] = meta
+	response["items"] = ingredients
 
 	app.jsonResponse(w, response)
 }

@@ -1,0 +1,31 @@
+type: object
+properties:
+  id:
+    description: |-
+      The unique identifier for the UserIngredient. This is the ID of the
+      association row in the `ingredient_user` table.
+    type: integer
+    example: 3154
+  userUUID:
+    description: Unique identifier for User
+    type: string
+    format: uuid
+    example: e6fc6b5a-882c-40ba-b860-b11a413ec2df
+    required: true
+  ingredientId:
+    description: Unique identifier for the Ingredient represented.
+    type: integer
+    example: 18
+    required: true
+  storeId:
+    description: |-
+      Unique identifier for the Store represented. If `null`, the association will exist for all Stores.
+    type: integer
+    example: 2
+  keyword:
+    description: |-
+      The keyword the user searched for to find the Ingredient.
+    type: string
+    example: chocolate
+  created:
+    $ref: '#/components/schemas/Created'

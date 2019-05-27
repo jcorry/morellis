@@ -390,6 +390,7 @@ func (u *UserModel) RemovePermission(userPermissionID int) (bool, error) {
 	return true, nil
 }
 
+// RemoveAllPermissions removes all Permissions from a User
 func (u *UserModel) RemoveAllPermissions(userID int) error {
 	stmt, err := u.DB.Prepare(`DELETE FROM permission_user WHERE user_id = ?`)
 	if err != nil {
@@ -400,6 +401,7 @@ func (u *UserModel) RemoveAllPermissions(userID int) error {
 	return err
 }
 
+// UpdatePermissions replaces all of a Users Permissions with new Permissions
 func (u *UserModel) UpdatePermissions(userID int, permissions []*models.UserPermission) error {
 	var IDs []int
 	for _, p := range permissions {
@@ -438,6 +440,101 @@ func (u *UserModel) UpdatePermissions(userID int, permissions []*models.UserPerm
 	return nil
 }
 
+// AddIngredient creates a UserIngredient association. This is used for allowing Users to
+// save Ingredient preferences for notifications.
+func (u *UserModel) AddIngredient(userID int64, ingredient *models.Ingredient, keyword string) (*models.UserIngredient, error) {
+	stmt := `INSERT INTO ingredient_user (ingredient_id, user_id, keyword) VALUES (?, ?, ?)`
+	res, err := u.DB.Exec(stmt, ingredient.ID, userID, keyword)
+	if err != nil {
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
+			if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_ingredient_user_ingredient") {
+				return nil, models.ErrDuplicateUserIngredient
+			}
+		}
+		return nil, err
+	}
+
+	lastInsertId, err := res.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	var userIngredient = &models.UserIngredient{
+		UserIngredientID: lastInsertId,
+		Ingredient:       ingredient,
+	}
+
+	stmt = `SELECT id, created 
+			   FROM ingredient_user 
+			  WHERE id = ?`
+
+	err = u.DB.QueryRow(stmt, lastInsertId).Scan(&userIngredient.UserIngredientID, &userIngredient.Created)
+	if err != nil {
+		return nil, err
+	}
+
+	return userIngredient, nil
+}
+
+// GetIngredients gets all of the UserIngredient associations for the User
+func (u *UserModel) GetIngredients(userID int64) ([]*models.UserIngredient, error) {
+	stmt := `SELECT iu.id, iu.created, i.id, i.name
+			   FROM ingredient_user iu
+	      LEFT JOIN ingredient i ON iu.ingredient_id = i.id
+              WHERE user_id = ? AND deleted = 0`
+
+	rows, err := u.DB.Query(stmt, userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	var userIngredients []*models.UserIngredient
+
+	for rows.Next() {
+		i := &models.Ingredient{}
+		ui := &models.UserIngredient{}
+
+		err = rows.Scan(&ui.UserIngredientID, &ui.Created, &i.ID, &i.Name)
+
+		if err != nil {
+			return nil, err
+		}
+
+		ui.Ingredient = i
+		userIngredients = append(userIngredients, ui)
+	}
+
+	return userIngredients, nil
+}
+
+// RemoveIngredient removes the UserIngredient association
+func (u *UserModel) RemoveUserIngredient(userIngredientID int64) error {
+	stmt := `UPDATE ingredient_user 
+				SET deleted = ?
+			  WHERE id = ? 
+			    AND deleted = 0`
+
+	res, err := u.DB.Exec(stmt, int32(time.Now().Unix()), userIngredientID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows < 1 {
+		return models.ErrNoneAffected
+	}
+
+	return nil
+}
+
 func (u *UserModel) checkValidPermission(p models.Permission) bool {
 	var isValid bool
 	stmt := `SELECT IF(COUNT(*), 'true', 'false') 
@@ -457,8 +554,7 @@ func (u *UserModel) checkValidUser(userID int) bool {
 	var isValid bool
 	stmt := `SELECT IF(COUNT(*), 'true', 'false')
 			   FROM user
-			  WHERE id = ? 
-		  		AND status_id = ?`
+			  WHERE id = ? AND status_id = ?`
 
 	err := u.DB.QueryRow(stmt, userID, models.USER_STATUS_VERIFIED).Scan(&isValid)
 	if err != nil {

@@ -23,6 +23,11 @@ tags:
   - name: Flavor
     description: |
       Flavors are ice cream flavors. Endpoints include simple CRUD operations.
+  - name: Ingredient
+    description: |-
+      Ingredients are a property of Flavors but exist as a separate endpoint so that they can be searched
+      and retrieved to make the Ingredient->User association used to determine which Users should be
+      notified when Flavors are updated.
   - name: User
     description: |
       User management endpoints allow a user to manage themselves or an admin level user to manage any other user.

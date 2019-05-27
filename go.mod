@@ -1,6 +1,7 @@
 module github.com/jcorry/morellis
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.3.3
 	github.com/PuerkitoBio/goquery v1.5.0 // indirect
 	github.com/antchfx/htmlquery v1.0.0 // indirect
 	github.com/antchfx/xmlquery v1.0.0 // indirect
