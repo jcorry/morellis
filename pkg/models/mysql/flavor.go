@@ -181,7 +181,32 @@ func (m *FlavorModel) Update(id int, flavor *models.Flavor) (*models.Flavor, err
 
 // Delete a Flavor identified by ID.
 func (m *FlavorModel) Delete(id int) (bool, error) {
-	return false, nil
+	tx, _ := m.DB.Begin()
+	defer tx.Rollback()
+
+	stmt := `DELETE FROM flavor_ingredient WHERE flavor_id = ?`
+	res, err := tx.Exec(stmt, id)
+	if err != nil {
+		return false, err
+	}
+
+	stmt = `DELETE FROM flavor WHERE id = ?`
+	res, err = tx.Exec(stmt, id)
+	if err != nil {
+		return false, err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return false, err
+	}
+
+	return affected > 0, nil
 }
 
 // Count returns the total number of Flavors

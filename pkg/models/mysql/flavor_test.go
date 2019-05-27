@@ -194,6 +194,59 @@ func TestFlavorModel_Insert_ShouldCommit(t *testing.T) {
 	}
 }
 
+func TestFlavorModel_Insert_CommitShouldError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening stub DB connection", err)
+	}
+	defer db.Close()
+
+	flavorID := int64(100)
+
+	flavor := &models.Flavor{
+		Name: "Vanilla",
+		Ingredients: []models.Ingredient{
+			{
+				Name: "vanilla",
+			},
+			{
+				Name: "sugar",
+			},
+		},
+	}
+
+	mock.ExpectBegin()
+
+	mock.ExpectExec(`^INSERT INTO flavor \(name, description, created\) VALUES \((.+), (.+), (.+)\)$`).
+		WillReturnResult(sqlmock.NewResult(flavorID, 1))
+
+	getByNameQuery := `^SELECT id, name FROM ingredient WHERE LOWER\(name\) = (.+)$`
+	insertIngredientQuery := `^INSERT INTO flavor_ingredient \(flavor_id, ingredient_id\) VALUES \((.+), (.+)\)$`
+	for idx, i := range flavor.Ingredients {
+		rows := sqlmock.NewRows([]string{"id", "name"}).AddRow(idx, i.Name)
+		mock.ExpectQuery(getByNameQuery).WithArgs(i.Name).WillReturnRows(rows)
+
+		mock.ExpectExec(insertIngredientQuery).
+			WithArgs(flavorID, idx).
+			WillReturnResult(sqlmock.NewResult(int64(100+idx), 1))
+	}
+
+	expectedErr := fmt.Errorf("insert commit err")
+	mock.ExpectCommit().WillReturnError(expectedErr)
+
+	f := FlavorModel{DB: db}
+
+	_, err = f.Insert(flavor)
+
+	if err != expectedErr {
+		t.Errorf("Unexpected err: %s", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
 func TestFlavorModel_Insert_ShouldRollbackOnFlavorInsertFail(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -384,5 +437,164 @@ func TestFlavorModel_Count(t *testing.T) {
 				t.Errorf("There were unfulfilled expectations: %s", err)
 			}
 		})
+	}
+}
+
+func TestFlavorModel_DeleteCommits(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening stub DB connection", err)
+	}
+	defer db.Close()
+
+	flavorID := 12
+
+	mock.ExpectBegin()
+
+	stmt := `^DELETE FROM flavor_ingredient WHERE flavor_id = (.+)$`
+	mock.ExpectExec(stmt).WithArgs(flavorID).WillReturnResult(sqlmock.NewResult(1, 3))
+
+	stmt = `^DELETE FROM flavor WHERE id = (.+)$`
+	mock.ExpectExec(stmt).WithArgs(flavorID).WillReturnResult(sqlmock.NewResult(1, 1))
+
+	mock.ExpectCommit()
+
+	f := FlavorModel{DB: db}
+
+	_, err = f.Delete(flavorID)
+	if err != nil {
+		t.Errorf("Unexpected err; Got %s", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestFlavorModel_DeleteReturnsFalseWhenNoAffectedRows(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening stub DB connection", err)
+	}
+	defer db.Close()
+
+	flavorID := 12
+
+	mock.ExpectBegin()
+
+	stmt := `^DELETE FROM flavor_ingredient WHERE flavor_id = (.+)$`
+	mock.ExpectExec(stmt).WithArgs(flavorID).WillReturnResult(sqlmock.NewResult(1, 3))
+
+	stmt = `^DELETE FROM flavor WHERE id = (.+)$`
+	mock.ExpectExec(stmt).WithArgs(flavorID).WillReturnResult(sqlmock.NewResult(1, 0))
+
+	mock.ExpectCommit()
+
+	f := FlavorModel{DB: db}
+
+	res, err := f.Delete(flavorID)
+	if err != nil {
+		t.Errorf("Unexpected err; Got %s", err)
+	}
+
+	if res != false {
+		t.Errorf("Unexpected result, want %t, got %v", false, res)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestFlavorModel_DeleteRollsBackOnFlavorIngredientError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening stub DB connection", err)
+	}
+	defer db.Close()
+
+	flavorID := 12
+	expectedErr := fmt.Errorf("delete flavor_ingredient err")
+
+	mock.ExpectBegin()
+
+	stmt := `^DELETE FROM flavor_ingredient WHERE flavor_id = (.+)$`
+	mock.ExpectExec(stmt).WithArgs(flavorID).WillReturnError(expectedErr)
+
+	mock.ExpectRollback()
+
+	f := FlavorModel{DB: db}
+
+	_, err = f.Delete(flavorID)
+	if err != expectedErr {
+		t.Errorf("Unexpected err; Got %s", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestFlavorModel_DeleteRollsBackOnFlavorError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening stub DB connection", err)
+	}
+	defer db.Close()
+
+	flavorID := 12
+	expectedErr := fmt.Errorf("Delete flavor err")
+
+	mock.ExpectBegin()
+
+	stmt := `^DELETE FROM flavor_ingredient WHERE flavor_id = (.+)$`
+	mock.ExpectExec(stmt).WithArgs(flavorID).WillReturnResult(sqlmock.NewResult(1, 3))
+
+	stmt = `^DELETE FROM flavor WHERE id = (.+)$`
+	mock.ExpectExec(stmt).WithArgs(flavorID).WillReturnError(expectedErr)
+
+	mock.ExpectRollback()
+
+	f := FlavorModel{DB: db}
+
+	_, err = f.Delete(flavorID)
+	if err != expectedErr {
+		t.Errorf("Unexpected err; Got %s", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestFlavorModel_DeleteCommitReturnsErr(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening stub DB connection", err)
+	}
+	defer db.Close()
+
+	flavorID := 12
+	expectedErr := fmt.Errorf("commit err")
+
+	mock.ExpectBegin()
+
+	stmt := `^DELETE FROM flavor_ingredient WHERE flavor_id = (.+)$`
+	mock.ExpectExec(stmt).WithArgs(flavorID).WillReturnResult(sqlmock.NewResult(1, 3))
+
+	stmt = `^DELETE FROM flavor WHERE id = (.+)$`
+	mock.ExpectExec(stmt).WithArgs(flavorID).WillReturnResult(sqlmock.NewResult(1, 1))
+
+	mock.ExpectCommit().WillReturnError(expectedErr)
+
+	f := FlavorModel{DB: db}
+
+	_, err = f.Delete(flavorID)
+	if err != expectedErr {
+		t.Errorf("Unexpected err; Got %s", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
 	}
 }
