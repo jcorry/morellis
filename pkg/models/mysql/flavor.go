@@ -181,19 +181,32 @@ func (m *FlavorModel) Update(id int, flavor *models.Flavor) (*models.Flavor, err
 
 // Delete a Flavor identified by ID.
 func (m *FlavorModel) Delete(id int) (bool, error) {
-	return false, nil
-}
+	tx, _ := m.DB.Begin()
+	defer tx.Rollback()
 
-// AddIngredient adds an Ingredient to a Flavor.
-func (m *FlavorModel) AddIngredient(flavorId int, ingredient *models.Ingredient) (*models.Ingredient, error) {
+	stmt := `DELETE FROM flavor_ingredient WHERE flavor_id = ?`
+	res, err := tx.Exec(stmt, id)
+	if err != nil {
+		return false, err
+	}
 
-	// Add Ingredient ID to flavor_ingredient table
-	return ingredient, nil
-}
+	stmt = `DELETE FROM flavor WHERE id = ?`
+	res, err = tx.Exec(stmt, id)
+	if err != nil {
+		return false, err
+	}
 
-// RemoveIngredient removes an Ingredient from a Flavor.
-func (m *FlavorModel) RemoveIngredient(id int, ingredient *models.Ingredient) (*models.Ingredient, error) {
-	return nil, nil
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return false, err
+	}
+
+	return affected > 0, nil
 }
 
 // Count returns the total number of Flavors
@@ -203,7 +216,7 @@ func (m *FlavorModel) Count() int {
 
 	err := row.Scan(&count)
 	if err != nil {
-		panic(err)
+		return 0
 	}
 
 	return count

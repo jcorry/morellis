@@ -51,8 +51,6 @@ type application struct {
 		Insert(*models.Flavor) (*models.Flavor, error)
 		Update(int, *models.Flavor) (*models.Flavor, error)
 		Delete(int) (bool, error)
-		AddIngredient(int, *models.Ingredient) (*models.Ingredient, error)
-		RemoveIngredient(int, *models.Ingredient) (*models.Ingredient, error)
 	}
 	ingredients interface {
 		Get(ID int64) (*models.Ingredient, error)
