@@ -25,12 +25,11 @@ func NewPermissionsCheck(handler http.Handler, permissions []string) *Permission
 
 func (pc *PermissionsCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(ContextKeyUser).(*models.User)
-	if !checkPermissions(user, pc.permissions) {
+	reqUUID := r.URL.Query().Get(":uuid")
+	if !checkPermissions(user, pc.permissions, reqUUID) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-
-	// @TODO: https://github.com/jcorry/morellis/issues/44
 
 	pc.handler.ServeHTTP(w, r)
 }
@@ -112,11 +111,21 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 	})
 }
 
-func checkPermissions(user *models.User, permissions []string) bool {
+func checkPermissions(user *models.User, permissions []string, reqUUID string) bool {
+	ok := false
 	for _, userPermission := range user.Permissions {
 		for _, requiredPermission := range permissions {
 			if userPermission.Permission.Name == requiredPermission {
-				return true
+				if requiredPermission == "self:read" || requiredPermission == "self:write" {
+					if user.UUID.String() == reqUUID {
+						ok = true
+					}
+				}
+
+				if requiredPermission == "user:read" || requiredPermission == "user:write" {
+					ok = true
+				}
+				return ok
 			}
 		}
 	}
