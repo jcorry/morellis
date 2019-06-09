@@ -2,10 +2,12 @@ package main
 
 import (
 	"database/sql"
-	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/joho/godotenv"
 
 	"github.com/google/uuid"
 
@@ -62,15 +64,19 @@ type application struct {
 }
 
 func main() {
-	addr := flag.String("addr", ":4001", "HTTP network address")
-	dsn := flag.String("dsn", "morellis:E4j+#2G^8Pa=^Nn9@(127.0.0.1:33061)/morellis?parseTime=true", "MySQL DSN")
-	mapsApiKey := flag.String("api_key", "AIzaSyDzOe0YI-sQXJHM9DMr7YEU5zCwhPBXFts", "Google maps geocoding api key")
-	flag.Parse()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	addr := fmt.Sprintf(":%s", os.Getenv("PORT"))
+	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true", os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_DATABASE"))
+	mapsApiKey := os.Getenv("GMAP_API_KEY")
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	db, err := openDB(*dsn)
+	db, err := openDB(dsn)
 
 	if err != nil {
 		errorLog.Fatal(err)
@@ -91,16 +97,16 @@ func main() {
 		stores:      &mysql.StoreModel{DB: db},
 		flavors:     &mysql.FlavorModel{DB: db},
 		ingredients: &mysql.IngredientModel{DB: db},
-		mapsApiKey:  *mapsApiKey,
+		mapsApiKey:  mapsApiKey,
 	}
 
 	srv := &http.Server{
-		Addr:     *addr,
+		Addr:     addr,
 		ErrorLog: errorLog,
 		Handler:  app.routes(),
 	}
 
-	infoLog.Printf("Starting server on %s", *addr)
+	infoLog.Printf("Starting server on %s", addr)
 
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
