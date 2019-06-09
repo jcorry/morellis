@@ -15,6 +15,7 @@ require (
 	github.com/gojp/goreportcard v0.0.0-20190515002622-515e065d1083 // indirect
 	github.com/google/uuid v1.1.0
 	github.com/jawher/mow.cli v1.0.5 // indirect
+	github.com/joho/godotenv v1.3.0
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
