@@ -1,8 +1,9 @@
 .DS_Store
 .idea/
 .env
-certs/
-cmd/dataloader
 cp.out
 data/
-morellis
+certs/
+cmd/dataloader
+cmd/pwtest
+
