@@ -202,6 +202,25 @@ func TestGetUser(t *testing.T) {
 	}
 }
 
+func TestDeleteUser(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	id, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+
+	urlPath := fmt.Sprintf("/api/v1/user/%s", id)
+
+	code, _, _ := ts.request(t, "delete", urlPath, bytes.NewBuffer(nil), true)
+
+	if code != http.StatusNoContent {
+		t.Errorf("want %d; got %d", http.StatusNoContent, code)
+	}
+}
+
 func TestGetStore(t *testing.T) {
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())
