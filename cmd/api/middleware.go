@@ -112,20 +112,17 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 }
 
 func checkPermissions(user *models.User, permissions []string, reqUUID string) bool {
-	ok := false
 	for _, userPermission := range user.Permissions {
 		for _, requiredPermission := range permissions {
 			if userPermission.Permission.Name == requiredPermission {
-				if requiredPermission == "self:read" || requiredPermission == "self:write" {
-					if user.UUID.String() == reqUUID {
-						ok = true
-					}
+				if requiredPermission == "user:read" || requiredPermission == "user:write" {
+					return true
 				}
 
-				if requiredPermission == "user:read" || requiredPermission == "user:write" {
-					ok = true
+				if (requiredPermission == "self:read" || requiredPermission == "self:write") &&
+					user.UUID.String() == reqUUID {
+					return true
 				}
-				return ok
 			}
 		}
 	}
