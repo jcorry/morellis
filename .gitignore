@@ -1,7 +1,7 @@
 .DS_Store
 .idea/
 .env
-tls/*
+tls/*.pem
 cmd/dataloader
 cp.out
 data/
