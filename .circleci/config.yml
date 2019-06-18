@@ -40,14 +40,14 @@ jobs:
         command: dockerize -wait tcp://127.0.0.1:3306 -timeout 1m
     # specify any bash command here prefixed with `run: `
     - run:
-        name: "Create TLS cert files"
-        command: |
-          mkdir ./tls && cd ./tls && go run $GOPATH/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
-    - run:
         name: "Create temp dir for artifacts"
         command: |
           mkdir -p /tmp/artifacts
     - run: go get -v -t -d ./...
+    - run:
+        name: "Create TLS cert files"
+        command: |
+          mkdir ./tls && cd ./tls && go run $GOPATH/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
     - run:
         command: |
           go test -v -coverprofile=c.out -covermode=atomic ./...
