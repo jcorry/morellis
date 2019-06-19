@@ -10,6 +10,9 @@ db:
 
 all: build
 
+certs: ## Generate TLS cert files
+	cd tls && go run /usr/local/go/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
+
 lint: ## Lint the files
 	@golint -set_exit_status ${PKG_LIST}
 

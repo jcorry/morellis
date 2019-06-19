@@ -45,6 +45,10 @@ jobs:
           mkdir -p /tmp/artifacts
     - run: go get -v -t -d ./...
     - run:
+        name: "Create TLS cert files"
+        command: |
+          mkdir ./tls && cd ./tls && go run $(go env GOROOT)/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
+    - run:
         command: |
           go test -v -coverprofile=c.out -covermode=atomic ./...
           go tool cover -html=c.out -o coverage.html

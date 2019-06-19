@@ -1,7 +1,7 @@
 .DS_Store
 .idea/
 .env
-certs/
+tls/*.pem
 cmd/dataloader
 cp.out
 data/
