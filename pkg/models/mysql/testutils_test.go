@@ -10,19 +10,13 @@ import (
 	"time"
 )
 
-var dsn string
-
-func init() {
-	if os.Getenv("TEST_DSN") != "" {
-		dsn = os.Getenv("TEST_DSN")
-	} else {
-		if !testing.Short() {
-			panic("No test DSN defined")
-		}
-	}
-}
-
 func newTestDB(t *testing.T) (*sql.DB, func()) {
+	var dsn string
+
+	dsn = os.Getenv("TEST_DSN")
+	if dsn == "" && !testing.Short() {
+		t.Fatal("No test DSN defined")
+	}
 
 	db, err := sql.Open("mysql", dsn)
 
