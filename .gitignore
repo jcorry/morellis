@@ -1,9 +1,8 @@
 .DS_Store
 .idea/
 .env
+tls/*.pem
+cmd/dataloader
 cp.out
 data/
-certs/
-cmd/dataloader
-cmd/pwtest
-
+morellis

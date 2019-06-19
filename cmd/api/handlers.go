@@ -31,6 +31,7 @@ func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&creds)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 	defer r.Body.Close()
 
@@ -136,6 +137,7 @@ func (app *application) partialUpdateUser(w http.ResponseWriter, r *http.Request
 
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	user, err = app.users.Update(user)
@@ -172,6 +174,7 @@ func (app *application) getUser(w http.ResponseWriter, r *http.Request) {
 	user.Permissions, err = app.users.GetPermissions(int(user.ID))
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	app.jsonResponse(w, user)
@@ -209,6 +212,7 @@ func (app *application) listUser(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	meta := make(map[string]interface{})
@@ -395,12 +399,14 @@ func (app *application) createStore(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	err = json.Unmarshal(b, &store)
 
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	// Geocode the store
@@ -504,6 +510,7 @@ func (app *application) listStore(w http.ResponseWriter, r *http.Request) {
 	stores, err := app.stores.List(limit, offset, sb)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	meta := make(map[string]interface{})
@@ -634,6 +641,7 @@ func (app *application) createFlavor(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 	defer r.Body.Close()
 
@@ -696,6 +704,7 @@ func (app *application) listFlavor(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	meta := make(map[string]interface{})
@@ -750,6 +759,7 @@ func (app *application) listIngredient(w http.ResponseWriter, r *http.Request) {
 		}
 		if err != nil {
 			app.serverError(w, err)
+			return
 		}
 		terms = r
 	}
@@ -757,6 +767,7 @@ func (app *application) listIngredient(w http.ResponseWriter, r *http.Request) {
 	ingredients, err := app.ingredients.Search(limit, offset, sb, terms)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	meta := make(map[string]interface{})
