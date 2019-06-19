@@ -182,7 +182,8 @@ func TestGetUser(t *testing.T) {
 		wantBody []byte
 	}{
 		{"Valid request", id.String(), http.StatusOK, []byte("McTestFace")},
-		{"No record", "foo", http.StatusNotFound, nil},
+		{"Invalid UUID", "foo", http.StatusNotFound, nil},
+		{"No record", "e6fc6b5a-882c-40ba-b860-b11a413ec2df", http.StatusNotFound, nil},
 	}
 
 	for _, tt := range tests {
