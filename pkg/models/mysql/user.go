@@ -25,7 +25,7 @@ const (
 )
 
 // Insert a new User
-func (u *UserModel) Insert(uid uuid.UUID, firstName string, lastName string, email string, phone string, statusID int, password string) (*models.User, error) {
+func (u *UserModel) Insert(uid uuid.UUID, firstName models.NullString, lastName models.NullString, email models.NullString, phone string, statusID int, password string) (*models.User, error) {
 	created := time.Now()
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), PW_HASH_COST)
 	if err != nil {
@@ -51,7 +51,7 @@ func (u *UserModel) Insert(uid uuid.UUID, firstName string, lastName string, ema
 		?
 	)`
 
-	result, err := u.DB.Exec(stmt, uid.String(), firstName, lastName, email, phone, statusID, hashedPassword, created)
+	result, err := u.DB.Exec(stmt, uid.String(), firstName.String, lastName.String, email.String, phone, statusID, hashedPassword, created)
 	if err != nil {
 		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 			if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_user_email") {

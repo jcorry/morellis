@@ -33,9 +33,9 @@ func TestUserModel_Get(t *testing.T) {
 			userID: 1,
 			wantUser: &models.User{
 				ID:        1,
-				FirstName: "Alice",
-				LastName:  "Jones",
-				Email:     "alice@example.com",
+				FirstName: models.NullString{"Alice", true},
+				LastName:  models.NullString{"Jones", true},
+				Email:     models.NullString{"alice@example.com", true},
 				Phone:     "867-5309",
 				Status:    "verified",
 				Created:   time.Date(2019, 02, 24, 17, 25, 25, 0, time.UTC),
@@ -53,6 +53,9 @@ func TestUserModel_Get(t *testing.T) {
 			m := UserModel{db}
 
 			user, err := m.Get(tt.userID)
+			if err != nil {
+				t.Errorf("Unexpected error getting user: %s", err)
+			}
 
 			// No way to generate this...has to come from DB
 			tt.wantUser.UUID = user.UUID
@@ -107,23 +110,23 @@ func TestUserModel_List(t *testing.T) {
 
 	users := []*models.User{
 		{
-			FirstName: "John",
-			LastName:  "Corry",
-			Email:     "jcorry@morellis.com",
+			FirstName: models.NullString{"John", true},
+			LastName:  models.NullString{"Corry", true},
+			Email:     models.NullString{"jcorry@morellis.com", true},
 			Phone:     "867-5309",
 			Password:  string(hashedPassword),
 		},
 		{
-			FirstName: "Garrett",
-			LastName:  "Rap",
-			Email:     "garrett@morellis.com",
+			FirstName: models.NullString{"Garrett", true},
+			LastName:  models.NullString{"Rap", true},
+			Email:     models.NullString{"garrett@morellis.com", true},
 			Phone:     "867-5309",
 			Password:  string(hashedPassword),
 		},
 		{
-			FirstName: "Brian",
-			LastName:  "Morton",
-			Email:     "brian@morellis.com",
+			FirstName: models.NullString{"Brian", true},
+			LastName:  models.NullString{"Morton", true},
+			Email:     models.NullString{"brian@morellis.com", true},
 			Phone:     "867-5309",
 			Password:  string(hashedPassword),
 		},
@@ -188,8 +191,8 @@ func TestUserModel_List(t *testing.T) {
 			}
 
 			for i, u := range list {
-				if u.FirstName != tt.wantUserNames[i] {
-					t.Errorf("want %s; got %s", tt.wantUserNames[i], u.FirstName)
+				if u.FirstName.String != tt.wantUserNames[i] {
+					t.Errorf("want %s; got %s", tt.wantUserNames[i], u.FirstName.String)
 				}
 			}
 
