@@ -195,13 +195,13 @@ CREATE TABLE `permission_user` (
 LOCK TABLES `permission_user` WRITE;
 /*!40000 ALTER TABLE `permission_user` DISABLE KEYS */;
 
-INSERT INTO `permission_user` (`id`, `user_id`, `permission_id`, `created`)
+INSERT INTO `permission_user` (`user_id`, `permission_id`, `created`)
 VALUES
-	(1,9,7,'2019-04-08 02:36:19');
+	(1,7,'2019-04-08 02:36:19'),
+    (1,3,'2019-04-08 02:38:43');
 
 /*!40000 ALTER TABLE `permission_user` ENABLE KEYS */;
 UNLOCK TABLES;
-
 
 # Dump of table ref_user_status
 # ------------------------------------------------------------
@@ -289,7 +289,7 @@ LOCK TABLES `user` WRITE;
 
 INSERT INTO `user` (`id`, `uuid`, `first_name`, `last_name`, `email`, `phone`, `status_id`, `hashed_password`, `created`, `updated`)
 VALUES
-	(9,'e6fc6b5a-882c-40ba-b860-b11a413ec2df','John','Corry','jcorry@gmail.com','678-592-8804',1,X'243261243132245A5230363157324A6E624877424D66386A535A6E4C75456C623674702F716E4630494C4C5972506C5A46435A536E59642E38365043','2019-03-18 12:24:34',NULL);
+	(1,'e6fc6b5a-882c-40ba-b860-b11a413ec2df','John','Corry','jcorry@gmail.com','678-592-8804',1,X'243261243132245A5230363157324A6E624877424D66386A535A6E4C75456C623674702F716E4630494C4C5972506C5A46435A536E59642E38365043','2019-03-18 12:24:34',NULL);
 
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
