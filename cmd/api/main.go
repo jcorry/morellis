@@ -20,7 +20,7 @@ type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
 	users    interface {
-		Insert(uid uuid.UUID, firstName string, lastName string, email string, phone string, statusID int, password string) (*models.User, error)
+		Insert(uid uuid.UUID, firstName models.NullString, lastName models.NullString, email models.NullString, phone string, statusID int, password string) (*models.User, error)
 		Update(*models.User) (*models.User, error)
 		Get(int) (*models.User, error)
 		GetByUUID(uuid.UUID) (*models.User, error)

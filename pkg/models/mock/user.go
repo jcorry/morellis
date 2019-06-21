@@ -10,9 +10,9 @@ import (
 
 var mockUser = &models.User{
 	ID:        1,
-	FirstName: "Testy",
-	LastName:  "McTestFace",
-	Email:     "test@example.com",
+	FirstName: models.NullString{"Testy", true},
+	LastName:  models.NullString{"McTestFace", true},
+	Email:     models.NullString{"test@example.com", true},
 	Phone:     "867-5309",
 	Status:    models.USER_STATUS_VERIFIED.Slug(),
 	Created:   time.Now(),
@@ -20,7 +20,7 @@ var mockUser = &models.User{
 
 type UserModel struct{}
 
-func (m *UserModel) Insert(uid uuid.UUID, firstName string, lastName string, email string, phone string, statusID int, password string) (*models.User, error) {
+func (m *UserModel) Insert(uid uuid.UUID, firstName models.NullString, lastName models.NullString, email models.NullString, phone string, statusID int, password string) (*models.User, error) {
 	user := &models.User{
 		ID:        1,
 		UUID:      uid,
@@ -31,7 +31,7 @@ func (m *UserModel) Insert(uid uuid.UUID, firstName string, lastName string, ema
 		Status:    models.USER_STATUS_VERIFIED.Slug(),
 		Created:   time.Now(),
 	}
-	switch email {
+	switch email.String {
 	case "dupe@example.com":
 		return nil, models.ErrDuplicateEmail
 	default:
@@ -40,7 +40,7 @@ func (m *UserModel) Insert(uid uuid.UUID, firstName string, lastName string, ema
 }
 
 func (m *UserModel) Update(user *models.User) (*models.User, error) {
-	switch user.Email {
+	switch user.Email.String {
 	case "dupe@example.com":
 		return nil, models.ErrDuplicateEmail
 	default:
@@ -88,7 +88,7 @@ func (m *UserModel) GetByUUID(ID uuid.UUID) (*models.User, error) {
 }
 
 func (m *UserModel) GetByCredentials(credentials models.Credentials) (*models.User, error) {
-	mockUser.Email = credentials.Email
+	mockUser.Email.String = credentials.Email
 	uid, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err

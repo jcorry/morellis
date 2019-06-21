@@ -1,8 +1,11 @@
 package models
 
 import (
+	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +22,44 @@ var (
 	ErrInvalidUser             = errors.New("models: Not a valid User")
 	ErrNoneAffected            = errors.New("models: No rows affected")
 )
+
+type NullString sql.NullString
+
+func (ns *NullString) MarshalJSON() ([]byte, error) {
+	if !ns.Valid {
+		return []byte("null"), nil
+	}
+	return json.Marshal(ns.String)
+}
+
+func (ns *NullString) UnmarshalJSON(data []byte) error {
+	var s *string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+
+	if s != nil {
+		ns.Valid = true
+		ns.String = *s
+	} else {
+		ns.Valid = false
+	}
+	return nil
+}
+
+func (ns *NullString) Scan(value interface{}) error {
+	var s sql.NullString
+	if err := s.Scan(value); err != nil {
+		return err
+	}
+	// if nil the make Valid false
+	if reflect.TypeOf(value) == nil {
+		*ns = NullString{s.String, false}
+	} else {
+		*ns = NullString{s.String, true}
+	}
+	return nil
+}
 
 // Credentials are used to authenticate with the API
 type Credentials struct {
@@ -44,9 +85,9 @@ type Ingredient struct {
 type User struct {
 	ID          int64            `json:"-"`
 	UUID        uuid.UUID        `json:"uuid"`
-	FirstName   string           `json:"firstName"`
-	LastName    string           `json:"lastName"`
-	Email       string           `json:"email"`
+	FirstName   NullString       `json:"firstName"`
+	LastName    NullString       `json:"lastName"`
+	Email       NullString       `json:"email"`
 	Phone       string           `json:"phone"`
 	Status      string           `json:"status"`
 	Permissions []UserPermission `json:"permissions"`
