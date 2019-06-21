@@ -412,7 +412,8 @@ func (app *application) createStore(w http.ResponseWriter, r *http.Request) {
 	// Geocode the store
 	err = app.geocodeStore(store)
 	if err != nil {
-		app.errorLog.Output(3, err.Error())
+		app.serverError(w, err)
+		return
 	}
 
 	store, err = app.stores.Insert(store.Name, store.Phone, store.Email, store.URL, store.Address, store.City, store.State, store.Zip, store.Lat, store.Lng)
