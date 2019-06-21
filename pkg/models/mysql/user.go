@@ -158,9 +158,9 @@ func (u *UserModel) GetByUUID(uuid uuid.UUID) (*models.User, error) {
 			return nil, err
 		}
 
-		for rows.Next() {
-			p := &models.UserPermission{}
+		user.Permissions = append(user.Permissions, *p)
 
+		for rows.Next() {
 			err = rows.Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &user.Phone, &user.Status, &user.Created, &p.UserPermissionID, &p.ID, &p.Name)
 
 			if err != nil {
