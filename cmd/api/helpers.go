@@ -92,7 +92,7 @@ func (app *application) serverError(w http.ResponseWriter, err error) {
 
 	http.Error(
 		w,
-		fmt.Sprintf("%s : %s", http.StatusText(http.StatusInternalServerError), err.Error()),
+		http.StatusText(http.StatusInternalServerError),
 		http.StatusInternalServerError)
 }
 

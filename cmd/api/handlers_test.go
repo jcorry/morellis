@@ -221,6 +221,54 @@ func TestDeleteUser(t *testing.T) {
 	}
 }
 
+func TestHandlers_CreateStore(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	tests := []struct {
+		name     string
+		store    models.Store
+		wantCode int
+		wantBody []byte
+	}{
+		{
+			"Valid Store",
+			models.Store{
+				Name:    "Foo",
+				Phone:   "867-5309",
+				Email:   "foo@bar.com",
+				URL:     "http://www.bar.com",
+				Address: "1600 Pennsylvania Ave",
+				City:    "Washington",
+				State:   "DC",
+				Zip:     "20500-0004",
+			},
+			200,
+			[]byte("Pennsylvania"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reqBody, err := json.Marshal(tt.store)
+			if err != nil {
+				t.Errorf("Unexpected err; %s", err)
+			}
+
+			code, _, body := ts.request(t, "post", "/api/v1/store", bytes.NewBuffer(reqBody), true)
+
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+		})
+	}
+}
+
 func TestGetStore(t *testing.T) {
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())
