@@ -25,23 +25,32 @@ func (m *FlavorModel) Get(id int) (*models.Flavor, error) {
 
 	rows, err := m.DB.Query(stmt, id)
 
-	if err == sql.ErrNoRows {
-		return nil, models.ErrNoRecord
-	} else if err != nil {
+	if err != nil {
 		return nil, err
 	}
 
 	defer rows.Close()
 
-	for rows.Next() {
+	if rows.Next() {
 		ingredient := &models.Ingredient{}
+
 		err = rows.Scan(&flavor.ID, &flavor.Name, &flavor.Description, &flavor.Created, &ingredient.ID, &ingredient.Name)
 
 		if err != nil {
 			return nil, err
 		}
 
-		flavor.Ingredients = append(flavor.Ingredients, *ingredient)
+		for rows.Next() {
+			err = rows.Scan(&flavor.ID, &flavor.Name, &flavor.Description, &flavor.Created, &ingredient.ID, &ingredient.Name)
+
+			if err != nil {
+				return nil, err
+			}
+
+			flavor.Ingredients = append(flavor.Ingredients, *ingredient)
+		}
+	} else {
+		return nil, models.ErrNoRecord
 	}
 
 	if err = rows.Err(); err != nil {
