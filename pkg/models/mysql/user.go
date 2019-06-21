@@ -149,7 +149,7 @@ func (u *UserModel) GetByUUID(uuid uuid.UUID) (*models.User, error) {
 
 	user := &models.User{}
 
-	for rows.Next() {
+	if rows.Next() {
 		p := &models.UserPermission{}
 
 		err = rows.Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &user.Phone, &user.Status, &user.Created, &p.UserPermissionID, &p.ID, &p.Name)
@@ -157,13 +157,19 @@ func (u *UserModel) GetByUUID(uuid uuid.UUID) (*models.User, error) {
 		if err != nil {
 			return nil, err
 		}
-		user.Permissions = append(user.Permissions, *p)
-	}
 
-	if err == sql.ErrNoRows {
+		for rows.Next() {
+			p := &models.UserPermission{}
+
+			err = rows.Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &user.Phone, &user.Status, &user.Created, &p.UserPermissionID, &p.ID, &p.Name)
+
+			if err != nil {
+				return nil, err
+			}
+			user.Permissions = append(user.Permissions, *p)
+		}
+	} else {
 		return nil, models.ErrNoRecord
-	} else if err != nil {
-		return nil, err
 	}
 
 	return user, nil
