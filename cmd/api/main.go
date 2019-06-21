@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 
@@ -101,9 +102,12 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:     addr,
-		ErrorLog: errorLog,
-		Handler:  app.routes(),
+		Addr:         addr,
+		ErrorLog:     errorLog,
+		Handler:      app.routes(),
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
 	}
 
 	infoLog.Printf("Starting server on %s", addr)
