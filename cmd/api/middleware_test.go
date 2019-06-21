@@ -9,6 +9,10 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/jcorry/morellis/pkg/models"
+
+	"github.com/bmizerany/pat"
+
 	"github.com/google/uuid"
 )
 
@@ -131,11 +135,14 @@ func TestNewPermissionsCheck(t *testing.T) {
 
 	tests := []struct {
 		name       string
+		reqUUID    bool
 		permission []string
 		wantCode   int
 	}{
-		{"Valid permission", []string{"user:read"}, 200},
-		{"Invalid permission", []string{"foo:bar"}, 401},
+		{"Valid permission", false, []string{"user:read"}, 200},
+		{"Invalid permission", false, []string{"foo:bar"}, 401},
+		{"Self permission", false, []string{"self:read"}, 200},
+		{"Self permission with mismatched UUIDs", true, []string{"self:read"}, 401},
 	}
 
 	for _, tt := range tests {
@@ -154,19 +161,41 @@ func TestNewPermissionsCheck(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			handlerToTest := NewPermissionsCheck(nextHandler, tt.permission)
+
+			var reqUUID string
+			if tt.reqUUID {
+				uid, err = uuid.NewRandom()
+				if err != nil {
+					t.Fatal(err)
+				}
+				user.Permissions = []models.UserPermission{
+					{
+						Permission: models.Permission{Name: "self:read"},
+					},
+					{
+						Permission: models.Permission{Name: "self:write"},
+					},
+				}
+
+				reqUUID = uid.String()
+			} else {
+				reqUUID = user.UUID.String()
+			}
+
 			reqToken, err := generateToken(user)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			handlerToTest := NewPermissionsCheck(nextHandler, tt.permission)
+			testUrl, err := url.Parse(fmt.Sprintf("http://testing/testing/%s", reqUUID))
 
-			testUrl, err := url.Parse("http://testing")
 			if err != nil {
 				t.Fatal(err)
 			}
 			req := http.Request{
-				URL: testUrl,
+				Method: http.MethodGet,
+				URL:    testUrl,
 				Header: map[string][]string{
 					"Content-Type":  {"application/json"},
 					"Authorization": {fmt.Sprintf("Bearer %s", reqToken)},
@@ -176,10 +205,17 @@ func TestNewPermissionsCheck(t *testing.T) {
 
 			w := httptest.NewRecorder()
 
-			handlerToTest.ServeHTTP(w, req.WithContext(ctx))
+			UserRouter(handlerToTest).ServeHTTP(w, req.WithContext(ctx))
 			if w.Result().StatusCode != tt.wantCode {
-				t.Errorf("Want code %d, Got code %d", tt.wantCode, w.Result().StatusCode)
+				t.Errorf("Want code %d, Got code %d; User UUID %s; Req UUID %s", tt.wantCode, w.Result().StatusCode, user.UUID.String(), reqUUID)
+				t.Errorf("User Permissions: %v", user.Permissions)
 			}
 		})
 	}
+}
+
+func UserRouter(handler http.Handler) *pat.PatternServeMux {
+	mux := pat.New()
+	mux.Get("/testing/:uuid", handler)
+	return mux
 }
