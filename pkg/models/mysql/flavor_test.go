@@ -37,7 +37,7 @@ func TestFlavorModel_Get(t *testing.T) {
 		{
 			"No rows",
 			1,
-			nil,
+			sqlmock.NewRows(cols),
 			sql.ErrNoRows,
 			models.ErrNoRecord,
 		},

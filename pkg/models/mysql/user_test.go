@@ -220,6 +220,13 @@ func TestUserModel_GetByUUID(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	uid, _ := uuid.NewRandom()
+
+	u, err = m.GetByUUID(uid)
+	if err != models.ErrNoRecord {
+		t.Error(err)
+	}
 }
 
 func TestUserModel_GetByCredentials(t *testing.T) {

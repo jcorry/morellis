@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"testing"
 
 	"github.com/google/uuid"
@@ -27,6 +28,7 @@ func newTestApplication(t *testing.T) *application {
 		stores:      &mock.StoreModel{},
 		flavors:     &mock.FlavorModel{},
 		ingredients: &mock.IngredientModel{},
+		mapsApiKey:  os.Getenv("GMAP_API_KEY"),
 	}
 }
 
