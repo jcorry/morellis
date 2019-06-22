@@ -221,12 +221,25 @@ func TestUserModel_GetByUUID(t *testing.T) {
 		t.Error(err)
 	}
 
+	if len(u.Permissions) != 2 {
+		t.Errorf("Unexpected permission count; want %d; got %d", 2, len(u.Permissions))
+	}
+
+	for _, p := range u.Permissions {
+		if p.Name == "user:read" || p.Name == "user:write" {
+			continue
+		} else {
+			t.Errorf("Missing a permission")
+		}
+	}
+
 	uid, _ := uuid.NewRandom()
 
 	u, err = m.GetByUUID(uid)
 	if err != models.ErrNoRecord {
 		t.Error(err)
 	}
+
 }
 
 func TestUserModel_GetByCredentials(t *testing.T) {
