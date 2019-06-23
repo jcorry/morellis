@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/rs/cors"
+
 	"github.com/joho/godotenv"
 
 	"github.com/google/uuid"
@@ -104,7 +106,7 @@ func main() {
 	srv := &http.Server{
 		Addr:         addr,
 		ErrorLog:     errorLog,
-		Handler:      app.routes(),
+		Handler:      cors.Default().Handler(app.routes()),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
