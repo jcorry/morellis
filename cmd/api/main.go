@@ -103,10 +103,16 @@ func main() {
 		mapsApiKey:  mapsApiKey,
 	}
 
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:*"},
+		AllowedHeaders: []string{"Authorization", "X-Requested-With", "Content-Type"},
+		Debug:          true,
+	})
+
 	srv := &http.Server{
 		Addr:         addr,
 		ErrorLog:     errorLog,
-		Handler:      cors.Default().Handler(app.routes()),
+		Handler:      c.Handler(app.routes()),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
