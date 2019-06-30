@@ -20,6 +20,7 @@ require (
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
 	github.com/rakyll/gotest v0.0.0-20180125184505-86f0749cd8cc // indirect
+	github.com/rs/cors v1.6.0
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/temoto/robotstxt v0.0.0-20180810133444-97ee4a9ee6ea // indirect
 	golang.org/x/crypto v0.0.0-20190219172222-a4c6cb3142f2
