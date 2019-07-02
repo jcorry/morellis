@@ -3,6 +3,8 @@
 .env
 tls/*.pem
 cmd/dataloader
+cmd/pwtest
+cmd/dialogflow
 cp.out
 data/
 morellis

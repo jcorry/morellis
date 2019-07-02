@@ -1,7 +1,7 @@
 module github.com/jcorry/morellis
 
 require (
-	cloud.google.com/go v0.40.0 // indirect
+	cloud.google.com/go v0.40.0
 	github.com/DATA-DOG/go-sqlmock v1.3.3
 	github.com/PuerkitoBio/goquery v1.5.0 // indirect
 	github.com/antchfx/htmlquery v1.0.0 // indirect
@@ -37,9 +37,9 @@ require (
 	golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	golang.org/x/tools v0.0.0-20190628222527-fb37f6ba8261 // indirect
-	google.golang.org/api v0.7.0 // indirect
+	google.golang.org/api v0.7.0
 	google.golang.org/appengine v1.6.1 // indirect
-	google.golang.org/genproto v0.0.0-20190627203621-eb59cef1c072 // indirect
+	google.golang.org/genproto v0.0.0-20190627203621-eb59cef1c072
 	google.golang.org/grpc v1.21.1 // indirect
 	googlemaps.github.io/maps v0.0.0-20190206003505-be134e760d70
 )
