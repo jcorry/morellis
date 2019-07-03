@@ -21,7 +21,7 @@ type EntityTypesService struct {
 
 var Svc EntityTypesService
 
-func NewSessionEntityTypesService() (*EntityTypesService, error) {
+func NewEntityTypesService() (*EntityTypesService, error) {
 	if Svc.Client != nil {
 		return &Svc, nil
 	}
@@ -69,7 +69,7 @@ func (s *EntityTypesService) AddEntities() error {
 
 	flavorModel := &mysql.FlavorModel{DB: s.DB}
 
-	flavors, err := flavorModel.List(100, 0, "")
+	flavors, err := flavorModel.List(100, 0, "", []string{})
 	if err != nil {
 		fmt.Println(fmt.Sprintf("%s", err))
 		return err
