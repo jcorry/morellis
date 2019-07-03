@@ -52,7 +52,7 @@ type application struct {
 	flavors interface {
 		Count() int
 		Get(int) (*models.Flavor, error)
-		List(int, int, string) ([]*models.Flavor, error)
+		List(limit int, offset int, sortBy string, ingredientTerms []string) ([]*models.Flavor, error)
 		Insert(*models.Flavor) (*models.Flavor, error)
 		Update(int, *models.Flavor) (*models.Flavor, error)
 		Delete(int) (bool, error)
