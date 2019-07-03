@@ -130,7 +130,7 @@ func TestFlavorModel_List(t *testing.T) {
 
 			f := FlavorModel{DB: db}
 
-			_, err := f.List(tt.limit, tt.offset, tt.order)
+			_, err := f.List(tt.limit, tt.offset, tt.order, []string{})
 			if err != tt.wantErr {
 				t.Errorf("Got unexpected error, want %s; Got %s", tt.wantErr, err)
 			}

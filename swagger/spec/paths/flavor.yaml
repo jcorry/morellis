@@ -16,6 +16,17 @@ get:
       description: The starting position in the recordset from which User objects will be retrieved and returned. Defaults to 0 if no value is supplied.
       schema:
         type: integer
+    - name: filterIngredient
+      in: query
+      description: |-
+        A string (or strings) used to search for matching Ingredients. Partial matches on the Ingredient's
+        Name field
+      schema:
+        type: array
+        collectionFormat: csv
+        items:
+          type: string
+        example: chocolate,coconut,van
   security:
     - bearer_auth:
       - 'flavor:read'

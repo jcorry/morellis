@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jcorry/morellis/pkg/models"
@@ -61,20 +62,41 @@ func (m *FlavorModel) Get(id int) (*models.Flavor, error) {
 
 // List {limit} number of Flavors starting at {offset}. If {order} matches a field name,
 // results will be ordered by {order}.
-func (m *FlavorModel) List(limit int, offset int, order string) ([]*models.Flavor, error) {
+func (m *FlavorModel) List(limit int, offset int, order string, ingredientTerms []string) ([]*models.Flavor, error) {
+
+	args := make([]interface{}, len(ingredientTerms))
+	for i, term := range ingredientTerms {
+		term = strings.ToLower(strings.TrimSpace(term))
+		args[i] = fmt.Sprintf("%%%s%%", term)
+	}
+
+	ingWhere := ``
+
+	if len(args) > 0 {
+		ingWhere = fmt.Sprintf(" WHERE i.name LIKE ?")
+	}
+
+	for i, _ := range args {
+		if i > 0 {
+			ingWhere = fmt.Sprintf("%s OR i.name LIKE ? ", ingWhere)
+		}
+	}
 
 	stmt := fmt.Sprintf(`SELECT f.id, f.name, f.description, f.created, i.id, i.name
 			   FROM flavor AS f
 		       JOIN flavor_ingredient AS fi ON f.id = fi.flavor_id
 		  LEFT JOIN ingredient AS i ON i.id = fi.ingredient_id
+					%s
 		   ORDER BY %s
-			  LIMIT ?, ?`, "f.name")
+			  LIMIT ?, ?`, ingWhere, "f.name")
 
 	if limit < 1 {
 		limit = DEFAULT_LIMIT
 	}
 
-	rows, err := m.DB.Query(stmt, offset, limit)
+	args = append(args, offset, limit)
+
+	rows, err := m.DB.Query(stmt, args...)
 
 	if err != nil {
 		return nil, err

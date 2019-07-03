@@ -700,8 +700,24 @@ func (app *application) listFlavor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sb := params.Get("sortBy")
+	fi := params.Get("filterIngredient")
 
-	flavors, err := app.flavors.List(limit, offset, sb)
+	t := csv.NewReader(strings.NewReader(fi))
+
+	var ingredientTerms []string
+	for {
+		r, err := t.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+		ingredientTerms = r
+	}
+
+	flavors, err := app.flavors.List(limit, offset, sb, ingredientTerms)
 
 	if err != nil {
 		app.serverError(w, err)
