@@ -89,7 +89,7 @@ func (m *FlavorModel) Get(id int) (*models.Flavor, error) {
 	return nil, models.ErrNoRecord
 }
 
-func (m *FlavorModel) List(limit int, offset int, order string) ([]*models.Flavor, error) {
+func (m *FlavorModel) List(limit int, offset int, order string, filterIngredients []string) ([]*models.Flavor, error) {
 	// sort them by name
 	sort.Slice(MockFlavors, func(i, j int) bool {
 		return MockFlavors[i].Name < MockFlavors[i].Name
