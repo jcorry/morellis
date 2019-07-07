@@ -6,11 +6,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
-	"github.com/rs/cors"
-
 	"github.com/joho/godotenv"
+
+	"github.com/rs/cors"
 
 	"github.com/google/uuid"
 
@@ -66,6 +67,29 @@ type application struct {
 	mapsApiKey string
 }
 
+type MySQLConfig struct {
+	// Optional.
+	Username, Password string
+
+	// Database name, used for separating local from GKE envs
+	Database string
+
+	// Host of the MySQL instance.
+	//
+	// If set, UnixSocket should be unset.
+	Host string
+
+	// Port of the MySQL instance.
+	//
+	// If set, UnixSocket should be unset.
+	Port int
+
+	// UnixSocket is the filepath to a unix socket.
+	//
+	// If set, Host and Port should be unset.
+	UnixSocket string
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -73,13 +97,20 @@ func main() {
 	}
 
 	addr := fmt.Sprintf(":%s", os.Getenv("PORT"))
-	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true", os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_DATABASE"))
+	// dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true", os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_DATABASE"))
+
 	mapsApiKey := os.Getenv("GMAP_API_KEY")
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	db, err := openDB(dsn)
+	infoLog.Println("Connecting to DB...")
+
+	db, err := configureCloudSQL(cloudSQLConfig{
+		Username: os.Getenv("GCP_MYSQL_USERNAME"),
+		Password: os.Getenv("GCP_MYSQL_PASSWORD"),
+		Instance: os.Getenv("GCP_MYSQL_INSTANCE"),
+	})
 
 	if err != nil {
 		errorLog.Fatal(err)
@@ -103,6 +134,7 @@ func main() {
 		mapsApiKey:  mapsApiKey,
 	}
 
+	infoLog.Println("Setting up CORS headers...")
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:*"},
 		AllowedHeaders: []string{"Authorization", "X-Requested-With", "Content-Type"},
@@ -135,4 +167,64 @@ func openDB(dsn string) (*sql.DB, error) {
 		return nil, err
 	}
 	return db, nil
+}
+
+type cloudSQLConfig struct {
+	Username, Password, Instance string
+}
+
+func configureCloudSQL(config cloudSQLConfig) (*sql.DB, error) {
+	if os.Getenv("GAE_INSTANCE") != "" {
+		// Running in production.
+		return newMySQLDB(MySQLConfig{
+			Username:   config.Username,
+			Password:   config.Password,
+			UnixSocket: "/cloudsql/" + config.Instance,
+		})
+	}
+
+	port, err := strconv.Atoi(os.Getenv("DB_PORT"))
+	if err != nil {
+		return nil, err
+	}
+
+	// Running locally.
+	return newMySQLDB(MySQLConfig{
+		Username: os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASS"),
+		Host:     "localhost",
+		Port:     port,
+		Database: os.Getenv("DB_DATABASE"),
+	})
+}
+
+// newMySQLDB creates a new BookDatabase backed by a given MySQL server.
+func newMySQLDB(config MySQLConfig) (*sql.DB, error) {
+	conn, err := sql.Open("mysql", config.dataStoreName(config.Database))
+	if err != nil {
+		return nil, fmt.Errorf("mysql: could not get a connection: %v", err)
+	}
+	if err := conn.Ping(); err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("mysql: could not establish a good connection: %v", err)
+	}
+	return conn, nil
+}
+
+// dataStoreName returns a connection string suitable for sql.Open.
+func (c MySQLConfig) dataStoreName(databaseName string) string {
+	var cred string
+	// [username[:password]@]
+	if c.Username != "" {
+		cred = c.Username
+		if c.Password != "" {
+			cred = cred + ":" + c.Password
+		}
+		cred = cred + "@"
+	}
+
+	if c.UnixSocket != "" {
+		return fmt.Sprintf("%sunix(%s)/%s?parseTime=true", cred, c.UnixSocket, databaseName)
+	}
+	return fmt.Sprintf("%stcp([%s]:%d)/%s?parseTime=true", cred, c.Host, c.Port, databaseName)
 }
