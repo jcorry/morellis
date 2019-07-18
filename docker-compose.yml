@@ -1,5 +1,19 @@
 version: '3'
 services:
+  cloudsql-proxy:
+    container_name: morellis-cloud-sql-proxy
+    image: gcr.io/cloudsql-docker/gce-proxy:1.11
+    command: /cloud_sql_proxy --dir=/cloudsql -instances=<${GCP_MYSQL_INSTANCE}>=tcp:3306 -credential_file=/credentials.json
+    ports:
+      - 3306:3306
+    volumes:
+      - ./morellis-api-a857005c832b.json:/credentials.json
+    restart: always
+    env_file:
+      - ./.env
+    networks:
+      - morellis-net
+
   db:
     container_name: morellis-mysql
     image: mysql:5.7
@@ -25,3 +39,6 @@ services:
       - ./sql/test:/docker-entrypoint-initdb.d
     ports:
       - "33062:3306"
+
+networks:
+  morellis-net:

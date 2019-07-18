@@ -6,10 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
-
-	"github.com/joho/godotenv"
 
 	"github.com/rs/cors"
 
@@ -91,11 +88,6 @@ type MySQLConfig struct {
 }
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
 	addr := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	// dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true", os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_DATABASE"))
 
@@ -183,22 +175,17 @@ func configureCloudSQL(config cloudSQLConfig) (*sql.DB, error) {
 		})
 	}
 
-	port, err := strconv.Atoi(os.Getenv("DB_PORT"))
-	if err != nil {
-		return nil, err
-	}
-
 	// Running locally.
 	return newMySQLDB(MySQLConfig{
-		Username: os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASS"),
-		Host:     "localhost",
-		Port:     port,
-		Database: os.Getenv("DB_DATABASE"),
+		Username: os.Getenv("GCP_MYSQL_USERNAME"),
+		Password: os.Getenv("GCP_MYSQL_PASSWORD"),
+		Host:     "127.0.0.1",
+		Database: os.Getenv("GCP_MYSQL_DATABASE"),
+		Port:     3306,
 	})
 }
 
-// newMySQLDB creates a new BookDatabase backed by a given MySQL server.
+// newMySQLDB creates a new database backed by a given MySQL server.
 func newMySQLDB(config MySQLConfig) (*sql.DB, error) {
 	conn, err := sql.Open("mysql", config.dataStoreName(config.Database))
 	if err != nil {

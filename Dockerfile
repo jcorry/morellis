@@ -11,7 +11,6 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o morellis cmd/api/*.go
 FROM alpine:latest
 
 COPY --from=0 /app/morellis /app/
-COPY --from=0 /app/.env /app/
 
 ENTRYPOINT ./app/morellis
 
