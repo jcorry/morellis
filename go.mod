@@ -2,7 +2,7 @@ module github.com/jcorry/morellis
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.3.3
-	github.com/GoogleCloudPlatform/cloudsql-proxy v0.0.0-20190711182328-f0b00cc64402 // indirect
+	github.com/GoogleCloudPlatform/cloudsql-proxy v0.0.0-20190711182328-f0b00cc64402
 	github.com/PuerkitoBio/goquery v1.5.0 // indirect
 	github.com/antchfx/htmlquery v1.0.0 // indirect
 	github.com/antchfx/xmlquery v1.0.0 // indirect
@@ -16,7 +16,7 @@ require (
 	github.com/gojp/goreportcard v0.0.0-20190515002622-515e065d1083 // indirect
 	github.com/google/uuid v1.1.0
 	github.com/jawher/mow.cli v1.0.5 // indirect
-	github.com/joho/godotenv v1.3.0
+	github.com/joho/godotenv v1.3.0 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect

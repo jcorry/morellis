@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/uuid"
 
+	gcpMyql "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jcorry/morellis/pkg/models"
 	"github.com/jcorry/morellis/pkg/models/mysql"
@@ -98,11 +99,7 @@ func main() {
 
 	infoLog.Println("Connecting to DB...")
 
-	db, err := configureCloudSQL(cloudSQLConfig{
-		Username: os.Getenv("GCP_MYSQL_USERNAME"),
-		Password: os.Getenv("GCP_MYSQL_PASSWORD"),
-		Instance: os.Getenv("GCP_MYSQL_INSTANCE"),
-	})
+	db, err := openDB()
 
 	if err != nil {
 		errorLog.Fatal(err)
@@ -149,8 +146,10 @@ func main() {
 }
 
 // openDB opens a DB connection using for a dsn
-func openDB(dsn string) (*sql.DB, error) {
-	db, err := sql.Open("mysql", dsn)
+func openDB() (*sql.DB, error) {
+	cfg := gcpMyql.Cfg(os.Getenv("GCP_MYSQL_INSTANCE"), os.Getenv("GCP_MYSQL_USERNAME"), os.Getenv("GCP_MYSQL_PASSWORD"))
+	cfg.DBName = os.Getenv("GCP_MYSQL_DATABASE")
+	db, err := gcpMyql.DialCfg(cfg)
 
 	if err != nil {
 		return nil, err
@@ -159,59 +158,4 @@ func openDB(dsn string) (*sql.DB, error) {
 		return nil, err
 	}
 	return db, nil
-}
-
-type cloudSQLConfig struct {
-	Username, Password, Instance string
-}
-
-func configureCloudSQL(config cloudSQLConfig) (*sql.DB, error) {
-	if os.Getenv("GAE_INSTANCE") != "" {
-		// Running in production.
-		return newMySQLDB(MySQLConfig{
-			Username:   config.Username,
-			Password:   config.Password,
-			UnixSocket: "/cloudsql/" + config.Instance,
-		})
-	}
-
-	// Running locally.
-	return newMySQLDB(MySQLConfig{
-		Username: os.Getenv("GCP_MYSQL_USERNAME"),
-		Password: os.Getenv("GCP_MYSQL_PASSWORD"),
-		Host:     "127.0.0.1",
-		Database: os.Getenv("GCP_MYSQL_DATABASE"),
-		Port:     3306,
-	})
-}
-
-// newMySQLDB creates a new database backed by a given MySQL server.
-func newMySQLDB(config MySQLConfig) (*sql.DB, error) {
-	conn, err := sql.Open("mysql", config.dataStoreName(config.Database))
-	if err != nil {
-		return nil, fmt.Errorf("mysql: could not get a connection: %v", err)
-	}
-	if err := conn.Ping(); err != nil {
-		conn.Close()
-		return nil, fmt.Errorf("mysql: could not establish a good connection: %v", err)
-	}
-	return conn, nil
-}
-
-// dataStoreName returns a connection string suitable for sql.Open.
-func (c MySQLConfig) dataStoreName(databaseName string) string {
-	var cred string
-	// [username[:password]@]
-	if c.Username != "" {
-		cred = c.Username
-		if c.Password != "" {
-			cred = cred + ":" + c.Password
-		}
-		cred = cred + "@"
-	}
-
-	if c.UnixSocket != "" {
-		return fmt.Sprintf("%sunix(%s)/%s?parseTime=true", cred, c.UnixSocket, databaseName)
-	}
-	return fmt.Sprintf("%stcp([%s]:%d)/%s?parseTime=true", cred, c.Host, c.Port, databaseName)
 }

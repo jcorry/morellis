@@ -6,3 +6,5 @@ cmd/dataloader
 cp.out
 data/
 morellis
+vendor/
+morellis-api-*.json
