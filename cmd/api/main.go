@@ -82,6 +82,7 @@ func main() {
 	db, err := openDB(dsn)
 
 	if err != nil {
+		infoLog.Output(1, fmt.Sprintf("DSN: %s", dsn))
 		errorLog.Fatal(err)
 	}
 	db.SetMaxIdleConns(50)

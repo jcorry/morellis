@@ -29,3 +29,5 @@ require (
 	google.golang.org/appengine v1.4.0 // indirect
 	googlemaps.github.io/maps v0.0.0-20190206003505-be134e760d70
 )
+
+go 1.13
