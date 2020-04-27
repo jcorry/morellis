@@ -43,7 +43,7 @@ jobs:
         name: "Create temp dir for artifacts"
         command: |
           mkdir -p /tmp/artifacts
-    - run: go get -v -t -d ./...
+    - run: go mod vendor
     - run:
         name: "Create TLS cert files"
         command: |
