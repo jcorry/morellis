@@ -1,16 +1,23 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
 	"database/sql/driver"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func newTestDB(t *testing.T) (*sql.DB, func()) {
+func newTestDB(t *testing.T) (*sql.DB, func(), error) {
 	var dsn string
 
 	dsn = os.Getenv("TEST_DSN")
@@ -24,29 +31,58 @@ func newTestDB(t *testing.T) (*sql.DB, func()) {
 		t.Fatal(err)
 	}
 
+	// Run DB migrations
+	driver, err := mysql.WithInstance(db, &mysql.Config{})
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to create DB driver for migrations: %v", err)
+	}
+	m, err := migrate.NewWithDatabaseInstance(
+		fmt.Sprintf("file://%s", os.Getenv("MIGRATIONS_DIR")),
+		"mysql",
+		driver)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to create migrator: %v", err)
+	}
+
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		return nil, nil, fmt.Errorf("unable to run DB migrations: %v", err)
+	}
+
+	// Do data inserts from testsdata dir
 	script, err := ioutil.ReadFile("./testdata/setup.sql")
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, err = db.Exec(string(script))
+	queries := strings.Split(string(script), ";")
+	tx, err := db.BeginTx(context.Background(), nil)
+
 	if err != nil {
-		t.Fatal(err)
+		return nil, nil, err
+	}
+
+	defer tx.Commit()
+
+	for _, q := range queries {
+		if q == "" {
+			continue
+		}
+		_, err = tx.Exec(q)
+		if err != nil {
+			tx.Rollback()
+			return nil, nil, err
+		}
 	}
 
 	return db, func() {
-		script, err := ioutil.ReadFile("./testdata/teardown.sql")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		_, err = db.Exec(string(script))
+		err = m.Drop()
 		if err != nil {
 			t.Fatal(err)
 		}
 		db.Close()
-	}
+	}, nil
 }
 
 func randomTimestamp() time.Time {

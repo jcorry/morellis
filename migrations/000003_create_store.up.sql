@@ -1,0 +1,16 @@
+-- CREATE store table
+CREATE TABLE store (
+   id INTEGER UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+   name VARCHAR(128) NOT NULL,
+   phone VARCHAR(32) NULL,
+   email VARCHAR(32) NULL,
+   url VARCHAR(64) NULL,
+   address VARCHAR(128) NULL,
+   city VARCHAR(64) NULL,
+   state VARCHAR(32) NULL,
+   zip VARCHAR(16) NULL,
+   lat DECIMAL(9, 6),
+   lng DECIMAL(9, 6),
+   created TIMESTAMP NOT NULL,
+   updated TIMESTAMP null
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

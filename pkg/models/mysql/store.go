@@ -107,12 +107,12 @@ func (s *StoreModel) Insert(name string, phone string, email string, url string,
 
 // Get a single Store by ID
 func (s *StoreModel) Get(id int) (*models.Store, error) {
-	stmt := `SELECT id, name, phone, email, url, phone, address, city, state, zip, lat, lng, created
+	stmt := `SELECT id, name, email, url, phone, address, city, state, zip, lat, lng, created
 			   FROM store
 		  	  WHERE id = ?`
 
 	store := &models.Store{}
-	err := s.DB.QueryRow(stmt, id).Scan(&store.ID, &store.Name, &store.Phone, &store.Email, &store.URL, &store.Phone, &store.Address, &store.City, &store.State, &store.Zip, &store.Lat, &store.Lng, &store.Created)
+	err := s.DB.QueryRow(stmt, id).Scan(&store.ID, &store.Name, &store.Email, &store.URL, &store.Phone, &store.Address, &store.City, &store.State, &store.Zip, &store.Lat, &store.Lng, &store.Created)
 
 	if err == sql.ErrNoRows {
 		return nil, models.ErrNoRecord

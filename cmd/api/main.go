@@ -89,6 +89,9 @@ func main() {
 
 	defer db.Close()
 
+	// ===================================================================================
+	// Run Migrations
+
 	if err != nil {
 		errorLog.Fatal(err)
 	}

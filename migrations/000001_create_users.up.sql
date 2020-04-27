@@ -1,0 +1,13 @@
+CREATE TABLE user (
+    id INT(11) UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    uuid VARCHAR(36) NOT NULL,
+    first_name VARCHAR(24) NULL,
+    last_name VARCHAR(24) NULL,
+    email VARCHAR(128) NULL,
+    phone VARCHAR(24) NOT NULL,
+    status_id TINYINT(3) UNSIGNED NOT NULL DEFAULT 1,
+    hashed_password CHAR(60) NOT NULL,
+    created TIMESTAMP NOT NULL,
+    updated TIMESTAMP NULL,
+    CONSTRAINT uk_user_email UNIQUE(email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

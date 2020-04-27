@@ -29,8 +29,9 @@ VALUES
 ALTER TABLE `user` ADD FOREIGN KEY (status_id) REFERENCES ref_user_status(id);
 
 -- Insert dummy user
-INSERT INTO user (uuid, first_name, last_name, email, phone, status_id, hashed_password, created)
+INSERT INTO user (id, uuid, first_name, last_name, email, phone, status_id, hashed_password, created)
 VALUES (
+   1,
    UUID(),
    'Alice',
    'Jones',
@@ -107,11 +108,11 @@ CREATE TABLE `ingredient` (
 
 INSERT INTO `ingredient` (`id`, `name`, `created`, `updated`)
 VALUES
-(1, 'coconut', '2019-03-01 21:52:22', NULL),
-(2, 'jalapeno', '2019-03-01 21:52:22', NULL),
-(3, 'butter', '2019-03-02 21:36:19', NULL),
-(4, 'pecan', '2019-03-02 21:36:19', NULL),
-(5, 'nuts', '2019-03-02 21:36:19', NULL);
+('coconut'),
+('jalapeno'),
+('butter'),
+('pecan'),
+('nuts');
 
 -- Creat ingredient_user table
 CREATE TABLE `ingredient_user` (
@@ -139,8 +140,8 @@ CREATE TABLE `flavor` (
 
 INSERT INTO `flavor` (`id`, `name`, `description`, `created`, `updated`)
 VALUES
-(1, 'Coconut Japaleno', 'One of our most unique flavors, it must be tasted to be believed!\nOur fresh made coconut ice cream is infused with just the right amount of fresh jalapenos. The experience of hot, sweet and cold hits your palate in pretty amazing ways; come try for yourself!', '2019-03-01 21:52:22', NULL),
-(2, 'Butter Pecan', 'Butter Pecan is an ice cream standard, but that doesnt mean the flavor has to be ordinary!\nOur buttery, nutty and savory ice cream is a rich and delicious fan favorite, blended with just the right amount of buttery goodness and fresh Georgia pecans.', '2019-03-02 21:36:19', NULL);
+('Coconut Japaleno', 'One of our most unique flavors, it must be tasted to be believed!\nOur fresh made coconut ice cream is infused with just the right amount of fresh jalapenos. The experience of hot, sweet and cold hits your palate in pretty amazing ways...come try for yourself!'),
+('Butter Pecan', 'Butter Pecan is an ice cream standard, but that doesnt mean the flavor has to be ordinary!\nOur buttery, nutty and savory ice cream is a rich and delicious fan favorite, blended with just the right amount of buttery goodness and fresh Georgia pecans.');
 
 
 -- Create flavor_ingredient table
@@ -156,20 +157,8 @@ ALTER TABLE `flavor_ingredient` ADD CONSTRAINT uk_flavor_id_ingredient_id UNIQUE
 
 INSERT INTO `flavor_ingredient` (`id`, `flavor_id`, `ingredient_id`)
 VALUES
-(1, 1, 1),
-(2, 1, 2),
-(3, 2, 3),
-(4, 2, 4),
-(5, 2, 5);
-
-CREATE TABLE `flavor_store` (
-    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-    `flavor_id` int(11) NOT NULL,
-    `store_id` int(11) NOT NULL,
-    `position` smallint(6) NOT NULL,
-    `is_active` tinyint(1) NULL DEFAULT '0',
-    `activated` datetime NOT NULL,
-    `deactivated` datetime DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_flavor_store_is_active_store_id_position_id` (`store_id`,`position`,`is_active`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+(1, 1),
+(1, 2),
+(2, 3),
+(2, 4),
+(2, 5);

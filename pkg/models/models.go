@@ -162,7 +162,7 @@ type Store struct {
 	Zip     string    `json:"zip"`
 	Lat     float64   `json:"lat"`
 	Lng     float64   `json:"lng"`
-	Created time.Time `json:"created"`
+	Created time.Time `db:"created" json:"created"`
 	Updated time.Time `json:"-"`
 }
 

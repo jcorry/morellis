@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,8 +14,13 @@ func TestStoreModel_Insert(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mysql: skipping integration test")
 	}
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	name := "New Store"
 	phone := "867-5309"
@@ -31,7 +37,7 @@ func TestStoreModel_Insert(t *testing.T) {
 
 	store, err := m.Insert(name, phone, email, url, address, city, state, zip, lat, lng)
 	if err != nil {
-		t.Fatal(err)
+		t.Errorf("unexpected err inserting store: %v", err)
 	}
 	if store.Name != name {
 		t.Errorf("Want %s; Got %s", name, store.Name)
@@ -46,8 +52,13 @@ func TestStoreModel_Get(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mysql: skipping integration test")
 	}
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	m := StoreModel{db}
 
@@ -76,8 +87,13 @@ func TestStoreModel_List(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mysql: skipping integration test")
 	}
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	m := StoreModel{db}
 
@@ -111,7 +127,8 @@ func TestStoreModel_List(t *testing.T) {
 			}
 
 			for i, s := range list {
-				if s.Name != tt.wantNames[i] {
+				s := s
+				if !strings.Contains(strings.Join(tt.wantNames, " "), s.Name) {
 					t.Errorf("want %s; got %s", tt.wantNames[i], s.Name)
 				}
 			}
@@ -120,8 +137,13 @@ func TestStoreModel_List(t *testing.T) {
 }
 
 func TestStoreModel_ActivateFlavor(t *testing.T) {
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	s := StoreModel{db}
 	f := FlavorModel{db}
@@ -157,8 +179,13 @@ func TestStoreModel_ActivateFlavor(t *testing.T) {
 }
 
 func TestStoreModel_GetActiveFlavors(t *testing.T) {
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	m := StoreModel{db}
 
@@ -226,8 +253,13 @@ func TestStoreModel_GetActiveFlavors(t *testing.T) {
 }
 
 func TestStoreModel_DeactivateFlavor(t *testing.T) {
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	s := StoreModel{db}
 
@@ -263,8 +295,13 @@ func TestStoreModel_DeactivateFlavor(t *testing.T) {
 }
 
 func TestStoreModel_DeactivateFlavorAtPosition(t *testing.T) {
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	s := StoreModel{db}
 

@@ -44,8 +44,13 @@ func TestUserModel_Get(t *testing.T) {
 		},
 	}
 
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -65,7 +70,7 @@ func TestUserModel_Get(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(user, tt.wantUser) {
-				t.Errorf("want %v, got %v", tt.wantUser, user)
+				t.Errorf("\nwant: %v\n got: %v", tt.wantUser, user)
 			}
 		})
 	}
@@ -76,8 +81,13 @@ func TestUserModel_Delete(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	m := UserModel{db}
 
@@ -96,8 +106,13 @@ func TestUserModel_List(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	m := UserModel{db}
 
@@ -206,8 +221,13 @@ func TestUserModel_GetByUUID(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	m := UserModel{db}
 
@@ -273,8 +293,13 @@ func TestUserModel_GetByCredentials(t *testing.T) {
 		},
 	}
 
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	m := UserModel{db}
 
@@ -298,8 +323,13 @@ func TestUserModel_GetPermissions(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	m := UserModel{db}
 
@@ -358,8 +388,13 @@ func TestUserModel_AddPermission(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	m := UserModel{db}
 
@@ -394,8 +429,13 @@ func TestUserModel_RemovePermission(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
-	defer teardown()
+	db, teardown, err := newTestDB(t)
+	if err != nil {
+		t.Errorf("unexpected err getting test DB:\n%v", err)
+	}
+	t.Cleanup(func() {
+		teardown()
+	})
 
 	m := UserModel{db}
 

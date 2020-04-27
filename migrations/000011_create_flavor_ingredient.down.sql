@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS flavor_ingredient CASCADE;

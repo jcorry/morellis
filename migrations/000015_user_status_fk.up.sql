@@ -1,0 +1,1 @@
+ALTER TABLE user ADD FOREIGN KEY (status_id) REFERENCES ref_user_status(id);
