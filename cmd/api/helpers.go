@@ -113,7 +113,7 @@ func (app *application) jsonResponse(w http.ResponseWriter, data interface{}) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(jsonData)
+	_, _ = w.Write(jsonData)
 }
 
 func (app *application) noContentResponse(w http.ResponseWriter) {

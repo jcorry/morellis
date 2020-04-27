@@ -277,11 +277,11 @@ func (u *UserModel) Delete(id int) (bool, error) {
 		return false, err
 	}
 	if affect > 0 {
-		tx.Commit()
+		_ = tx.Commit()
 		return true, nil
 	}
 
-	tx.Rollback()
+	_ = tx.Rollback()
 	return false, nil
 }
 

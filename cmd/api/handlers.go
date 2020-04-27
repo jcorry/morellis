@@ -37,7 +37,7 @@ func (app *application) createAuth(w http.ResponseWriter, r *http.Request) {
 
 	user, err := app.users.GetByCredentials(creds)
 	if err != nil {
-		app.errorLog.Output(2, err.Error())
+		_ = app.errorLog.Output(2, err.Error())
 		app.clientError(w, http.StatusNotFound)
 		return
 	}
@@ -286,7 +286,7 @@ func (app *application) createUserIngredientAssociation(w http.ResponseWriter, r
 	// If that's not an actual Ingredient: 404
 	ingredient, err := app.ingredients.Get(userIngredient.IngredientID)
 	if err != nil {
-		app.infoLog.Output(2, fmt.Sprintf("No ingredient found for ID: %d", userIngredient.IngredientID))
+		_ = app.infoLog.Output(2, fmt.Sprintf("No ingredient found for ID: %d", userIngredient.IngredientID))
 		app.notFound(w)
 		return
 	}
@@ -323,7 +323,7 @@ func (app *application) deleteUserIngredientAssociation(w http.ResponseWriter, r
 
 	userIngredientId, err := strconv.Atoi(r.URL.Query().Get(":userIngredientID"))
 	if err != nil {
-		app.infoLog.Output(2, "No userIngredientID found in URL")
+		_ = app.infoLog.Output(2, "No userIngredientID found in URL")
 		app.notFound(w)
 		return
 	}
@@ -331,7 +331,7 @@ func (app *application) deleteUserIngredientAssociation(w http.ResponseWriter, r
 	err = app.users.RemoveUserIngredient(int64(userIngredientId))
 
 	if err != nil {
-		app.errorLog.Output(2, err.Error())
+		_ = app.errorLog.Output(2, err.Error())
 
 		if err == models.ErrNoneAffected {
 			app.notFound(w)
@@ -442,7 +442,16 @@ func (app *application) partialUpdateStore(w http.ResponseWriter, r *http.Reques
 
 	err = json.NewDecoder(r.Body).Decode(&store)
 
-	app.geocodeStore(store)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	err = app.geocodeStore(store)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
 
 	store, err = app.stores.Update(id, store.Name, store.Phone, store.Email, store.URL, store.Address, store.City, store.State, store.Zip, store.Lat, store.Lng)
 
@@ -462,11 +471,6 @@ func (app *application) updateStore(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var store *models.Store
-
-	if err != nil {
-		app.notFound(w)
-		return
-	}
 
 	err = json.NewDecoder(r.Body).Decode(&store)
 
@@ -577,7 +581,7 @@ func (app *application) activateStoreFlavor(w http.ResponseWriter, r *http.Reque
 	}
 
 	if req.FlavorID != int64(flavorID) {
-		app.errorLog.Output(2, fmt.Sprintf("Request body flavor_id (%d) must match URL query :flavorID (%d)", req.FlavorID, flavorID))
+		_ = app.errorLog.Output(2, fmt.Sprintf("Request body flavor_id (%d) must match URL query :flavorID (%d)", req.FlavorID, flavorID))
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}

@@ -10,9 +10,9 @@ import (
 
 var mockUser = &models.User{
 	ID:        1,
-	FirstName: models.NullString{"Testy", true},
-	LastName:  models.NullString{"McTestFace", true},
-	Email:     models.NullString{"test@example.com", true},
+	FirstName: models.NullString{String: "Testy", Valid: true},
+	LastName:  models.NullString{String: "McTestFace", Valid: true},
+	Email:     models.NullString{String: "test@example.com", Valid: true},
 	Phone:     "867-5309",
 	Status:    models.USER_STATUS_VERIFIED.Slug(),
 	Created:   time.Now(),

@@ -6,7 +6,7 @@ jobs:
   build:
     docker:
     # specify the version
-    - image: circleci/golang:1.11
+    - image: circleci/golang:1.14
       environment:
         TEST_DSN: morellistest:testpass@tcp(127.0.0.1:3306)/morellistest?parseTime=true&multiStatements=true
     

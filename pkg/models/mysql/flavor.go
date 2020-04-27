@@ -151,20 +151,22 @@ func (m *FlavorModel) List(limit int, offset int, order string, ingredientTerms 
 func (m *FlavorModel) Insert(flavor *models.Flavor) (*models.Flavor, error) {
 	created := time.Now()
 	tx, _ := m.DB.Begin()
-	defer tx.Rollback()
+	defer func() {
+		_ = tx.Rollback()
+	}()
 
 	stmt := `INSERT INTO flavor (name, description, created) VALUES (?, ?, ?)`
 	res, err := tx.Exec(stmt, flavor.Name, flavor.Description, created)
 
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return nil, err
 	}
 
 	flavorId, err := res.LastInsertId()
 
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return nil, err
 	}
 
@@ -181,7 +183,7 @@ func (m *FlavorModel) Insert(flavor *models.Flavor) (*models.Flavor, error) {
 		}
 
 		if err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return nil, err
 		}
 
@@ -191,7 +193,7 @@ func (m *FlavorModel) Insert(flavor *models.Flavor) (*models.Flavor, error) {
 		_, err = tx.Exec(stmt, flavorId, i.ID)
 
 		if err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return nil, err
 		}
 	}

@@ -63,7 +63,9 @@ func newTestDB(t *testing.T) (*sql.DB, func(), error) {
 		return nil, nil, err
 	}
 
-	defer tx.Commit()
+	defer func() {
+		_ = tx.Commit()
+	}()
 
 	for _, q := range queries {
 		if q == "" {

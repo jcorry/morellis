@@ -194,7 +194,7 @@ func (s *StoreModel) ActivateFlavor(storeID int64, flavorID int64, position int)
 			return models.ErrDuplicateFlavor
 		}
 	}
-	tx.Commit()
+	_ = tx.Commit()
 
 	return err
 }

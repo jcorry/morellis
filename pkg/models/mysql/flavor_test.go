@@ -330,7 +330,7 @@ func TestFlavorModel_Insert_ShouldRollbackOnFlavorIngredientInsertFail(t *testin
 
 	f := FlavorModel{DB: db}
 
-	_, err = f.Insert(flavor)
+	_, _ = f.Insert(flavor)
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("There were unfulfilled expectations: %s", err)
