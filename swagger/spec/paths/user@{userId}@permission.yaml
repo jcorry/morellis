@@ -21,7 +21,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/UserPermission'
+          $ref: '../components/schemas/UserPermission.yaml'
   responses:
     '200':
       description: Success

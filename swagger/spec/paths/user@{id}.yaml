@@ -21,7 +21,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/User'
+            $ref: '../components/schemas/User.yaml'
     '403':
       description: Forbidden
     '404':
@@ -46,7 +46,7 @@ patch:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/User'
+          $ref: '../components/schemas/User.yaml'
     description: Updated user object
     required: true
   responses:

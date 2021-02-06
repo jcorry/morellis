@@ -43,11 +43,11 @@ get:
             type: object
             properties:
               meta:
-                $ref: '#/components/schemas/ListMeta'
+                $ref: '../components/schemas/ListMeta.yaml'
               items:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Ingredient'
+                  $ref: '../components/schemas/Ingredient.yaml'
     '403':
       description: Forbidden
     '404':

@@ -25,3 +25,12 @@ services:
       - ./sql/test:/docker-entrypoint-initdb.d
     ports:
       - "33062:3306"
+  swagger:
+    container_name: morellis-swagger
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8001:8080"
+    volumes: 
+      - ./swagger/spec:/usr/share/nginx/html/swagger
+    environment:
+      API_URL: swagger/swagger.yaml

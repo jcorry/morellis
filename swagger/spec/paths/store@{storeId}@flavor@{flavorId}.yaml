@@ -25,14 +25,14 @@ post:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/StoreFlavor'
+          $ref: '../components/schemas/StoreFlavor.yaml'
   responses:
     '200':
       description: Success
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/StoreFlavor'
+            $ref: '../components/schemas/StoreFlavor.yaml'
 delete:
   tags:
     - Flavor

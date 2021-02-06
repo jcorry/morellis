@@ -39,11 +39,11 @@ get:
             type: object
             properties:
               meta:
-                $ref: '#/components/schemas/ListMeta'
+                $ref: '../components/schemas/ListMeta.yaml'
               items:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Flavor'
+                  $ref: '../components/schemas/Flavor.yaml'
     '403':
       description: Forbidden
     '404':
@@ -59,7 +59,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/Flavor'
+          $ref: '../components/schemas/Flavor.yaml'
     description: Flavor payload
     required: true
   security:
@@ -71,6 +71,6 @@ post:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Flavor'
+            $ref: '../components/schemas/Flavor.yaml'
     '403':
       description: Forbidden
