@@ -23,11 +23,11 @@ post:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/UserIngredient'
+          $ref: '../components/schemas/UserIngredient.yaml'
   responses:
     '200':
       description: Success
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/UserIngredient'
+            $ref: '../components/schemas/UserIngredient.yaml'

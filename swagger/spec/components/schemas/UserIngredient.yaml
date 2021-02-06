@@ -28,4 +28,4 @@ properties:
     type: string
     example: chocolate
   created:
-    $ref: '#/components/schemas/Created'
+    $ref: './Created.yaml'

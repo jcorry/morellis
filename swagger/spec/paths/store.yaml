@@ -28,11 +28,11 @@ get:
             type: object
             properties:
               meta:
-                $ref: '#/components/schemas/ListMeta'
+                $ref: '../components/schemas/ListMeta.yaml'
               items:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Store'
+                  $ref: '../components/schemas/Store.yaml'
     '403':
       description: Forbidden
     '404':
@@ -48,7 +48,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/Store'
+          $ref: '../components/schemas/Store.yaml'
     description: Store payload
     required: true
   security:
@@ -60,7 +60,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Store'
+            $ref: '../components/schemas/Store.yaml'
     '403':
       description: Forbidden
     '404':

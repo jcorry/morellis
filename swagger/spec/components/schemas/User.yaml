@@ -16,7 +16,7 @@ properties:
     minLength: 1
     example: Smith
   email:
-    $ref: '#/components/schemas/Email'
+    $ref: './Email.yaml'
   phone:
     description: The phone number used to send SMS messages to the User.
     type: string
@@ -29,6 +29,6 @@ properties:
     description: Permissions represent the read/write privileges the User has in the API
     type: array
     items:
-      $ref: '#/components/schemas/UserPermission'
+      $ref: './UserPermission.yaml'
   created:
-    $ref: '#/components/schemas/Created'
+    $ref: './Created.yaml'

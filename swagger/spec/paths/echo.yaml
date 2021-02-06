@@ -17,7 +17,7 @@ post:
             type: integer
             format: int32
         X-Expires-After:
-          $ref: '#/components/headers/ExpiresAfter'
+          $ref: '../components/headers/ExpiresAfter.yaml'
       content:
         application/json:
           schema:

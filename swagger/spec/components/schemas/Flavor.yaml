@@ -15,6 +15,6 @@ properties:
     description: Ingredients belonging to the Flavor
     type: array
     items:
-      $ref: '#/components/schemas/Ingredient'
+      $ref: './Ingredient.yaml'
   created:
-    $ref: '#/components/schemas/Created'
+    $ref: './Created.yaml'

@@ -49,4 +49,4 @@ properties:
       determine this value, but consumer supplied values will override.
     example: "33.9227138"
   created:
-    $ref: "#/components/schemas/Created"
+    $ref: "./Created.yaml"
