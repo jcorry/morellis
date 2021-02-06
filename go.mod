@@ -1,5 +1,7 @@
 module github.com/jcorry/morellis
 
+go 1.15
+
 require (
 	cloud.google.com/go v0.40.0
 	github.com/DATA-DOG/go-sqlmock v1.3.3

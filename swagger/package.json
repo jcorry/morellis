@@ -2,7 +2,7 @@
   "name": "morellis",
   "version": "1.0.0",
   "dependencies": {
-    "swagger-repo": "^2.0.0-rc.11"
+    "swagger-repo": "^1.5.1"
   },
   "private": true,
   "scripts": {
