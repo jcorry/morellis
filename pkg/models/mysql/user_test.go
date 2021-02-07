@@ -181,6 +181,17 @@ func TestUserModel_GetByAuthToken(t *testing.T) {
 			},
 			err: ErrNoAuthTokenFound,
 		},
+		{
+			name:  "token found, no user found",
+			token: "foo",
+			setup: func() {
+				err := rdb.Set(context.Background(), fmt.Sprintf(`%s:%s`, AUTH_TOKEN_KEY_PREFIX, "foo"), "100", time.Second*300).Err()
+				if err != nil {
+					t.Fatalf("unexpected err setting up Redis: %v", err)
+				}
+			},
+			err: models.ErrNoRecord,
+		},
 	}
 
 	for _, tt := range tests {
