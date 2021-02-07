@@ -24,6 +24,9 @@ func newTestDB(t *testing.T) (*sql.DB, func()) {
 		t.Fatal(err)
 	}
 
+	db.SetMaxIdleConns(0)
+	db.SetConnMaxLifetime(time.Second * 10)
+
 	script, err := ioutil.ReadFile("./testdata/setup.sql")
 
 	if err != nil {

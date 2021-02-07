@@ -9,7 +9,7 @@ db:
 	docker-compose up db
 
 test-db:
-	docker-compose up db-test
+	docker-compose up -d db-test
 
 stop-test-db:
 	docker-compose down db-test
@@ -23,7 +23,9 @@ lint: ## Lint the files
 	@golint -set_exit_status ${PKG_LIST}
 
 test: ## Run unittests
-	@go test -v -short ${PKG_LIST}
+	export TEST_DSN="morellistest:testpass@tcp(127.0.0.1:33062)/morellistest?parseTime=true&multiStatements=true" && \
+	export GMAP_API_KEY="AIzaSyCk_dlauHCalmY00ufmVWfV4-g5eNHU8W8" && \
+	go test -v -p 1 -count=1 ./...
 
 race: dep ## Run data race detector
 	@go test -race -short ${PKG_LIST}
