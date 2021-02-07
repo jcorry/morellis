@@ -8,6 +8,9 @@ GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 db:
 	docker-compose up db
 
+test-db:
+	docker-compose up -d db-test
+
 all: build
 
 certs: ## Generate TLS cert files
@@ -17,7 +20,8 @@ lint: ## Lint the files
 	@golint -set_exit_status ${PKG_LIST}
 
 test: ## Run unittests
-	@go test -v ${PKG_LIST}
+	go clean -testcache && \
+	go test -v -p 1 -count=1 ./...
 
 race: dep ## Run data race detector
 	@go test -race -short ${PKG_LIST}
