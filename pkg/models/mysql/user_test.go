@@ -1,7 +1,9 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"reflect"
 	"strconv"
 	"testing"
@@ -138,6 +140,58 @@ func TestUserModel_GetByPhone(t *testing.T) {
 
 			if err != tt.wantError {
 				t.Errorf("want %v, got %s", tt.wantError, err)
+			}
+		})
+	}
+}
+
+func TestUserModel_GetByAuthToken(t *testing.T) {
+	db, teardown := newTestDB(t)
+	defer teardown()
+
+	rdb := newTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
+
+	tests := []struct {
+		name  string
+		token string
+		setup func()
+		err   error
+	}{
+		{
+			name:  "token found",
+			token: "foo",
+			setup: func() {
+				err := rdb.Set(context.Background(), fmt.Sprintf(`%s:%s`, AUTH_TOKEN_KEY_PREFIX, "foo"), "1", time.Second*300).Err()
+				if err != nil {
+					t.Fatalf("unexpected err setting up Redis: %v", err)
+				}
+			},
+			err: nil,
+		},
+		{
+			name:  "no token found",
+			token: "bar",
+			setup: func() {
+
+			},
+			err: ErrNoAuthTokenFound,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setup()
+			_, err := m.GetByAuthToken(tt.token)
+			if tt.err != nil {
+				if tt.err != err {
+					t.Fatalf("unexpected err: %v", err)
+				}
 			}
 		})
 	}

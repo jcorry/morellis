@@ -1,9 +1,12 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -23,8 +26,13 @@ type UserModel struct {
 }
 
 const (
-	DEFAULT_LIMIT int = 25
-	PW_HASH_COST  int = 12
+	DEFAULT_LIMIT         int = 25
+	PW_HASH_COST          int = 12
+	AUTH_TOKEN_KEY_PREFIX     = `auth-token`
+)
+
+var (
+	ErrNoAuthTokenFound = errors.New("no auth token found")
 )
 
 // Insert a new User
@@ -227,6 +235,28 @@ func (u *UserModel) GetByPhone(phone string) (*models.User, error) {
 	}
 
 	return user, nil
+}
+
+// GetByAuthToken uses an auth token to look up the user ID in Redis, then get the user
+// from MySQL to return
+func (u *UserModel) GetByAuthToken(token string) (*models.User, error) {
+	id, err := u.Redis.Get(context.Background(), fmt.Sprintf(`%s:%s`, AUTH_TOKEN_KEY_PREFIX, token)).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return nil, ErrNoAuthTokenFound
+		}
+	}
+
+	if id == "" {
+		return nil, ErrNoAuthTokenFound
+	}
+
+	userID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return u.Get(userID)
 }
 
 // List Users limiting results by `limit` beginning at `offset` and ordered by `order`
