@@ -41,6 +41,10 @@ jobs:
     - run:
         name: Wait for db
         command: dockerize -wait tcp://127.0.0.1:3306 -timeout 1m
+
+    - run:
+        name: Wait for Redis
+        command: dockerize -wait tcp://127.0.0.1:6379 -timeout 1m
     # specify any bash command here prefixed with `run: `
     - run:
         name: "Create temp dir for artifacts"
