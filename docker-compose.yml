@@ -13,6 +13,7 @@ services:
       - ./data:/var/lib/mysql
     ports:
       - "33061:3306"
+
   db-test:
     container_name: morellis-mysql-test
     image: mysql:5.7
@@ -25,6 +26,23 @@ services:
       - ./sql/test:/docker-entrypoint-initdb.d
     ports:
       - "33062:3306"
+
+  redis:
+    container_name: morellis-redis
+    image: redis:latest
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - ./data/redis:/var/lib/redis
+    ports:
+      - "63791:6379"
+
+  redis-test:
+    container_name: morellis-redis-test
+    image: redis:latest
+    command: redis-server --requirepass password
+    ports:
+      - "63792:6379"
+
   swagger:
     container_name: morellis-swagger
     image: swaggerapi/swagger-ui
