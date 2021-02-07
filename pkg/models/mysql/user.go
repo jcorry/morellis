@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -197,6 +198,28 @@ func (u *UserModel) GetByCredentials(c models.Credentials) (*models.User, error)
 
 	if err == bcrypt.ErrMismatchedHashAndPassword {
 		return nil, models.ErrInvalidCredentials
+	} else if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+// GetByPhone retrieves a user by their phone number
+func (u *UserModel) GetByPhone(phone string) (*models.User, error) {
+	reg := regexp.MustCompile("[^0-9]")
+	phone = reg.ReplaceAllString(phone, "")
+
+	stmt := `SELECT u.id, u.uuid, u.first_name, u.last_name, u.email, u.phone, s.slug, u.created
+			   FROM user AS u
+		  LEFT JOIN ref_user_status AS s ON u.status_id = s.id
+			  WHERE REGEXP_REPLACE(u.phone, '[^0-9]', "") = ?`
+
+	user := &models.User{}
+	err := u.DB.QueryRow(stmt, phone).Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &user.Phone, &user.Status, &user.Created)
+
+	if err == sql.ErrNoRows {
+		return nil, models.ErrNoRecord
 	} else if err != nil {
 		return nil, err
 	}

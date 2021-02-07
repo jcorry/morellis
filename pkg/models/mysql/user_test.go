@@ -71,6 +71,68 @@ func TestUserModel_Get(t *testing.T) {
 	}
 }
 
+func TestUserModel_GetByPhone(t *testing.T) {
+	if testing.Short() {
+		t.Skip("mysql: skipping integration test")
+	}
+
+	tests := []struct {
+		name      string
+		phone     string
+		wantUser  *models.User
+		wantError error
+	}{
+		{
+			name:  "Valid ID",
+			phone: "867-5309",
+			wantUser: &models.User{
+				ID:        1,
+				FirstName: models.NullString{"Alice", true},
+				LastName:  models.NullString{"Jones", true},
+				Email:     models.NullString{"alice@example.com", true},
+				Phone:     "867-5309",
+				Status:    "verified",
+				Created:   time.Date(2019, 02, 24, 17, 25, 25, 0, time.UTC),
+			},
+			wantError: nil,
+		},
+		{
+			name:      "no matching phone",
+			phone:     "867-5309-699",
+			wantUser:  nil,
+			wantError: models.ErrNoRecord,
+		},
+	}
+
+	db, teardown := newTestDB(t)
+	defer teardown()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			m := UserModel{db}
+
+			user, err := m.GetByPhone(tt.phone)
+			if tt.wantError == nil && err != nil {
+				t.Errorf("Unexpected error getting user: %s", err)
+			}
+
+			if tt.wantError == nil {
+				// No way to generate this...has to come from DB
+				tt.wantUser.UUID = user.UUID
+
+				if !reflect.DeepEqual(user, tt.wantUser) {
+					t.Errorf("want %v, got %v", tt.wantUser, user)
+				}
+			}
+
+			if err != tt.wantError {
+				t.Errorf("want %v, got %s", tt.wantError, err)
+			}
+		})
+	}
+}
+
 func TestUserModel_Delete(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mysql: skipping integration test")
