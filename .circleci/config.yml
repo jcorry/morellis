@@ -6,12 +6,12 @@ jobs:
   build:
     docker:
     # specify the version
-    - image: circleci/golang:1.11
+    - image: circleci/golang:1.15
       environment:
         TEST_DSN: morellistest:testpass@tcp(127.0.0.1:3306)/morellistest?parseTime=true&multiStatements=true
         TEST_REDIS_ADDRESS: 127.0.0.1:6379
     
-    - image: circleci/mysql:5.7
+    - image: circleci/mysql:latest
       environment:
         MYSQL_ROOT_PASSWORD: password
         MYSQL_DATABASE: morellistest
