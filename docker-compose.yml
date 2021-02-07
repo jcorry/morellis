@@ -39,7 +39,7 @@ services:
   redis-test:
     container_name: morellis-redis-test
     image: redis:latest
-    command: redis-server --requirepass password
+    command: redis-server
     ports:
       - "63792:6379"
 

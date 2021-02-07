@@ -1,13 +1,17 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
 	"database/sql/driver"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 func newTestDB(t *testing.T) (*sql.DB, func()) {
@@ -47,6 +51,26 @@ func newTestDB(t *testing.T) (*sql.DB, func()) {
 		}
 		db.Close()
 	}
+}
+
+func newTestRedis(t *testing.T) *redis.Client {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("TEST_REDIS_ADDRESS"),
+		Password: "",
+		DB:       0,
+	})
+
+	cmd := rdb.Ping(context.TODO())
+	if cmd.Err() != nil {
+		t.Fatal(cmd.Err())
+	}
+	t.Log(fmt.Sprintf("Redis: %s", cmd.String()))
+
+	t.Cleanup(func() {
+		rdb.FlushDB(context.TODO())
+	})
+
+	return rdb
 }
 
 func randomTimestamp() time.Time {

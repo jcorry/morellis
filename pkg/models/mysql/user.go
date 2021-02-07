@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 
 	"github.com/go-sql-driver/mysql"
@@ -17,7 +18,8 @@ import (
 
 // UserModel wraps DB connection pool.
 type UserModel struct {
-	DB *sql.DB
+	DB    *sql.DB
+	Redis *redis.Client
 }
 
 const (

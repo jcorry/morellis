@@ -47,10 +47,15 @@ func TestUserModel_Get(t *testing.T) {
 	db, teardown := newTestDB(t)
 	defer teardown()
 
+	rdb := newTestRedis(t)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			m := UserModel{db}
+			m := UserModel{
+				DB:    db,
+				Redis: rdb,
+			}
 
 			user, err := m.Get(tt.userID)
 			if err != nil {
@@ -107,10 +112,15 @@ func TestUserModel_GetByPhone(t *testing.T) {
 	db, teardown := newTestDB(t)
 	defer teardown()
 
+	rdb := newTestRedis(t)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			m := UserModel{db}
+			m := UserModel{
+				DB:    db,
+				Redis: rdb,
+			}
 
 			user, err := m.GetByPhone(tt.phone)
 			if tt.wantError == nil && err != nil {
@@ -141,7 +151,12 @@ func TestUserModel_Delete(t *testing.T) {
 	db, teardown := newTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := newTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
 
 	result, err := m.Delete(1)
 	if !result {
@@ -161,7 +176,9 @@ func TestUserModel_List(t *testing.T) {
 	db, teardown := newTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := newTestRedis(t)
+
+	m := UserModel{DB: db, Redis: rdb}
 
 	m.Delete(1)
 
@@ -271,7 +288,12 @@ func TestUserModel_GetByUUID(t *testing.T) {
 	db, teardown := newTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := newTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
 
 	u, err := m.Get(1)
 	if err != nil {
@@ -338,7 +360,12 @@ func TestUserModel_GetByCredentials(t *testing.T) {
 	db, teardown := newTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := newTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -363,7 +390,12 @@ func TestUserModel_GetPermissions(t *testing.T) {
 	db, teardown := newTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := newTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
 
 	tests := []struct {
 		name     string
@@ -423,7 +455,12 @@ func TestUserModel_AddPermission(t *testing.T) {
 	db, teardown := newTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := newTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
 
 	tests := []struct {
 		name    string
@@ -459,7 +496,12 @@ func TestUserModel_RemovePermission(t *testing.T) {
 	db, teardown := newTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := newTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
 
 	tests := []struct {
 		name       string
