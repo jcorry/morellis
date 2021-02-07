@@ -1,5 +1,5 @@
 .DS_Store
-.idea/
+.idea/*
 .env
 tls/*.pem
 cmd/dataloader
@@ -7,3 +7,4 @@ cmd/pwtest
 cp.out
 data/
 morellis
+vendor

@@ -11,6 +11,11 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	MAX_USER_INGREDIENTS = 3
+	MAX_USER_FLAVORS     = 3
+)
+
 var (
 	ErrNoRecord                = errors.New("models: No matching record(s) found")
 	ErrInvalidCredentials      = errors.New("models: Invalid credentials")

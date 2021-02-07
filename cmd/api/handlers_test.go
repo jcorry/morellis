@@ -261,6 +261,7 @@ func TestHandlers_CreateStore(t *testing.T) {
 
 			if code != tt.wantCode {
 				t.Errorf("want %d; got %d", tt.wantCode, code)
+				t.Errorf("Body: %s", body)
 			}
 
 			if !bytes.Contains(body, tt.wantBody) {
