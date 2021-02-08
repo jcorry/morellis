@@ -78,6 +78,34 @@ func TestUserModel_Get(t *testing.T) {
 	}
 }
 
+func TestUserModel_SaveAuthToken(t *testing.T) {
+	db, teardown := newTestDB(t)
+	defer teardown()
+
+	rdb := newTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
+
+	token := "foo"
+
+	t.Run("save token", func(t *testing.T) {
+		err := m.SaveAuthToken(token, 1)
+		if err != nil {
+			t.Errorf("unexpected err saving token: %v", err)
+		}
+	})
+
+	t.Run("get token", func(t *testing.T) {
+		_, err := m.GetByAuthToken(token)
+		if err != nil {
+			t.Errorf("unexpected err getting user by token: %v", err)
+		}
+	})
+}
+
 func TestUserModel_GetByPhone(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mysql: skipping integration test")

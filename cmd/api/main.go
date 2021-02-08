@@ -120,7 +120,7 @@ func main() {
 		ingredients: &mysql.IngredientModel{DB: db},
 		mapsApiKey:  mapsApiKey,
 		sender:      sender,
-		baseUrl:     os.Getenv("BASE_URL"),
+		baseUrl:     os.Getenv("BASE_APP_URL"),
 	}
 
 	c := cors.New(cors.Options{
