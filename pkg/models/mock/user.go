@@ -20,6 +20,18 @@ var mockUser = &models.User{
 
 type UserModel struct{}
 
+func (m *UserModel) GetByPhone(phone string) (*models.User, error) {
+	return mockUser, nil
+}
+
+func (m *UserModel) GetByAuthToken(token string) (*models.User, error) {
+	return mockUser, nil
+}
+
+func (m *UserModel) SaveAuthToken(token string, userID int) error {
+	return nil
+}
+
 func (m *UserModel) Insert(uid uuid.UUID, firstName models.NullString, lastName models.NullString, email models.NullString, phone string, statusID int, password string) (*models.User, error) {
 	user := &models.User{
 		ID:        1,
