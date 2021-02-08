@@ -257,14 +257,14 @@ func TestUserModel_List(t *testing.T) {
 			FirstName: models.NullString{"John", true},
 			LastName:  models.NullString{"Corry", true},
 			Email:     models.NullString{"jcorry@morellis.com", true},
-			Phone:     "867-5309",
+			Phone:     "867-5307",
 			Password:  string(hashedPassword),
 		},
 		{
 			FirstName: models.NullString{"Garrett", true},
 			LastName:  models.NullString{"Rap", true},
 			Email:     models.NullString{"garrett@morellis.com", true},
-			Phone:     "867-5309",
+			Phone:     "867-5308",
 			Password:  string(hashedPassword),
 		},
 		{
