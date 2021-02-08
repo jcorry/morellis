@@ -30,9 +30,9 @@ services:
   redis:
     container_name: morellis-redis
     image: redis:latest
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
     volumes:
-      - ./data/redis:/var/lib/redis
+      - ./data/redis:/data
     ports:
       - "63791:6379"
 

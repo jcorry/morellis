@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -12,7 +13,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/jcorry/morellis/pkg/models"
+	"github.com/jcorry/morellis/pkg/models/mysql"
 )
 
 type UserIngredientBody struct {
@@ -22,6 +26,111 @@ type UserIngredientBody struct {
 	StoreID      int64     `json:"storeId,omitempty"`
 	Keyword      string    `json:"keyword,omitempty"`
 	Created      time.Time `json:"created"`
+}
+
+// Webhook handlers
+
+// smsAuthRequest looks the user up by their phone number, supplied by the incoming twilio
+// webhook. If found, generates an expiring auth token and sends the user a URL at
+// which they can authenticate and get a JWT with limited permissions for future requests
+func (app *application) smsAuthRequest(w http.ResponseWriter, r *http.Request) {
+	guid := uuid.New()
+	token := base64.StdEncoding.EncodeToString([]byte(guid.String()))
+
+	type TwilioPayload struct {
+		From string `json:"From"`
+		Body string `json:"Body"`
+	}
+	var tp TwilioPayload
+	err := json.NewDecoder(r.Body).Decode(&tp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var user *models.User
+	user, err = app.users.GetByPhone(tp.From)
+	// If no user is found, create one
+	if err != nil {
+		if err == models.ErrNoRecord {
+			password, err := bcrypt.GenerateFromPassword([]byte(uuid.New().String()), bcrypt.DefaultCost)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			user, err = app.users.Insert(uuid.New(), models.NullString{}, models.NullString{}, models.NullString{}, tp.From, int(models.USER_STATUS_VERIFIED), string(password))
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// save the token
+	err = app.users.SaveAuthToken(token, int(user.ID))
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	url := fmt.Sprintf(`https://%s/auth/%s`, app.baseUrl, token)
+	message := fmt.Sprintf(`access the 🍦 app at: %s`, url)
+
+	_, err = app.sender.Send(r.Context(), user.Phone, message)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// authByToken looks for a valid auth token in the URL and if found, returns a JWT
+func (app *application) authByToken(w http.ResponseWriter, r *http.Request) {
+	// look up user by token
+	user, err := app.users.GetByAuthToken(r.URL.Query().Get(":token"))
+	if err != nil {
+		app.errorLog.Output(2, err.Error())
+		if err == models.ErrNoRecord {
+			app.clientError(w, http.StatusNotFound)
+			return
+		}
+		if err == mysql.ErrNoAuthTokenFound {
+			app.clientError(w, http.StatusNotFound)
+			return
+		}
+		app.serverError(w, err)
+		return
+	}
+	user.Permissions, err = app.users.GetPermissions(int(user.ID))
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	token, err := generateToken(user)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	claims, err := verifyToken(token)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	exp := time.Unix(claims.ExpiresAt, 0)
+
+	response := struct {
+		Token   string    `json:"token"`
+		Expires time.Time `json:"expires"`
+	}{
+		token,
+		exp,
+	}
+
+	app.jsonResponse(w, response)
+
 }
 
 // Auth handlers

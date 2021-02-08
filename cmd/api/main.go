@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/rs/cors"
 
 	"github.com/joho/godotenv"
@@ -17,6 +18,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jcorry/morellis/pkg/models"
 	"github.com/jcorry/morellis/pkg/models/mysql"
+	"github.com/jcorry/morellis/pkg/sms"
 )
 
 type application struct {
@@ -28,6 +30,9 @@ type application struct {
 		Get(int) (*models.User, error)
 		GetByUUID(uuid.UUID) (*models.User, error)
 		GetByCredentials(models.Credentials) (*models.User, error)
+		GetByPhone(string) (*models.User, error)
+		GetByAuthToken(string) (*models.User, error)
+		SaveAuthToken(string, int) error
 		List(int, int, string) ([]*models.User, error)
 		Delete(int) (bool, error)
 		Count() int
@@ -63,6 +68,8 @@ type application struct {
 		Insert(*models.Ingredient) (*models.Ingredient, error)
 		Search(limit int, offset int, order string, search []string) ([]*models.Ingredient, error)
 	}
+	sender     sms.Messager
+	baseUrl    string
 	mapsApiKey string
 }
 
@@ -93,20 +100,36 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
+	// Initialize redis
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("REDIS_ADDRESS"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
+	})
+
+	// Initialize Twilio Client
+	client := &http.Client{}
+	sender := sms.NewTwilioMessager(client, os.Getenv("TWILIO_SID"), os.Getenv("TWILIO_AUTH_TOKEN"), os.Getenv("TWILIO_NUMBER"))
+
 	app := &application{
 		errorLog:    errorLog,
 		infoLog:     infoLog,
-		users:       &mysql.UserModel{DB: db},
+		users:       &mysql.UserModel{DB: db, Redis: rdb},
 		stores:      &mysql.StoreModel{DB: db},
 		flavors:     &mysql.FlavorModel{DB: db},
 		ingredients: &mysql.IngredientModel{DB: db},
 		mapsApiKey:  mapsApiKey,
+		sender:      sender,
+		baseUrl:     os.Getenv("BASE_URL"),
 	}
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:*"},
-		AllowedHeaders: []string{"Authorization", "X-Requested-With", "Content-Type"},
-		Debug:          true,
+		AllowedOrigins:     []string{"http://localhost:*", "https://localhost:*"},
+		AllowedHeaders:     []string{"*"},
+		AllowCredentials:   true,
+		AllowedMethods:     []string{http.MethodGet, http.MethodPost, http.MethodOptions, http.MethodPatch, http.MethodDelete, http.MethodPut},
+		OptionsPassthrough: true,
+		Debug:              true,
 	})
 
 	srv := &http.Server{

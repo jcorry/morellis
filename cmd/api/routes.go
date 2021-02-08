@@ -10,6 +10,10 @@ func (app *application) routes() http.Handler {
 	mux := pat.New()
 	// Auth route
 	mux.Post("/api/v1/auth", http.HandlerFunc(app.createAuth))
+	mux.Get("/auth/:token", http.HandlerFunc(app.authByToken))
+
+	// Webhooks
+	mux.Post("/webhooks/v1/sms/auth", http.HandlerFunc(app.smsAuthRequest))
 
 	// User routes
 	mux.Post("/api/v1/user", app.jwtVerification(NewPermissionsCheck(http.HandlerFunc(app.createUser), []string{"user:write", "self:write"})))

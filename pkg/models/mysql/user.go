@@ -237,6 +237,11 @@ func (u *UserModel) GetByPhone(phone string) (*models.User, error) {
 	return user, nil
 }
 
+// SaveAuthToken writes the auth token to redis
+func (u *UserModel) SaveAuthToken(token string, userID int) error {
+	return u.Redis.Set(context.Background(), fmt.Sprintf(`%s:%s`, AUTH_TOKEN_KEY_PREFIX, token), userID, time.Second*300).Err()
+}
+
 // GetByAuthToken uses an auth token to look up the user ID in Redis, then get the user
 // from MySQL to return
 func (u *UserModel) GetByAuthToken(token string) (*models.User, error) {
