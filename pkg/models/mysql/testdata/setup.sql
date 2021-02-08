@@ -13,6 +13,8 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE `user` ADD CONSTRAINT uk_user_email UNIQUE(email);
+ALTER TABLE `user` ADD CONSTRAINT uk_user_phone UNIQUE(phone);
+
 
 CREATE TABLE `ref_user_status` (
     id TINYINT(3) UNSIGNED NOT NULL PRIMARY KEY,
