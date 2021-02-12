@@ -15,6 +15,7 @@ var (
 	ErrNoRecord                = errors.New("models: No matching record(s) found")
 	ErrInvalidCredentials      = errors.New("models: Invalid credentials")
 	ErrDuplicateEmail          = errors.New("models: Duplicate email")
+	ErrDuplicatePhone          = errors.New("models: Duplicate phone")
 	ErrDuplicateFlavor         = errors.New("models: Only one flavor may be active at a position at a time.")
 	ErrInvalidPermission       = errors.New("models: Not a valid Permission")
 	ErrDuplicateUserPermission = errors.New("models: User already has that Permission")

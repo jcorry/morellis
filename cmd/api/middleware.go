@@ -6,9 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/google/uuid"
-	"github.com/jcorry/morellis/pkg/models"
-
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -24,9 +21,9 @@ func NewPermissionsCheck(handler http.Handler, permissions []string) *Permission
 }
 
 func (pc *PermissionsCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value(ContextKeyUser).(*models.User)
+	claims := r.Context().Value(ContextKeyUser).(*Claims)
 	reqUUID := r.URL.Query().Get(":uuid")
-	if !checkPermissions(user, pc.permissions, reqUUID) {
+	if !checkPermissions(claims, pc.permissions, reqUUID) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -56,22 +53,7 @@ func (app *application) jwtVerification(next http.Handler) http.Handler {
 				}
 
 				if token.Valid {
-					// Is it a valid user?
-					uid, err := uuid.Parse(claims.UUID)
-					if err != nil {
-						app.errorLog.Output(2, err.Error())
-						w.WriteHeader(http.StatusInternalServerError)
-						return
-					}
-
-					user, err := app.users.GetByUUID(uid)
-					if err != nil {
-						app.errorLog.Output(2, err.Error())
-						w.WriteHeader(http.StatusUnauthorized)
-						return
-					}
-
-					ctx := context.WithValue(r.Context(), ContextKeyUser, user)
+					ctx := context.WithValue(r.Context(), ContextKeyUser, claims)
 					next.ServeHTTP(w, r.WithContext(ctx))
 					return
 				}
@@ -111,8 +93,8 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 	})
 }
 
-func checkPermissions(user *models.User, permissions []string, reqUUID string) bool {
-	for _, userPermission := range user.Permissions {
+func checkPermissions(c *Claims, permissions []string, reqUUID string) bool {
+	for _, userPermission := range c.Permissions {
 		for _, requiredPermission := range permissions {
 			if userPermission.Permission.Name == requiredPermission {
 				if requiredPermission == "user:read" || requiredPermission == "user:write" {
@@ -120,7 +102,7 @@ func checkPermissions(user *models.User, permissions []string, reqUUID string) b
 				}
 
 				if (requiredPermission == "self:read" || requiredPermission == "self:write") &&
-					user.UUID.String() == reqUUID {
+					c.UUID == reqUUID {
 					return true
 				}
 			}

@@ -9,11 +9,13 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
+
 	"github.com/jcorry/morellis/pkg/models"
-	"github.com/jcorry/morellis/pkg/models/mock"
+	"github.com/jcorry/morellis/pkg/models/mysql"
 )
 
 type testServer struct {
@@ -21,13 +23,20 @@ type testServer struct {
 }
 
 func newTestApplication(t *testing.T) *application {
+	db, cleanup := mysql.NewTestDB(t)
+	t.Cleanup(func() {
+		cleanup()
+	})
+
+	rdb := mysql.NewTestRedis(t)
+
 	return &application{
 		errorLog:    log.New(ioutil.Discard, "", 0),
 		infoLog:     log.New(ioutil.Discard, "", 0),
-		users:       &mock.UserModel{},
-		stores:      &mock.StoreModel{},
-		flavors:     &mock.FlavorModel{},
-		ingredients: &mock.IngredientModel{},
+		users:       &mysql.UserModel{DB: db, Redis: rdb},
+		stores:      &mysql.StoreModel{DB: db},
+		flavors:     &mysql.FlavorModel{DB: db},
+		ingredients: &mysql.IngredientModel{DB: db},
 		mapsApiKey:  os.Getenv("GMAP_API_KEY"),
 	}
 }
@@ -53,7 +62,7 @@ func (ts *testServer) request(t *testing.T, method string, urlPath string, reqBo
 		},
 	}
 
-	switch method {
+	switch strings.ToLower(method) {
 	case "get":
 		req.Method = "GET"
 	case "post":

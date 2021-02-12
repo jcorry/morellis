@@ -14,7 +14,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-func newTestDB(t *testing.T) (*sql.DB, func()) {
+func NewTestDB(t *testing.T) (*sql.DB, func()) {
 	var dsn string
 
 	dsn = os.Getenv("TEST_DSN")
@@ -28,7 +28,7 @@ func newTestDB(t *testing.T) (*sql.DB, func()) {
 		t.Fatal(err)
 	}
 
-	script, err := ioutil.ReadFile("./testdata/setup.sql")
+	script, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", os.Getenv("TEST_DATA_DIR"), "setup.sql"))
 
 	if err != nil {
 		t.Fatal(err)
@@ -40,7 +40,7 @@ func newTestDB(t *testing.T) (*sql.DB, func()) {
 	}
 
 	return db, func() {
-		script, err := ioutil.ReadFile("./testdata/teardown.sql")
+		script, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", os.Getenv("TEST_DATA_DIR"), "teardown.sql"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -53,7 +53,7 @@ func newTestDB(t *testing.T) (*sql.DB, func()) {
 	}
 }
 
-func newTestRedis(t *testing.T) *redis.Client {
+func NewTestRedis(t *testing.T) *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     os.Getenv("TEST_REDIS_ADDRESS"),
 		Password: "",

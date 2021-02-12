@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/jcorry/morellis/pkg/models"
 	"github.com/jcorry/morellis/pkg/models/mysql"
+	"github.com/jcorry/morellis/pkg/sms"
 )
 
 type UserIngredientBody struct {
@@ -34,6 +36,13 @@ type UserIngredientBody struct {
 // webhook. If found, generates an expiring auth token and sends the user a URL at
 // which they can authenticate and get a JWT with limited permissions for future requests
 func (app *application) smsAuthRequest(w http.ResponseWriter, r *http.Request) {
+	err := sms.ValidateIncomingRequest(app.baseUrl, os.Getenv("TWILIO_AUTH_TOKEN"), r)
+	if err != nil {
+		app.errorLog.Output(2, err.Error())
+		app.clientError(w, http.StatusUnauthorized)
+		return
+	}
+
 	guid := uuid.New()
 	token := base64.StdEncoding.EncodeToString([]byte(guid.String()))
 
@@ -42,7 +51,7 @@ func (app *application) smsAuthRequest(w http.ResponseWriter, r *http.Request) {
 		Body string `json:"Body"`
 	}
 	var tp TwilioPayload
-	err := json.NewDecoder(r.Body).Decode(&tp)
+	err = json.NewDecoder(r.Body).Decode(&tp)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -205,7 +214,7 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 	user, err = app.users.Insert(uid, reqUser.FirstName, reqUser.LastName, reqUser.Email, reqUser.Phone, int(userStatus.GetID(reqUser.Status)), reqUser.Password)
 
 	if err != nil {
-		if err == models.ErrDuplicateEmail {
+		if err == models.ErrDuplicateEmail || err == models.ErrDuplicatePhone {
 			app.badRequest(w, err)
 			return
 		}
@@ -251,7 +260,7 @@ func (app *application) partialUpdateUser(w http.ResponseWriter, r *http.Request
 
 	user, err = app.users.Update(user)
 	if err != nil {
-		if err == models.ErrDuplicateEmail {
+		if err == models.ErrDuplicateEmail || err == models.ErrDuplicatePhone {
 			app.badRequest(w, err)
 			return
 		}
@@ -698,21 +707,23 @@ func (app *application) activateStoreFlavor(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Is it even an available Flavor?
-	_, err = app.flavors.Get(flavorID)
+	f, err := app.flavors.Get(flavorID)
 	if err == models.ErrNoRecord {
 		app.clientError(w, http.StatusNotFound)
 		return
 	}
+	req.FlavorID = f.ID
 
 	// Is it a valid store?
-	_, err = app.stores.Get(storeID)
+	s, err := app.stores.Get(storeID)
 	if err == models.ErrNoRecord {
 		app.clientError(w, http.StatusNotFound)
 		return
 	}
+	req.StoreID = s.ID
 
 	// Make the association link
-	err = app.stores.ActivateFlavor(req.StoreID, req.FlavorID, req.Position)
+	err = app.stores.ActivateFlavor(s.ID, f.ID, req.Position)
 	if err != nil {
 		app.serverError(w, err)
 		return

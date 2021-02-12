@@ -13,8 +13,6 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/google/uuid"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jcorry/morellis/pkg/models"
 	"github.com/jcorry/morellis/pkg/models/mysql"
@@ -22,55 +20,15 @@ import (
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	users    interface {
-		Insert(uid uuid.UUID, firstName models.NullString, lastName models.NullString, email models.NullString, phone string, statusID int, password string) (*models.User, error)
-		Update(*models.User) (*models.User, error)
-		Get(int) (*models.User, error)
-		GetByUUID(uuid.UUID) (*models.User, error)
-		GetByCredentials(models.Credentials) (*models.User, error)
-		GetByPhone(string) (*models.User, error)
-		GetByAuthToken(string) (*models.User, error)
-		SaveAuthToken(string, int) error
-		List(int, int, string) ([]*models.User, error)
-		Delete(int) (bool, error)
-		Count() int
-		GetPermissions(userID int) ([]models.UserPermission, error)
-		AddPermission(userID int, p models.Permission) (int, error)
-		RemovePermission(userPermissionID int) (bool, error)
-		RemoveAllPermissions(userID int) error
-		AddIngredient(userID int64, ingredient *models.Ingredient, keyword string) (*models.UserIngredient, error)
-		GetIngredients(userID int64) ([]*models.UserIngredient, error)
-		RemoveUserIngredient(userIngredientID int64) error
-	}
-	stores interface {
-		Insert(string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
-		Update(int, string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
-		Get(storeID int) (*models.Store, error)
-		List(int, int, string) ([]*models.Store, error)
-		Count() int
-		ActivateFlavor(storeID int64, flavorID int64, position int) error
-		DeactivateFlavor(storeID int64, flavorID int64) (bool, error)
-		DeactivateFlavorAtPosition(storeID int64, position int) (bool, error)
-	}
-	flavors interface {
-		Count() int
-		Get(int) (*models.Flavor, error)
-		List(limit int, offset int, sortBy string, ingredientTerms []string) ([]*models.Flavor, error)
-		Insert(*models.Flavor) (*models.Flavor, error)
-		Update(int, *models.Flavor) (*models.Flavor, error)
-		Delete(int) (bool, error)
-	}
-	ingredients interface {
-		Get(ID int64) (*models.Ingredient, error)
-		GetByName(string) (*models.Ingredient, error)
-		Insert(*models.Ingredient) (*models.Ingredient, error)
-		Search(limit int, offset int, order string, search []string) ([]*models.Ingredient, error)
-	}
-	sender     sms.Messager
-	baseUrl    string
-	mapsApiKey string
+	errorLog    *log.Logger
+	infoLog     *log.Logger
+	users       models.UserRepository
+	stores      models.StoreRepository
+	flavors     models.FlavorRepository
+	ingredients models.IngredientRepository
+	sender      sms.Messager
+	baseUrl     string
+	mapsApiKey  string
 }
 
 func main() {

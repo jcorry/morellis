@@ -68,6 +68,9 @@ func (u *UserModel) Insert(uid uuid.UUID, firstName models.NullString, lastName 
 			if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_user_email") {
 				return nil, models.ErrDuplicateEmail
 			}
+			if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_user_phone") {
+				return nil, models.ErrDuplicatePhone
+			}
 		}
 		return nil, err
 	}
@@ -105,11 +108,14 @@ func (u *UserModel) Update(user *models.User) (*models.User, error) {
 	var userStatus models.UserStatus
 	userStatusID := userStatus.GetID(user.Status)
 
-	_, err := u.DB.Exec(stmt, user.FirstName, user.LastName, user.Email, user.Phone, userStatusID, user.ID)
+	_, err := u.DB.Exec(stmt, user.FirstName.String, user.LastName.String, user.Email.String, user.Phone, userStatusID, user.ID)
 	if err != nil {
 		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 			if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_user_email") {
 				return nil, models.ErrDuplicateEmail
+			}
+			if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_user_phone") {
+				return nil, models.ErrDuplicatePhone
 			}
 		}
 		return nil, err

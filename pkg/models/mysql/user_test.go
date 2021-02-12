@@ -46,10 +46,10 @@ func TestUserModel_Get(t *testing.T) {
 		},
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	rdb := newTestRedis(t)
+	rdb := NewTestRedis(t)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -79,10 +79,10 @@ func TestUserModel_Get(t *testing.T) {
 }
 
 func TestUserModel_SaveAuthToken(t *testing.T) {
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	rdb := newTestRedis(t)
+	rdb := NewTestRedis(t)
 
 	m := UserModel{
 		DB:    db,
@@ -139,10 +139,10 @@ func TestUserModel_GetByPhone(t *testing.T) {
 		},
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	rdb := newTestRedis(t)
+	rdb := NewTestRedis(t)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -174,10 +174,10 @@ func TestUserModel_GetByPhone(t *testing.T) {
 }
 
 func TestUserModel_GetByAuthToken(t *testing.T) {
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	rdb := newTestRedis(t)
+	rdb := NewTestRedis(t)
 
 	m := UserModel{
 		DB:    db,
@@ -241,10 +241,10 @@ func TestUserModel_Delete(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	rdb := newTestRedis(t)
+	rdb := NewTestRedis(t)
 
 	m := UserModel{
 		DB:    db,
@@ -266,10 +266,10 @@ func TestUserModel_List(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	rdb := newTestRedis(t)
+	rdb := NewTestRedis(t)
 
 	m := UserModel{DB: db, Redis: rdb}
 
@@ -378,10 +378,10 @@ func TestUserModel_GetByUUID(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	rdb := newTestRedis(t)
+	rdb := NewTestRedis(t)
 
 	m := UserModel{
 		DB:    db,
@@ -450,10 +450,10 @@ func TestUserModel_GetByCredentials(t *testing.T) {
 		},
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	rdb := newTestRedis(t)
+	rdb := NewTestRedis(t)
 
 	m := UserModel{
 		DB:    db,
@@ -480,10 +480,10 @@ func TestUserModel_GetPermissions(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	rdb := newTestRedis(t)
+	rdb := NewTestRedis(t)
 
 	m := UserModel{
 		DB:    db,
@@ -545,10 +545,10 @@ func TestUserModel_AddPermission(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	rdb := newTestRedis(t)
+	rdb := NewTestRedis(t)
 
 	m := UserModel{
 		DB:    db,
@@ -586,10 +586,10 @@ func TestUserModel_RemovePermission(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	rdb := newTestRedis(t)
+	rdb := NewTestRedis(t)
 
 	m := UserModel{
 		DB:    db,

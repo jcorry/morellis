@@ -13,7 +13,7 @@ func TestStoreModel_Insert(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mysql: skipping integration test")
 	}
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
 	name := "New Store"
@@ -46,7 +46,7 @@ func TestStoreModel_Get(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mysql: skipping integration test")
 	}
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
 	m := StoreModel{db}
@@ -76,7 +76,7 @@ func TestStoreModel_List(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mysql: skipping integration test")
 	}
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
 	m := StoreModel{db}
@@ -120,7 +120,7 @@ func TestStoreModel_List(t *testing.T) {
 }
 
 func TestStoreModel_ActivateFlavor(t *testing.T) {
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
 	s := StoreModel{db}
@@ -157,7 +157,7 @@ func TestStoreModel_ActivateFlavor(t *testing.T) {
 }
 
 func TestStoreModel_GetActiveFlavors(t *testing.T) {
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
 	m := StoreModel{db}
@@ -226,7 +226,7 @@ func TestStoreModel_GetActiveFlavors(t *testing.T) {
 }
 
 func TestStoreModel_DeactivateFlavor(t *testing.T) {
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
 	s := StoreModel{db}
@@ -263,7 +263,7 @@ func TestStoreModel_DeactivateFlavor(t *testing.T) {
 }
 
 func TestStoreModel_DeactivateFlavorAtPosition(t *testing.T) {
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
 	s := StoreModel{db}
