@@ -398,12 +398,12 @@ func TestUserModel_GetByUUID(t *testing.T) {
 		t.Error(err)
 	}
 
-	if len(u.Permissions) != 2 {
+	if len(u.Permissions) != 3 {
 		t.Errorf("Unexpected permission count; want %d; got %d", 2, len(u.Permissions))
 	}
 
 	for _, p := range u.Permissions {
-		if p.Name == "user:read" || p.Name == "user:write" {
+		if p.Name == "user:read" || p.Name == "user:write" || p.Name == "self:read" {
 			continue
 		} else {
 			t.Errorf("Missing a permission")
@@ -507,7 +507,7 @@ func TestUserModel_GetPermissions(t *testing.T) {
 
 			if tt.minCount > 0 {
 				stmt := `INSERT INTO permission_user (user_id, permission_id)
-					SELECT ?, id FROM permission WHERE name LIKE "self%"`
+					SELECT ?, id FROM permission WHERE name LIKE "flavor%"`
 
 				_, err := m.DB.Exec(stmt, user.ID)
 				if err != nil {

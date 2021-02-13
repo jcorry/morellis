@@ -5,39 +5,76 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"os"
 	"testing"
 
 	"github.com/jcorry/morellis/pkg/models"
+	"github.com/jcorry/morellis/pkg/sms"
+	"github.com/jcorry/morellis/pkg/sms/smsfakes"
 )
 
 func TestSmsAuthRequest(t *testing.T) {
 	app := newTestApplication(t)
-	ts := newTestServer(t, app.routes())
-	defer ts.Close()
+	app.sender = &smsfakes.FakeMessager{}
 
 	tests := []struct {
-		validSignature bool
-		statusCode     int
+		statusCode int
 	}{
 		{
-			validSignature: true,
-			statusCode:     http.StatusOK,
+			statusCode: http.StatusOK,
 		},
 		{
-			validSignature: false,
-			statusCode:     http.StatusUnauthorized,
+			statusCode: http.StatusUnauthorized,
 		},
 	}
+
+	reqUrl, err := url.Parse("https://localhost/webhooks/v1/sms/auth")
+	if err != nil {
+		t.Errorf("error parsing URL: %v", err)
+	}
+
 	for _, tt := range tests {
 		tt := tt
-		t.Run("", func(t *testing.T) {
-			code, _, _ := ts.request(t, "post", "/webhooks/v1/sms/auth", bytes.NewBuffer([]byte{}), false)
-			if code != tt.statusCode {
-				t.Errorf("unexpected code; want %d; got %d", tt.statusCode, code)
+		t.Run(fmt.Sprintf("%v", tt.statusCode), func(t *testing.T) {
+			body := map[string]interface{}{
+				"CallSid": "CA1234567890ABCDE",
+				"Caller":  "+8675309",
+				"Digits":  "1234",
+				"From":    "+8675309",
+				"To":      "+18005551212",
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			sig := `foo`
+			form := url.Values{}
+			if tt.statusCode == http.StatusOK {
+				for k, v := range body {
+					form[k] = []string{fmt.Sprintf("%v", v)}
+				}
+				sig = sms.GetExpectedTwilioSignature("https://localhost", os.Getenv("TWILIO_AUTH_TOKEN"), "/webhooks/v1/sms/auth", form)
+			}
+
+			req := http.Request{
+				Method: http.MethodGet,
+				URL:    reqUrl,
+				Form:   form,
+				Header: map[string][]string{
+					"Content-Type":       {"application/json"},
+					"X-Twilio-Signature": {sig},
+				},
+			}
+
+			res := NewFakeResponse(t)
+
+			app.smsAuthRequest(res, &req)
+			if res.status != tt.statusCode {
+				t.Errorf("unexpected status in response; want %v; got %v", tt.statusCode, res.status)
 			}
 		})
 	}
-
 }
 
 func TestCreateAuth(t *testing.T) {

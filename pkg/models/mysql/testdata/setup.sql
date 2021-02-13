@@ -77,7 +77,8 @@ CREATE TABLE `permission_user` (
 INSERT INTO `permission_user` (`permission_id`, `user_id`)
 VALUES
 (3, 1),
-(4, 1);
+(4, 1),
+(8, 1);
 
 -- CREATE store table
 CREATE TABLE `store` (

@@ -48,14 +48,9 @@ func (app *application) smsAuthRequest(w http.ResponseWriter, r *http.Request) {
 
 	type TwilioPayload struct {
 		From string `json:"From"`
-		Body string `json:"Body"`
 	}
 	var tp TwilioPayload
-	err = json.NewDecoder(r.Body).Decode(&tp)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	tp.From = r.FormValue(`From`)
 
 	var user *models.User
 	user, err = app.users.GetByPhone(tp.From)
@@ -91,6 +86,7 @@ func (app *application) smsAuthRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(http.StatusText(http.StatusOK)))
 }
 
 // authByToken looks for a valid auth token in the URL and if found, returns a JWT
