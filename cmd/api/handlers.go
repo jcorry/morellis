@@ -36,7 +36,7 @@ type UserIngredientBody struct {
 // webhook. If found, generates an expiring auth token and sends the user a URL at
 // which they can authenticate and get a JWT with limited permissions for future requests
 func (app *application) smsAuthRequest(w http.ResponseWriter, r *http.Request) {
-	err := sms.ValidateIncomingRequest(app.baseUrl, os.Getenv("TWILIO_AUTH_TOKEN"), r)
+	err := sms.ValidateIncomingRequest(os.Getenv("HOST"), os.Getenv("TWILIO_AUTH_TOKEN"), r)
 	if err != nil {
 		app.errorLog.Output(2, err.Error())
 		app.clientError(w, http.StatusUnauthorized)
@@ -76,7 +76,7 @@ func (app *application) smsAuthRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url := fmt.Sprintf(`https://%s/auth/%s`, app.baseUrl, token)
+	url := fmt.Sprintf(`%s/auth/%s`, app.baseUrl, token)
 	message := fmt.Sprintf(`access the 🍦 app at: %s`, url)
 
 	_, err = app.sender.Send(r.Context(), user.Phone, message)

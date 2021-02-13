@@ -78,11 +78,11 @@ func main() {
 		ingredients: &mysql.IngredientModel{DB: db},
 		mapsApiKey:  mapsApiKey,
 		sender:      sender,
-		baseUrl:     os.Getenv("BASE_APP_URL"),
+		baseUrl:     os.Getenv("HOST"),
 	}
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:     []string{"http://localhost:*", "https://localhost:*"},
+		AllowedOrigins:     []string{fmt.Sprintf("%s:*", os.Getenv("HOST"))},
 		AllowedHeaders:     []string{"*"},
 		AllowCredentials:   true,
 		AllowedMethods:     []string{http.MethodGet, http.MethodPost, http.MethodOptions, http.MethodPatch, http.MethodDelete, http.MethodPut},
