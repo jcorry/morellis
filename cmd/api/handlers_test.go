@@ -29,7 +29,7 @@ func TestSmsAuthRequest(t *testing.T) {
 		},
 	}
 
-	reqUrl, err := url.Parse("https://localhost/webhooks/v1/sms/auth")
+	reqUrl, err := url.Parse(fmt.Sprintf("%s/webhooks/v1/sms/auth", os.Getenv("HOST")))
 	if err != nil {
 		t.Errorf("error parsing URL: %v", err)
 	}
@@ -54,7 +54,7 @@ func TestSmsAuthRequest(t *testing.T) {
 				for k, v := range body {
 					form[k] = []string{fmt.Sprintf("%v", v)}
 				}
-				sig = sms.GetExpectedTwilioSignature("https://localhost", os.Getenv("TWILIO_AUTH_TOKEN"), "/webhooks/v1/sms/auth", form)
+				sig = sms.GetExpectedTwilioSignature(os.Getenv("HOST"), os.Getenv("TWILIO_AUTH_TOKEN"), reqUrl.String(), form)
 			}
 
 			req := http.Request{
