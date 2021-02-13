@@ -5,9 +5,9 @@
 # http://www.sequelpro.com/
 # https://github.com/sequelpro/sequelpro
 #
-# Host: 127.0.0.1 (MySQL 5.7.25)
+# Host: 127.0.0.1 (MySQL 5.7.33)
 # Database: morellis
-# Generation Time: 2019-04-09 03:09:36 +0000
+# Generation Time: 2021-02-07 17:40:19 +0000
 # ************************************************************
 
 
@@ -146,6 +146,27 @@ VALUES
 UNLOCK TABLES;
 
 
+# Dump of table ingredient_user
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `ingredient_user`;
+
+CREATE TABLE `ingredient_user` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `ingredient_id` int(11) unsigned NOT NULL,
+  `user_id` int(11) unsigned NOT NULL,
+  `keyword` varchar(16) DEFAULT NULL,
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `deleted` int(8) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_ingredient_user_ingredient_id_user_id` (`ingredient_id`,`user_id`,`deleted`),
+  KEY `fk_ingredient_user_user_id` (`user_id`),
+  CONSTRAINT `fk_ingredient_user_ingredient_id` FOREIGN KEY (`ingredient_id`) REFERENCES `ingredient` (`id`),
+  CONSTRAINT `fk_ingredient_user_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
 # Dump of table permission
 # ------------------------------------------------------------
 
@@ -195,13 +216,14 @@ CREATE TABLE `permission_user` (
 LOCK TABLES `permission_user` WRITE;
 /*!40000 ALTER TABLE `permission_user` DISABLE KEYS */;
 
-INSERT INTO `permission_user` (`user_id`, `permission_id`, `created`)
+INSERT INTO `permission_user` (`id`, `user_id`, `permission_id`, `created`)
 VALUES
-	(1,7,'2019-04-08 02:36:19'),
-    (1,3,'2019-04-08 02:38:43');
+	(1,1,7,'2019-04-08 02:36:19'),
+	(2,1,3,'2019-04-08 02:38:43');
 
 /*!40000 ALTER TABLE `permission_user` ENABLE KEYS */;
 UNLOCK TABLES;
+
 
 # Dump of table ref_user_status
 # ------------------------------------------------------------
@@ -279,6 +301,7 @@ CREATE TABLE `user` (
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `updated` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_phone` (`phone`),
   UNIQUE KEY `uk_user_email` (`email`),
   KEY `status_id` (`status_id`),
   CONSTRAINT `fk_user_status_id_ref_user_status_id` FOREIGN KEY (`status_id`) REFERENCES `ref_user_status` (`id`)
@@ -294,19 +317,7 @@ VALUES
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
-CREATE TABLE `ingredient_user` (
-    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-    `ingredient_id` int(11) unsigned NOT NULL,
-    `user_id` int(11) unsigned NOT NULL,
-    `keyword` varchar(16) DEFAULT NULL,
-    `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `deleted` int(8) DEFAULT '0',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ingredient_user_ingredient_id_user_id` (`ingredient_id`,`user_id`,`deleted`),
-    KEY `fk_ingredient_user_user_id` (`user_id`),
-    CONSTRAINT `fk_ingredient_user_ingredient_id` FOREIGN KEY (`ingredient_id`) REFERENCES `ingredient` (`id`),
-    CONSTRAINT `fk_ingredient_user_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

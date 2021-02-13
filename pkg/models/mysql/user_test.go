@@ -1,7 +1,9 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"reflect"
 	"strconv"
 	"testing"
@@ -44,13 +46,18 @@ func TestUserModel_Get(t *testing.T) {
 		},
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
+
+	rdb := NewTestRedis(t)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			m := UserModel{db}
+			m := UserModel{
+				DB:    db,
+				Redis: rdb,
+			}
 
 			user, err := m.Get(tt.userID)
 			if err != nil {
@@ -71,15 +78,178 @@ func TestUserModel_Get(t *testing.T) {
 	}
 }
 
+func TestUserModel_SaveAuthToken(t *testing.T) {
+	db, teardown := NewTestDB(t)
+	defer teardown()
+
+	rdb := NewTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
+
+	token := "foo"
+
+	t.Run("save token", func(t *testing.T) {
+		err := m.SaveAuthToken(token, 1)
+		if err != nil {
+			t.Errorf("unexpected err saving token: %v", err)
+		}
+	})
+
+	t.Run("get token", func(t *testing.T) {
+		_, err := m.GetByAuthToken(token)
+		if err != nil {
+			t.Errorf("unexpected err getting user by token: %v", err)
+		}
+	})
+}
+
+func TestUserModel_GetByPhone(t *testing.T) {
+	if testing.Short() {
+		t.Skip("mysql: skipping integration test")
+	}
+
+	tests := []struct {
+		name      string
+		phone     string
+		wantUser  *models.User
+		wantError error
+	}{
+		{
+			name:  "Valid ID",
+			phone: "867-5309",
+			wantUser: &models.User{
+				ID:        1,
+				FirstName: models.NullString{"Alice", true},
+				LastName:  models.NullString{"Jones", true},
+				Email:     models.NullString{"alice@example.com", true},
+				Phone:     "867-5309",
+				Status:    "verified",
+				Created:   time.Date(2019, 02, 24, 17, 25, 25, 0, time.UTC),
+			},
+			wantError: nil,
+		},
+		{
+			name:      "no matching phone",
+			phone:     "867-5309-699",
+			wantUser:  nil,
+			wantError: models.ErrNoRecord,
+		},
+	}
+
+	db, teardown := NewTestDB(t)
+	defer teardown()
+
+	rdb := NewTestRedis(t)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			m := UserModel{
+				DB:    db,
+				Redis: rdb,
+			}
+
+			user, err := m.GetByPhone(tt.phone)
+			if tt.wantError == nil && err != nil {
+				t.Errorf("Unexpected error getting user: %s", err)
+			}
+
+			if tt.wantError == nil {
+				// No way to generate this...has to come from DB
+				tt.wantUser.UUID = user.UUID
+
+				if !reflect.DeepEqual(user, tt.wantUser) {
+					t.Errorf("want %v, got %v", tt.wantUser, user)
+				}
+			}
+
+			if err != tt.wantError {
+				t.Errorf("want %v, got %s", tt.wantError, err)
+			}
+		})
+	}
+}
+
+func TestUserModel_GetByAuthToken(t *testing.T) {
+	db, teardown := NewTestDB(t)
+	defer teardown()
+
+	rdb := NewTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
+
+	tests := []struct {
+		name  string
+		token string
+		setup func()
+		err   error
+	}{
+		{
+			name:  "token found",
+			token: "foo",
+			setup: func() {
+				err := rdb.Set(context.Background(), fmt.Sprintf(`%s:%s`, AUTH_TOKEN_KEY_PREFIX, "foo"), "1", time.Second*300).Err()
+				if err != nil {
+					t.Fatalf("unexpected err setting up Redis: %v", err)
+				}
+			},
+			err: nil,
+		},
+		{
+			name:  "no token found",
+			token: "bar",
+			setup: func() {
+
+			},
+			err: ErrNoAuthTokenFound,
+		},
+		{
+			name:  "token found, no user found",
+			token: "foo",
+			setup: func() {
+				err := rdb.Set(context.Background(), fmt.Sprintf(`%s:%s`, AUTH_TOKEN_KEY_PREFIX, "foo"), "100", time.Second*300).Err()
+				if err != nil {
+					t.Fatalf("unexpected err setting up Redis: %v", err)
+				}
+			},
+			err: models.ErrNoRecord,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setup()
+			_, err := m.GetByAuthToken(tt.token)
+			if tt.err != nil {
+				if tt.err != err {
+					t.Fatalf("unexpected err: %v", err)
+				}
+			}
+		})
+	}
+}
+
 func TestUserModel_Delete(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := NewTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
 
 	result, err := m.Delete(1)
 	if !result {
@@ -96,10 +266,12 @@ func TestUserModel_List(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := NewTestRedis(t)
+
+	m := UserModel{DB: db, Redis: rdb}
 
 	m.Delete(1)
 
@@ -113,14 +285,14 @@ func TestUserModel_List(t *testing.T) {
 			FirstName: models.NullString{"John", true},
 			LastName:  models.NullString{"Corry", true},
 			Email:     models.NullString{"jcorry@morellis.com", true},
-			Phone:     "867-5309",
+			Phone:     "867-5307",
 			Password:  string(hashedPassword),
 		},
 		{
 			FirstName: models.NullString{"Garrett", true},
 			LastName:  models.NullString{"Rap", true},
 			Email:     models.NullString{"garrett@morellis.com", true},
-			Phone:     "867-5309",
+			Phone:     "867-5308",
 			Password:  string(hashedPassword),
 		},
 		{
@@ -206,10 +378,15 @@ func TestUserModel_GetByUUID(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := NewTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
 
 	u, err := m.Get(1)
 	if err != nil {
@@ -221,12 +398,12 @@ func TestUserModel_GetByUUID(t *testing.T) {
 		t.Error(err)
 	}
 
-	if len(u.Permissions) != 2 {
+	if len(u.Permissions) != 3 {
 		t.Errorf("Unexpected permission count; want %d; got %d", 2, len(u.Permissions))
 	}
 
 	for _, p := range u.Permissions {
-		if p.Name == "user:read" || p.Name == "user:write" {
+		if p.Name == "user:read" || p.Name == "user:write" || p.Name == "self:read" {
 			continue
 		} else {
 			t.Errorf("Missing a permission")
@@ -273,10 +450,15 @@ func TestUserModel_GetByCredentials(t *testing.T) {
 		},
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := NewTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -298,10 +480,15 @@ func TestUserModel_GetPermissions(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := NewTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
 
 	tests := []struct {
 		name     string
@@ -320,7 +507,7 @@ func TestUserModel_GetPermissions(t *testing.T) {
 
 			if tt.minCount > 0 {
 				stmt := `INSERT INTO permission_user (user_id, permission_id)
-					SELECT ?, id FROM permission WHERE name LIKE "self%"`
+					SELECT ?, id FROM permission WHERE name LIKE "flavor%"`
 
 				_, err := m.DB.Exec(stmt, user.ID)
 				if err != nil {
@@ -358,10 +545,15 @@ func TestUserModel_AddPermission(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := NewTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
 
 	tests := []struct {
 		name    string
@@ -394,10 +586,15 @@ func TestUserModel_RemovePermission(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
-	db, teardown := newTestDB(t)
+	db, teardown := NewTestDB(t)
 	defer teardown()
 
-	m := UserModel{db}
+	rdb := NewTestRedis(t)
+
+	m := UserModel{
+		DB:    db,
+		Redis: rdb,
+	}
 
 	tests := []struct {
 		name       string

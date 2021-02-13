@@ -9,8 +9,6 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/jcorry/morellis/pkg/models"
-
 	"github.com/bmizerany/pat"
 
 	"github.com/google/uuid"
@@ -51,14 +49,15 @@ func TestJwtVerificationMiddleware(t *testing.T) {
 			}
 
 			if tt.validToken {
-				uid, err := uuid.NewRandom()
+				user, err := app.users.GetByPhone("867-5309")
 				if err != nil {
 					t.Fatal(err)
 				}
-				user, err := app.users.GetByUUID(uid)
+				user, err = app.users.GetByUUID(user.UUID)
 				if err != nil {
 					t.Fatal(err)
 				}
+
 				token, err := generateToken(user)
 				if err != nil {
 					t.Fatal(err)
@@ -86,12 +85,11 @@ func TestJwtVerificationAddsUserToContext(t *testing.T) {
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
-	uid, err := uuid.NewRandom()
+	user, err := app.users.GetByPhone("867-5309")
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	user, err := app.users.GetByUUID(uid)
+	user, err = app.users.GetByUUID(user.UUID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,11 +100,11 @@ func TestJwtVerificationAddsUserToContext(t *testing.T) {
 	}
 
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		val := r.Context().Value(ContextKeyUser)
+		val := r.Context().Value(ContextKeyUser).(*Claims)
 		if val == nil {
 			t.Error("user not present")
 		}
-		if val != user {
+		if val.UUID != user.UUID.String() {
 			t.Error("Not the same user")
 		}
 	})
@@ -151,12 +149,11 @@ func TestNewPermissionsCheck(t *testing.T) {
 			ts := newTestServer(t, app.routes())
 			defer ts.Close()
 
-			uid, err := uuid.NewRandom()
+			user, err := app.users.GetByPhone("867-5309")
 			if err != nil {
 				t.Fatal(err)
 			}
-
-			user, err := app.users.GetByUUID(uid)
+			user, err = app.users.GetByUUID(user.UUID)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -165,17 +162,9 @@ func TestNewPermissionsCheck(t *testing.T) {
 
 			var reqUUID string
 			if tt.reqUUID {
-				uid, err = uuid.NewRandom()
+				uid, err := uuid.NewRandom()
 				if err != nil {
 					t.Fatal(err)
-				}
-				user.Permissions = []models.UserPermission{
-					{
-						Permission: models.Permission{Name: "self:read"},
-					},
-					{
-						Permission: models.Permission{Name: "self:write"},
-					},
 				}
 
 				reqUUID = uid.String()
@@ -201,7 +190,11 @@ func TestNewPermissionsCheck(t *testing.T) {
 					"Authorization": {fmt.Sprintf("Bearer %s", reqToken)},
 				},
 			}
-			ctx := context.WithValue(req.Context(), ContextKeyUser, user)
+			claims := Claims{
+				UUID:        user.UUID.String(),
+				Permissions: user.Permissions,
+			}
+			ctx := context.WithValue(req.Context(), ContextKeyUser, &claims)
 
 			w := httptest.NewRecorder()
 

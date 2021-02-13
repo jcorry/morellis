@@ -8,62 +8,27 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/rs/cors"
 
 	"github.com/joho/godotenv"
 
-	"github.com/google/uuid"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jcorry/morellis/pkg/models"
 	"github.com/jcorry/morellis/pkg/models/mysql"
+	"github.com/jcorry/morellis/pkg/sms"
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	users    interface {
-		Insert(uid uuid.UUID, firstName models.NullString, lastName models.NullString, email models.NullString, phone string, statusID int, password string) (*models.User, error)
-		Update(*models.User) (*models.User, error)
-		Get(int) (*models.User, error)
-		GetByUUID(uuid.UUID) (*models.User, error)
-		GetByCredentials(models.Credentials) (*models.User, error)
-		List(int, int, string) ([]*models.User, error)
-		Delete(int) (bool, error)
-		Count() int
-		GetPermissions(userID int) ([]models.UserPermission, error)
-		AddPermission(userID int, p models.Permission) (int, error)
-		RemovePermission(userPermissionID int) (bool, error)
-		RemoveAllPermissions(userID int) error
-		AddIngredient(userID int64, ingredient *models.Ingredient, keyword string) (*models.UserIngredient, error)
-		GetIngredients(userID int64) ([]*models.UserIngredient, error)
-		RemoveUserIngredient(userIngredientID int64) error
-	}
-	stores interface {
-		Insert(string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
-		Update(int, string, string, string, string, string, string, string, string, float64, float64) (*models.Store, error)
-		Get(storeID int) (*models.Store, error)
-		List(int, int, string) ([]*models.Store, error)
-		Count() int
-		ActivateFlavor(storeID int64, flavorID int64, position int) error
-		DeactivateFlavor(storeID int64, flavorID int64) (bool, error)
-		DeactivateFlavorAtPosition(storeID int64, position int) (bool, error)
-	}
-	flavors interface {
-		Count() int
-		Get(int) (*models.Flavor, error)
-		List(limit int, offset int, sortBy string, ingredientTerms []string) ([]*models.Flavor, error)
-		Insert(*models.Flavor) (*models.Flavor, error)
-		Update(int, *models.Flavor) (*models.Flavor, error)
-		Delete(int) (bool, error)
-	}
-	ingredients interface {
-		Get(ID int64) (*models.Ingredient, error)
-		GetByName(string) (*models.Ingredient, error)
-		Insert(*models.Ingredient) (*models.Ingredient, error)
-		Search(limit int, offset int, order string, search []string) ([]*models.Ingredient, error)
-	}
-	mapsApiKey string
+	errorLog    *log.Logger
+	infoLog     *log.Logger
+	users       models.UserRepository
+	stores      models.StoreRepository
+	flavors     models.FlavorRepository
+	ingredients models.IngredientRepository
+	sender      sms.Messager
+	baseUrl     string
+	mapsApiKey  string
 }
 
 func main() {
@@ -93,20 +58,36 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
+	// Initialize redis
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("REDIS_ADDRESS"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
+	})
+
+	// Initialize Twilio Client
+	client := &http.Client{}
+	sender := sms.NewTwilioMessager(client, os.Getenv("TWILIO_SID"), os.Getenv("TWILIO_AUTH_TOKEN"), os.Getenv("TWILIO_NUMBER"))
+
 	app := &application{
 		errorLog:    errorLog,
 		infoLog:     infoLog,
-		users:       &mysql.UserModel{DB: db},
+		users:       &mysql.UserModel{DB: db, Redis: rdb},
 		stores:      &mysql.StoreModel{DB: db},
 		flavors:     &mysql.FlavorModel{DB: db},
 		ingredients: &mysql.IngredientModel{DB: db},
 		mapsApiKey:  mapsApiKey,
+		sender:      sender,
+		baseUrl:     os.Getenv("HOST"),
 	}
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:*"},
-		AllowedHeaders: []string{"Authorization", "X-Requested-With", "Content-Type"},
-		Debug:          true,
+		AllowedOrigins:     []string{fmt.Sprintf("%s:*", os.Getenv("HOST"))},
+		AllowedHeaders:     []string{"*"},
+		AllowCredentials:   true,
+		AllowedMethods:     []string{http.MethodGet, http.MethodPost, http.MethodOptions, http.MethodPatch, http.MethodDelete, http.MethodPut},
+		OptionsPassthrough: true,
+		Debug:              true,
 	})
 
 	srv := &http.Server{

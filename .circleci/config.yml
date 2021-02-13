@@ -6,16 +6,20 @@ jobs:
   build:
     docker:
     # specify the version
-    - image: circleci/golang:1.11
+    - image: circleci/golang:1.15
       environment:
         TEST_DSN: morellistest:testpass@tcp(127.0.0.1:3306)/morellistest?parseTime=true&multiStatements=true
+        TEST_REDIS_ADDRESS: 127.0.0.1:6379
+        TEST_DATA_DIR: /go/src/github.com/jcorry/morellis/pkg/models/mysql/testdata
     
-    - image: circleci/mysql:5.7
+    - image: circleci/mysql:latest
       environment:
         MYSQL_ROOT_PASSWORD: password
         MYSQL_DATABASE: morellistest
         MYSQL_USER: morellistest
         MYSQL_PASSWORD: testpass
+
+    - image: circleci/redis:latest
 
     # Specify service dependencies here if necessary
     # CircleCI maintains a library of pre-built images
@@ -38,6 +42,10 @@ jobs:
     - run:
         name: Wait for db
         command: dockerize -wait tcp://127.0.0.1:3306 -timeout 1m
+
+    - run:
+        name: Wait for Redis
+        command: dockerize -wait tcp://127.0.0.1:6379 -timeout 1m
     # specify any bash command here prefixed with `run: `
     - run:
         name: "Create temp dir for artifacts"
@@ -50,7 +58,7 @@ jobs:
           mkdir ./tls && cd ./tls && go run $(go env GOROOT)/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
     - run:
         command: |
-          go test -v -coverprofile=c.out -covermode=atomic ./...
+          go test -v -coverprofile=c.out -covermode=atomic -p 1 ./...
           go tool cover -html=c.out -o coverage.html
           mv coverage.html /tmp/artifacts
           bash <(curl -s https://codecov.io/bash) -f c.out
