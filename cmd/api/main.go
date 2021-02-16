@@ -9,13 +9,15 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/mysql"
 	"github.com/rs/cors"
 
 	"github.com/joho/godotenv"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jcorry/morellis/pkg/models"
-	"github.com/jcorry/morellis/pkg/models/mysql"
+	repo "github.com/jcorry/morellis/pkg/models/mysql"
 	"github.com/jcorry/morellis/pkg/sms"
 )
 
@@ -38,7 +40,7 @@ func main() {
 	}
 
 	addr := fmt.Sprintf(":%s", os.Getenv("PORT"))
-	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true", os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_DATABASE"))
+	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true&multiStatements=true", os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_DATABASE"))
 	mapsApiKey := os.Getenv("GMAP_API_KEY")
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -54,8 +56,21 @@ func main() {
 
 	defer db.Close()
 
+	// Run migrations
+	driver, err := mysql.WithInstance(db, &mysql.Config{})
 	if err != nil {
-		errorLog.Fatal(err)
+		log.Fatal(err)
+	}
+	m, err := migrate.NewWithDatabaseInstance(
+		fmt.Sprintf("file://%s", os.Getenv("MIGRATIONS_DIR")),
+		"mysql",
+		driver,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err = m.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatal(err)
 	}
 
 	// Initialize redis
@@ -72,10 +87,10 @@ func main() {
 	app := &application{
 		errorLog:    errorLog,
 		infoLog:     infoLog,
-		users:       &mysql.UserModel{DB: db, Redis: rdb},
-		stores:      &mysql.StoreModel{DB: db},
-		flavors:     &mysql.FlavorModel{DB: db},
-		ingredients: &mysql.IngredientModel{DB: db},
+		users:       &repo.UserModel{DB: db, Redis: rdb},
+		stores:      &repo.StoreModel{DB: db},
+		flavors:     &repo.FlavorModel{DB: db},
+		ingredients: &repo.IngredientModel{DB: db},
 		mapsApiKey:  mapsApiKey,
 		sender:      sender,
 		baseUrl:     os.Getenv("HOST"),

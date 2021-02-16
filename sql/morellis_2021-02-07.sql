@@ -134,13 +134,13 @@ CREATE TABLE `ingredient` (
 LOCK TABLES `ingredient` WRITE;
 /*!40000 ALTER TABLE `ingredient` DISABLE KEYS */;
 
-INSERT INTO `ingredient` (`id`, `name`, `created`, `updated`)
+INSERT INTO `ingredient` (`id`, `name`)
 VALUES
-	(1,'coconut','2019-03-01 21:52:22',NULL),
-	(2,'jalapeno','2019-03-01 21:52:22',NULL),
-	(3,'butter','2019-03-02 21:36:19',NULL),
-	(4,'pecan','2019-03-02 21:36:19',NULL),
-	(5,'nuts','2019-03-02 21:36:19',NULL);
+	(1,'coconut'),
+	(2,'jalapeno'),
+	(3,'butter'),
+	(4,'pecan'),
+	(5,'nuts');
 
 /*!40000 ALTER TABLE `ingredient` ENABLE KEYS */;
 UNLOCK TABLES;

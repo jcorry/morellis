@@ -23,11 +23,7 @@ type testServer struct {
 }
 
 func newTestApplication(t *testing.T) *application {
-	db, cleanup := mysql.NewTestDB(t)
-	t.Cleanup(func() {
-		cleanup()
-	})
-
+	db := mysql.NewTestDB(t)
 	rdb := mysql.NewTestRedis(t)
 
 	return &application{

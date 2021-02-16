@@ -5,16 +5,19 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func NewTestDB(t *testing.T) (*sql.DB, func()) {
+func NewTestDB(t *testing.T) *sql.DB {
 	var dsn string
 
 	dsn = os.Getenv("TEST_DSN")
@@ -28,29 +31,31 @@ func NewTestDB(t *testing.T) (*sql.DB, func()) {
 		t.Fatal(err)
 	}
 
-	script, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", os.Getenv("TEST_DATA_DIR"), "setup.sql"))
-
+	driver, err := mysql.WithInstance(db, &mysql.Config{})
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	_, err = db.Exec(string(script))
+	m, err := migrate.NewWithDatabaseInstance(
+		fmt.Sprintf("file://%s", os.Getenv("MIGRATIONS_DIR")),
+		"mysql",
+		driver,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
+	if err = m.Up(); err != nil && err != migrate.ErrNoChange {
+		t.Fatal(err)
+	}
 
-	return db, func() {
-		script, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", os.Getenv("TEST_DATA_DIR"), "teardown.sql"))
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		_, err = db.Exec(string(script))
+	t.Cleanup(func() {
+		err = m.Drop()
 		if err != nil {
 			t.Fatal(err)
 		}
 		db.Close()
-	}
+	})
+
+	return db
 }
 
 func NewTestRedis(t *testing.T) *redis.Client {

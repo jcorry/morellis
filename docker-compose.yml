@@ -9,8 +9,7 @@ services:
       MYSQL_USER: morellis
       MYSQL_PASSWORD: E4j+#2G^8Pa=^Nn9
     volumes:
-      - ./sql:/docker-entrypoint-initdb.d
-      - ./data:/var/lib/mysql
+      - ./data/mysql:/var/lib/mysql
     ports:
       - "33061:3306"
 
@@ -22,8 +21,6 @@ services:
       MYSQL_DATABASE: morellistest
       MYSQL_USER: morellistest
       MYSQL_PASSWORD: testpass
-    volumes:
-      - ./sql/test:/docker-entrypoint-initdb.d
     ports:
       - "33062:3306"
 

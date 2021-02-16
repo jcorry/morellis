@@ -62,7 +62,7 @@ func (u *UserModel) Insert(uid uuid.UUID, firstName models.NullString, lastName 
 		?
 	)`
 
-	result, err := u.DB.Exec(stmt, uid.String(), firstName.String, lastName.String, email.String, phone, statusID, hashedPassword, created)
+	result, err := u.DB.Exec(stmt, uid.String(), firstName.String, lastName.String, email.String, NormalizePhone(phone), statusID, hashedPassword, created)
 	if err != nil {
 		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 			if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_user_email") {
@@ -84,6 +84,7 @@ func (u *UserModel) Insert(uid uuid.UUID, firstName models.NullString, lastName 
 
 	user := &models.User{
 		ID:        id,
+		UUID:      uid,
 		FirstName: firstName,
 		LastName:  lastName,
 		Email:     email,
@@ -108,7 +109,7 @@ func (u *UserModel) Update(user *models.User) (*models.User, error) {
 	var userStatus models.UserStatus
 	userStatusID := userStatus.GetID(user.Status)
 
-	_, err := u.DB.Exec(stmt, user.FirstName.String, user.LastName.String, user.Email.String, user.Phone, userStatusID, user.ID)
+	_, err := u.DB.Exec(stmt, user.FirstName.String, user.LastName.String, user.Email.String, NormalizePhone(user.Phone), userStatusID, user.ID)
 	if err != nil {
 		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 			if mysqlErr.Number == 1062 && strings.Contains(mysqlErr.Message, "uk_user_email") {
@@ -229,10 +230,10 @@ func (u *UserModel) GetByPhone(phone string) (*models.User, error) {
 	stmt := `SELECT u.id, u.uuid, u.first_name, u.last_name, u.email, u.phone, s.slug, u.created
 			   FROM user AS u
 		  LEFT JOIN ref_user_status AS s ON u.status_id = s.id
-			  WHERE REGEXP_REPLACE(u.phone, '[^0-9]', "") = ?`
+			  WHERE REGEXP_REPLACE(u.phone, '[^0-9]', '') = ?`
 
 	user := &models.User{}
-	err := u.DB.QueryRow(stmt, phone).Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &user.Phone, &user.Status, &user.Created)
+	err := u.DB.QueryRow(stmt, NormalizePhone(phone)).Scan(&user.ID, &user.UUID, &user.FirstName, &user.LastName, &user.Email, &user.Phone, &user.Status, &user.Created)
 
 	if err == sql.ErrNoRows {
 		return nil, models.ErrNoRecord
@@ -399,11 +400,11 @@ func (u *UserModel) GetPermissions(userID int) ([]models.UserPermission, error) 
 
 // AddPermission adds a Permission to a User
 func (u *UserModel) AddPermission(userID int, p models.Permission) (int, error) {
-	if !u.checkValidPermission(p) {
+	if !u.CheckValidPermission(p) {
 		return 0, models.ErrInvalidPermission
 	}
 
-	if !u.checkValidUser(userID) {
+	if !u.CheckValidUser(userID) {
 		return 0, models.ErrInvalidUser
 	}
 
@@ -607,7 +608,7 @@ func (u *UserModel) RemoveUserIngredient(userIngredientID int64) error {
 	return nil
 }
 
-func (u *UserModel) checkValidPermission(p models.Permission) bool {
+func (u *UserModel) CheckValidPermission(p models.Permission) bool {
 	var isValid bool
 	stmt := `SELECT IF(COUNT(*), 'true', 'false') 
 			   FROM permission 
@@ -622,7 +623,7 @@ func (u *UserModel) checkValidPermission(p models.Permission) bool {
 	return isValid
 }
 
-func (u *UserModel) checkValidUser(userID int) bool {
+func (u *UserModel) CheckValidUser(userID int) bool {
 	var isValid bool
 	stmt := `SELECT IF(COUNT(*), 'true', 'false')
 			   FROM user
@@ -634,4 +635,11 @@ func (u *UserModel) checkValidUser(userID int) bool {
 	}
 
 	return isValid
+}
+
+// NormalizePhone
+func NormalizePhone(p string) string {
+	// retain only the digits
+	regexp := regexp.MustCompile(`[^0-9]`)
+	return regexp.ReplaceAllString(p, "")
 }
