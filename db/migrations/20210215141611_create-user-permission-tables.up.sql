@@ -9,19 +9,19 @@ CREATE TABLE `permission` (
 LOCK TABLES `permission` WRITE;
 /*!40000 ALTER TABLE `permission` DISABLE KEYS */;
 
-INSERT INTO `permission` (`name`)
+INSERT INTO `permission` (`id`, `name`)
 VALUES
-('store:read'),
-('store:write'),
-('user:read'),
-('user:write'),
-('flavor:read'),
-('flavor:write'),
-('ingredient:read'),
-('ingredient:write'),
-('self:write'),
-('self:read'),
-('all');
+(1, 'store:read'),
+(2, 'store:write'),
+(3, 'user:read'),
+(4, 'user:write'),
+(5, 'flavor:read'),
+(6, 'flavor:write'),
+(7, 'ingredient:read'),
+(8, 'ingredient:write'),
+(9, 'self:write'),
+(10, 'self:read'),
+(11, 'all');
 
 /*!40000 ALTER TABLE `permission` ENABLE KEYS */;
 UNLOCK TABLES;
