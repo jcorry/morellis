@@ -10,8 +10,11 @@ import (
 	"testing"
 
 	"github.com/bmizerany/pat"
+	"github.com/stretchr/testify/require"
 
 	"github.com/google/uuid"
+
+	"github.com/jcorry/morellis/pkg/models"
 )
 
 func TestJwtVerificationMiddleware(t *testing.T) {
@@ -49,14 +52,20 @@ func TestJwtVerificationMiddleware(t *testing.T) {
 			}
 
 			if tt.validToken {
-				user, err := app.users.GetByPhone("867-5309")
-				if err != nil {
-					t.Fatal(err)
+				user, err := app.users.Insert(
+					uuid.New(),
+					models.NullString{String: "testy"},
+					models.NullString{String: "McTesterson"},
+					models.NullString{String: "test@test.com"},
+					"16785928804",
+					int(models.USER_STATUS_VERIFIED),
+					"password",
+				)
+				user.Permissions = []models.UserPermission{
+					{Permission: models.Permission{Name: "all"}},
+					{Permission: models.Permission{Name: "user:read"}},
 				}
-				user, err = app.users.GetByUUID(user.UUID)
-				if err != nil {
-					t.Fatal(err)
-				}
+				require.NoError(t, err)
 
 				token, err := generateToken(user)
 				if err != nil {
@@ -85,14 +94,20 @@ func TestJwtVerificationAddsUserToContext(t *testing.T) {
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
-	user, err := app.users.GetByPhone("867-5309")
-	if err != nil {
-		t.Fatal(err)
+	user, err := app.users.Insert(
+		uuid.New(),
+		models.NullString{String: "testy"},
+		models.NullString{String: "McTesterson"},
+		models.NullString{String: "test@test.com"},
+		"16785928804",
+		int(models.USER_STATUS_VERIFIED),
+		"password",
+	)
+	user.Permissions = []models.UserPermission{
+		{Permission: models.Permission{Name: "all"}},
+		{Permission: models.Permission{Name: "user:read"}},
 	}
-	user, err = app.users.GetByUUID(user.UUID)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	reqToken, err := generateToken(user)
 	if err != nil {
@@ -149,14 +164,22 @@ func TestNewPermissionsCheck(t *testing.T) {
 			ts := newTestServer(t, app.routes())
 			defer ts.Close()
 
-			user, err := app.users.GetByPhone("867-5309")
-			if err != nil {
-				t.Fatal(err)
+			user, err := app.users.Insert(
+				uuid.New(),
+				models.NullString{String: "testy"},
+				models.NullString{String: "McTesterson"},
+				models.NullString{String: "test@test.com"},
+				"16785928804",
+				int(models.USER_STATUS_VERIFIED),
+				"password",
+			)
+			user.Permissions = []models.UserPermission{
+				{Permission: models.Permission{Name: "all"}},
+				{Permission: models.Permission{Name: "user:read"}},
+				{Permission: models.Permission{Name: "self:write"}},
+				{Permission: models.Permission{Name: "self:read"}},
 			}
-			user, err = app.users.GetByUUID(user.UUID)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			handlerToTest := NewPermissionsCheck(nextHandler, tt.permission)
 

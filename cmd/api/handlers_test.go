@@ -9,6 +9,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
+
 	"github.com/jcorry/morellis/pkg/models"
 	"github.com/jcorry/morellis/pkg/sms"
 	"github.com/jcorry/morellis/pkg/sms/smsfakes"
@@ -82,6 +85,10 @@ func TestCreateAuth(t *testing.T) {
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
+	// create a user
+	_, err := app.users.Insert(uuid.New(), models.NullString{String: "Alice"}, models.NullString{String: "Wonder"}, models.NullString{String: "alice@example.com"}, "404-555-1212", int(models.USER_STATUS_VERIFIED), "password")
+	require.NoError(t, err)
+
 	tests := []struct {
 		name     string
 		email    string
@@ -137,7 +144,7 @@ func TestCreateUser(t *testing.T) {
 	}{
 		{"Valid submission", "Bob", "McTestFace", "867-5310", "bob@testy.com", "valid-password", []string{"user:read", "user:write"}, http.StatusOK, []byte("Bob")},
 		{"Duplicate email", "Bob", "McTestFace", "867-5311", "bob@testy.com", "valid-password", []string{"user:read", "user:write"}, http.StatusBadRequest, []byte("Duplicate email")},
-		{"Duplicate phone", "Bob", "McTestFace", "867-5309", "dupe@example.com", "valid-password", []string{"user:read", "user:write"}, http.StatusBadRequest, []byte("Duplicate phone")},
+		{"Duplicate phone", "Bob", "McTestFace", "867-5310", "dupe@example.com", "valid-password", []string{"user:read", "user:write"}, http.StatusBadRequest, []byte("Duplicate phone")},
 	}
 
 	for _, tt := range tests {
@@ -184,6 +191,10 @@ func TestPartialUpdateUser(t *testing.T) {
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
+
+	// create a user
+	_, err := app.users.Insert(uuid.New(), models.NullString{String: "Alice"}, models.NullString{String: "Wonder"}, models.NullString{String: "alice@example.com"}, "404-555-1212", int(models.USER_STATUS_VERIFIED), "password")
+	require.NoError(t, err)
 
 	tests := []struct {
 		name      string
@@ -235,10 +246,13 @@ func TestGetUser(t *testing.T) {
 	defer ts.Close()
 
 	// get a valid userID
-	u, err := app.users.GetByPhone("867-5309")
-	if err != nil {
-		t.Error(err)
-	}
+	// create a user
+	u, err := app.users.Insert(uuid.New(), models.NullString{String: "Alice"}, models.NullString{String: "Wonder"}, models.NullString{String: "alice@example.com"}, "404-555-1212", int(models.USER_STATUS_VERIFIED), "password")
+	require.NoError(t, err)
+	_, err = app.users.AddPermission(int(u.ID), models.Permission{
+		Name: "self:read",
+	})
+	require.NoError(t, err)
 
 	tests := []struct {
 		name     string
@@ -252,8 +266,10 @@ func TestGetUser(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			urlPath := fmt.Sprintf("/api/v1/user/%s", tt.id)
+			app.infoLog.Output(2, fmt.Sprintf("URL: %s", urlPath))
 
 			code, _, body := ts.request(t, "get", urlPath, bytes.NewBuffer(nil), true)
 
@@ -274,10 +290,13 @@ func TestDeleteUser(t *testing.T) {
 	defer ts.Close()
 
 	// get a valid userID
-	u, err := app.users.GetByPhone("867-5309")
-	if err != nil {
-		t.Error(err)
-	}
+	// create a user
+	u, err := app.users.Insert(uuid.New(), models.NullString{String: "Alice"}, models.NullString{String: "Wonder"}, models.NullString{String: "alice@example.com"}, "404-555-1212", int(models.USER_STATUS_VERIFIED), "password")
+	require.NoError(t, err)
+	_, err = app.users.AddPermission(int(u.ID), models.Permission{
+		Name: "self:read",
+	})
+	require.NoError(t, err)
 
 	urlPath := fmt.Sprintf("/api/v1/user/%s", u.UUID.String())
 
@@ -554,109 +573,4 @@ func TestListStore(t *testing.T) {
 	if code != 200 {
 		t.Errorf("want %d, got %d", 200, code)
 	}
-}
-
-func TestUserIngredientAssociations(t *testing.T) {
-	app := newTestApplication(t)
-	ts := newTestServer(t, app.routes())
-	defer ts.Close()
-
-	u, err := app.users.GetByPhone("867-5309")
-	if err != nil {
-		t.Errorf("Unexpected error: %s", err)
-	}
-
-	url := fmt.Sprintf("/api/v1/user/%s/ingredient", u.UUID.String())
-
-	req := map[string]interface{}{
-		"userUuid":     u.UUID.String(),
-		"ingredientId": 2,
-		"storeId":      1,
-		"keyword":      "coconut",
-	}
-
-	t.Run("create an association", func(t *testing.T) {
-		reqBytes, err := json.Marshal(req)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		code, _, body := ts.request(t, "post", url, bytes.NewBuffer(reqBytes), true)
-		if code != http.StatusOK {
-			t.Errorf("want %d; got %d", http.StatusOK, code)
-		}
-
-		if !bytes.Contains(body, []byte("coconut")) {
-			t.Errorf("want body %s to contain %q", body, []byte("coconut"))
-		}
-	})
-
-	t.Run("list associations", func(t *testing.T) {
-		code, _, body := ts.request(t, http.MethodGet, url, bytes.NewBuffer([]byte{}), true)
-		if code != http.StatusOK {
-			t.Errorf("want %d; got %d", http.StatusOK, code)
-		}
-		if !bytes.Contains(body, []byte(`"meta":{"count":1,"totalRecords":1}`)) {
-			t.Errorf("unexpected body: got %s", body)
-		}
-	})
-
-	t.Run("create another association", func(t *testing.T) {
-		req["ingredientId"] = 1
-		reqBytes, err := json.Marshal(req)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		code, _, body := ts.request(t, "post", url, bytes.NewBuffer(reqBytes), true)
-		if code != http.StatusOK {
-			t.Errorf("want %d; got %d", http.StatusOK, code)
-		}
-
-		if !bytes.Contains(body, []byte("coconut")) {
-			t.Errorf("want body %s to contain %q", body, []byte("coconut"))
-		}
-	})
-
-	t.Run("list associations", func(t *testing.T) {
-		code, _, body := ts.request(t, http.MethodGet, url, bytes.NewBuffer([]byte{}), true)
-		if code != http.StatusOK {
-			t.Errorf("want %d; got %d", http.StatusOK, code)
-		}
-		if !bytes.Contains(body, []byte(`"meta":{"count":2,"totalRecords":2}`)) {
-			t.Errorf("unexpected body: got %s", body)
-		}
-	})
-
-	t.Run("create an invalid association", func(t *testing.T) {
-		req["ingredientId"] = 42
-		reqBytes, err := json.Marshal(req)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		code, _, _ := ts.request(t, "post", url, bytes.NewBuffer(reqBytes), true)
-		if code != http.StatusNotFound {
-			t.Errorf("want %d; got %d", http.StatusOK, code)
-		}
-	})
-
-	t.Run("delete an association", func(t *testing.T) {
-		url = fmt.Sprintf("/api/v1/user/%s/ingredient/%d", u.UUID.String(), 1)
-		code, _, _ := ts.request(t, "delete", url, bytes.NewBuffer([]byte{}), true)
-		if code != http.StatusNoContent {
-			t.Errorf("want %d; got %d", http.StatusOK, code)
-		}
-	})
-
-	t.Run("list associations", func(t *testing.T) {
-		url = fmt.Sprintf("/api/v1/user/%s/ingredient", u.UUID.String())
-		code, _, body := ts.request(t, http.MethodGet, url, bytes.NewBuffer([]byte{}), true)
-		if code != http.StatusOK {
-			t.Errorf("want %d; got %d", http.StatusOK, code)
-		}
-		if !bytes.Contains(body, []byte(`"meta":{"count":1,"totalRecords":1}`)) {
-			t.Errorf("unexpected body: got %s", body)
-		}
-	})
 }

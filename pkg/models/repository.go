@@ -9,10 +9,10 @@ type UserRepository interface {
 	Get(int) (*User, error)
 	GetByUUID(uuid.UUID) (*User, error)
 	GetByCredentials(Credentials) (*User, error)
-	GetByPhone(string) (*User, error)
+	GetByPhone(phone string) (*User, error)
 	GetByAuthToken(string) (*User, error)
 	SaveAuthToken(string, int) error
-	List(int, int, string) ([]*User, error)
+	List(limit int, offset int, order string) ([]*User, error)
 	Delete(int) (bool, error)
 	Count() int
 	GetPermissions(userID int) ([]UserPermission, error)
