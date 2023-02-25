@@ -15,6 +15,6 @@ require (
 	github.com/rs/cors v1.6.0
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
+	golang.org/x/crypto v0.1.0
 	googlemaps.github.io/maps v0.0.0-20190206003505-be134e760d70
 )
